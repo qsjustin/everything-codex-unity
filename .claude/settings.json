@@ -1,0 +1,76 @@
+{
+  "permissions": {
+    "defaultMode": "allowEdits"
+  },
+  "mcpServers": {
+    "unityMCP": {
+      "url": "http://localhost:8080/mcp"
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/block-scene-edit.sh",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/block-meta-edit.sh",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/guard-editor-runtime.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/block-projectsettings.sh",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/warn-serialization.sh",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/warn-filename.sh",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/warn-platform-defines.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/validate-commit.sh",
+            "timeout": 15000
+          }
+        ]
+      }
+    ]
+  }
+}

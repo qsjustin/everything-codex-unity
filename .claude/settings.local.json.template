@@ -1,0 +1,10 @@
+{
+  "// INSTRUCTIONS": "Copy this file to settings.local.json and customize. This file is git-ignored.",
+  "permissions": {
+    "defaultMode": "allowEdits"
+  },
+  "env": {
+    "// UNITY_PROJECT_DIR": "Override if your Unity project is in a subdirectory",
+    "// MCP_PORT": "Override unity-mcp port (default: 8080)"
+  }
+}
