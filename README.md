@@ -45,7 +45,7 @@ One prompt to playable prototype. Describe a mechanic, and Claude:
 
 ```bash
 # From your Unity project root:
-git clone https://github.com/<user>/everything-claude-unity.git /tmp/ecu
+git clone https://github.com/XeldarAlz/everything-claude-unity.git /tmp/ecu
 /tmp/ecu/install.sh --project-dir .
 rm -rf /tmp/ecu
 ```
