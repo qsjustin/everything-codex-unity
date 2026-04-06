@@ -11,6 +11,9 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/_lib.sh"
+
 # Read the tool input from stdin (JSON with tool_name, file_path, etc.)
 INPUT=$(cat)
 
@@ -24,7 +27,7 @@ fi
 # Check if the file has a Unity binary/YAML extension
 case "$FILE_PATH" in
     *.unity|*.prefab)
-        echo "BLOCKED: Direct editing of scene/prefab files corrupts serialized references." >&2
+        MSG="Direct editing of scene/prefab files corrupts serialized references."
         echo "" >&2
         echo "  File: $FILE_PATH" >&2
         echo "" >&2
@@ -34,7 +37,7 @@ case "$FILE_PATH" in
         echo "    - manage_components  → add/configure components" >&2
         echo "    - manage_prefabs     → create/edit prefabs" >&2
         echo "    - batch_execute      → bundle multiple operations" >&2
-        exit 2
+        unity_hook_block "$MSG"
         ;;
     *.asset)
         # Allow .asset files in Scripts/ or code-generated paths, block others
@@ -43,7 +46,7 @@ case "$FILE_PATH" in
                 exit 0
                 ;;
             *)
-                echo "BLOCKED: Direct editing of .asset files can corrupt serialized data." >&2
+                MSG="Direct editing of .asset files can corrupt serialized data."
                 echo "" >&2
                 echo "  File: $FILE_PATH" >&2
                 echo "" >&2
@@ -51,7 +54,7 @@ case "$FILE_PATH" in
                 echo "    - manage_asset              → manage assets" >&2
                 echo "    - manage_scriptable_object   → edit ScriptableObjects" >&2
                 echo "    - manage_material            → edit materials" >&2
-                exit 2
+                unity_hook_block "$MSG"
                 ;;
         esac
         ;;

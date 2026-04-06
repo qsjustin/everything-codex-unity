@@ -58,6 +58,11 @@
             "type": "command",
             "command": ".claude/hooks/warn-platform-defines.sh",
             "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/suggest-verify.sh",
+            "timeout": 3000
           }
         ]
       },

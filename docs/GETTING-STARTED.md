@@ -66,9 +66,9 @@ After installation, your project contains:
 
 ```
 .claude/
-  agents/          12 specialized sub-agents (coder, reviewer, scene-builder, etc.)
-  commands/        15 slash commands (/unity-prototype, /unity-build, etc.)
-  hooks/            8 safety hooks (block scene edits, warn on serialization issues)
+  agents/          15 specialized sub-agents (coder, reviewer, verifier, scene-builder, etc.)
+  commands/        17 slash commands (/unity-workflow, /unity-prototype, /unity-doctor, etc.)
+  hooks/            9 safety hooks + _lib.sh (block scene edits, warn on serialization, suggest review)
   rules/            5 always-loaded coding standards (C# style, performance, architecture)
   skills/          35 knowledge modules organized by category
     core/            Assembly definitions, event systems, object pooling, MCP patterns
@@ -133,10 +133,12 @@ See [MCP-SETUP.md](MCP-SETUP.md) for detailed setup and troubleshooting.
 
 | Command | What It Does |
 |---------|-------------|
+| `/unity-doctor` | Diagnostic health check — verify MCP, hooks, project structure are all working |
 | `/unity-init` | Scans your project and generates a tailored CLAUDE.md |
 | `/unity-audit` | Full project health check (meta files, missing refs, code quality) |
 | `/unity-review` | Reviews your C# code for Unity-specific issues |
 | `/unity-prototype "description"` | Creates a playable prototype from a text description |
+| `/unity-workflow "description"` | Full pipeline: clarify requirements → plan → execute → verify |
 | `/unity-fix` | Diagnoses and fixes bugs using console errors |
 | `/unity-scene "description"` | Builds a scene from a natural language description |
 | `/unity-build` | Configures and triggers a build |
@@ -148,12 +150,18 @@ Start with `/unity-init`, then `/unity-audit` to get a baseline. From there, try
 
 ## Troubleshooting
 
+### Quick Diagnostic
+
+Run `/unity-doctor` as a first troubleshooting step. It checks MCP connectivity, .claude/ integrity, hook registration, project structure, and skill/package alignment — and provides actionable fixes for any issues found.
+
 ### Hooks Not Firing
 
 - Verify hooks are executable: `ls -la .claude/hooks/*.sh`
 - If not: `chmod +x .claude/hooks/*.sh`
 - Check that `settings.json` has the `hooks` block (compare with the template)
 - Hooks require `jq` installed on your system for JSON parsing
+- To temporarily disable hooks: set `DISABLE_UNITY_HOOKS=1` in your environment
+- To downgrade blocking hooks to warnings: set `UNITY_HOOK_MODE=warn`
 
 ### MCP Not Connecting
 

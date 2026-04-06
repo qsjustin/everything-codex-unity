@@ -9,6 +9,12 @@ args: feature_description
 
 Plan and implement the feature described by the user: **$ARGUMENTS**
 
+## Agent Routing
+
+- Default: use `unity-coder` agent (opus — full architectural reasoning)
+- If `$ARGUMENTS` contains `--quick`: use `unity-coder-lite` agent (sonnet — faster, for simple additions)
+- Strip the `--quick` flag from arguments before passing to the agent
+
 ## Phase 1: Plan
 
 1. **Analyze the feature** — identify which Unity subsystems are involved:
@@ -46,3 +52,13 @@ Plan and implement the feature described by the user: **$ARGUMENTS**
 2. Summarize what was created/modified
 3. Explain how to test the feature
 4. Note any manual steps needed (e.g., assigning references in Inspector)
+
+## Phase 4: Auto-Verify (Optional)
+
+After implementation, offer to run the `unity-verifier` agent for a verify-fix loop:
+- Reviews all changed files for serialization safety, performance, and Unity-specific pitfalls
+- Auto-fixes safe issues (missing FormerlySerializedAs, CompareTag, cached GetComponent, etc.)
+- Re-verifies up to 3 iterations until clean
+- Reports remaining items that require human judgment
+
+Suggest: "Would you like me to run a verification pass on the changes?"

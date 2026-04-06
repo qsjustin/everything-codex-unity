@@ -12,12 +12,13 @@ Built for **solo indie mobile game developers**. Follows the proven architecture
 
 | Component | Count | Purpose |
 |-----------|-------|---------|
-| **Agents** | 12 | Specialized sub-agents for coding, scene building, profiling, testing, building |
-| **Commands** | 15 | Slash commands like `/unity-prototype`, `/unity-review`, `/unity-build` |
+| **Agents** | 15 | Specialized sub-agents for coding, scene building, profiling, testing, verification |
+| **Commands** | 17 | Slash commands like `/unity-prototype`, `/unity-workflow`, `/unity-doctor` |
 | **Skills** | 34 | Knowledge modules for Unity systems, gameplay patterns, and mobile genres |
-| **Hooks** | 8 | Safety net — blocks scene/meta corruption, warns on serialization mistakes |
+| **Hooks** | 9 | Safety net — blocks scene/meta corruption, warns on serialization, suggests review |
 | **Rules** | 5 | C# coding standards, performance rules, architecture patterns |
-| **Scripts** | 6 | Validation tools for meta files, code quality, assembly definitions |
+| **Scripts** | 8 | Validation tools for meta files, code quality, serialization, architecture |
+| **Templates** | 10 | C# templates for MVS pattern (Model, View, System, LifetimeScope, Message) |
 
 ### The Killer Feature: `/unity-prototype`
 
@@ -55,6 +56,19 @@ Or manually:
 # Clone and copy .claude/ into your project
 git clone https://github.com/<user>/everything-claude-unity.git
 cp -r everything-claude-unity/.claude your-unity-project/.claude
+```
+
+### Upgrade / Uninstall
+
+```bash
+# Upgrade to latest version (preserves your customizations)
+./upgrade.sh --project-dir .
+
+# Preview what would change before upgrading
+./upgrade.sh --project-dir . --dry-run
+
+# Remove everything-claude-unity
+./uninstall.sh --project-dir .
 ```
 
 ### Setup Unity MCP (Recommended)
@@ -110,10 +124,15 @@ claude
 
 ## Commands
 
+### Full Pipeline
+```
+/unity-workflow <description>   Complete pipeline: clarify → plan → execute → verify
+```
+
 ### Daily Workflow
 ```
-/unity-feature <description>    Plan + implement a feature
-/unity-fix <bug or error>       Diagnose and fix a bug
+/unity-feature <description>    Plan + implement a feature (--quick for simple tasks)
+/unity-fix <bug or error>       Diagnose and fix a bug (--quick for obvious fixes)
 /unity-prototype <mechanic>     One prompt to playable prototype
 /unity-scene <description>      Build a scene via MCP
 /unity-shader <description>     Create shaders with live preview
@@ -123,7 +142,7 @@ claude
 
 ### Quality Gates
 ```
-/unity-review                   Full code review (serialization, perf, architecture)
+/unity-review [scope]           Code review (--thorough for deep analysis)
 /unity-optimize                 Profile via MCP + fix bottlenecks
 /unity-test                     Write + run tests via MCP
 /unity-audit                    Full project health check
@@ -135,6 +154,7 @@ claude
 /unity-init                     Scan project + generate CLAUDE.md
 /unity-build                    Configure + trigger builds
 /unity-migrate                  Plan version/pipeline migration
+/unity-doctor                   Diagnostic health check (MCP, hooks, project structure)
 ```
 
 ---
@@ -158,6 +178,24 @@ These hooks prevent the most common AI mistakes in Unity projects:
 | `warn-filename` | C# file name doesn't match class name (script won't attach) |
 | `warn-platform-defines` | `#if UNITY_ANDROID` without `#else` fallback |
 | `validate-commit` | Missing .meta files, code quality issues on commit |
+| `suggest-verify` | Suggests `/unity-review` after 5+ C# files modified |
+
+### Hook Kill Switches
+
+All hooks support environment variable overrides:
+
+```bash
+# Bypass ALL hooks (for experienced users or CI)
+DISABLE_UNITY_HOOKS=1
+
+# Downgrade blocking hooks to warnings
+UNITY_HOOK_MODE=warn
+
+# Disable a specific hook
+DISABLE_HOOK_BLOCK_SCENE_EDIT=1
+```
+
+Configure in `.claude/settings.local.json` — see the template for all options.
 
 ---
 
@@ -219,6 +257,12 @@ Run these to check project health:
 
 # Analyze build size from Editor.log
 ./scripts/analyze-build-size.sh
+
+# Check for serialized field renames missing FormerlySerializedAs
+./scripts/validate-serialization.sh
+
+# Check MVS architecture compliance
+./scripts/validate-architecture.sh
 
 # Auto-generate CLAUDE.md from project scan
 ./scripts/generate-claude-md.sh > CLAUDE.md

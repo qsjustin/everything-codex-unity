@@ -11,6 +11,9 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/_lib.sh"
+
 INPUT=$(cat)
 
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
@@ -21,7 +24,7 @@ fi
 
 # Check if the command is staging ProjectSettings or Packages files
 if echo "$COMMAND" | grep -qE 'git\s+add.*ProjectSettings/'; then
-    echo "BLOCKED: Do not stage ProjectSettings/ files directly." >&2
+    MSG="Do not stage ProjectSettings/ files directly."
     echo "" >&2
     echo "  Command: $COMMAND" >&2
     echo "" >&2
@@ -32,16 +35,16 @@ if echo "$COMMAND" | grep -qE 'git\s+add.*ProjectSettings/'; then
     echo "    - manage_build     → change build/player settings" >&2
     echo "    - manage_physics   → change physics settings" >&2
     echo "    - manage_graphics  → change graphics/quality settings" >&2
-    exit 2
+    unity_hook_block "$MSG"
 fi
 
 if echo "$COMMAND" | grep -qE 'git\s+add.*Packages/(manifest|packages-lock)\.json'; then
-    echo "BLOCKED: Do not stage Packages/ manifest files directly." >&2
+    MSG="Do not stage Packages/ manifest files directly."
     echo "" >&2
     echo "  Command: $COMMAND" >&2
     echo "" >&2
     echo "  Use unity-mcp manage_packages to install/remove packages." >&2
-    exit 2
+    unity_hook_block "$MSG"
 fi
 
 exit 0

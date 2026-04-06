@@ -9,6 +9,12 @@ args: scope
 
 Perform a comprehensive code review with Unity-specific checks.
 
+## Agent Routing
+
+- Default: use `unity-reviewer` agent (sonnet — efficient for standard reviews)
+- If `$ARGUMENTS` contains `--thorough`: use opus model for deeper architectural analysis
+- Strip the `--thorough` flag from arguments before passing to the agent
+
 ## Scope
 
 If the user specified a scope: review **$ARGUMENTS**

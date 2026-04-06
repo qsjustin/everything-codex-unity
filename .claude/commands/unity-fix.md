@@ -9,9 +9,15 @@ args: bug_description
 
 Fix the issue described by the user: **$ARGUMENTS**
 
+## Agent Routing
+
+- Default: use `unity-fixer` agent (opus — deep investigation)
+- If `$ARGUMENTS` contains `--quick`: use `unity-fixer-lite` agent (sonnet — for obvious fixes)
+- Strip the `--quick` flag from arguments before passing to the agent
+
 ## Workflow
 
-Use the `unity-fixer` agent to:
+Use the selected fixer agent to:
 
 1. **Gather evidence:**
    - Read Unity console via `read_console` MCP for errors, warnings, stack traces

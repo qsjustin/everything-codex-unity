@@ -21,19 +21,22 @@ This project follows the architecture established by [everything-claude-code](ht
 ```
 .claude/
   settings.json      Configuration: permissions, MCP servers, hook definitions
-  agents/            12 agent definitions (.md files with frontmatter)
-  commands/          15 user-invocable slash commands
-  hooks/              8 shell scripts for pre/post tool validation
+  agents/            15 agent definitions (.md files with frontmatter)
+  commands/          17 user-invocable slash commands
+  hooks/              9 shell scripts for pre/post tool validation + _lib.sh
   rules/              5 always-loaded coding standards
   skills/            35 knowledge modules in 6 categories
+  VERSION            Installed version for upgrade tracking
 ```
 
 Supporting files outside `.claude/`:
 
 ```
-scripts/             Shell scripts for validation (meta integrity, code quality)
+scripts/             Shell scripts for validation (meta, code quality, serialization, architecture)
 install.sh           One-command installer
-templates/           Template files for project scaffolding
+upgrade.sh           Version-aware upgrade with backup and customization preservation
+uninstall.sh         Clean removal with backup option
+templates/           C# templates for MVS pattern (Model, View, System, LifetimeScope, Message)
 ```
 
 ---
@@ -55,9 +58,11 @@ Agents are Markdown files in `.claude/agents/` with YAML frontmatter that contro
 
 ### Model Selection
 
-- **Opus** -- complex implementation, creative prototyping, debugging, shader writing (8 agents)
-- **Sonnet** -- code review, test writing, migration analysis, build configuration (4 agents)
+- **Opus** -- complex implementation, creative prototyping, debugging, shader writing, verification (9 agents)
+- **Sonnet** -- code review, test writing, migration, builds, and lite variants for simple tasks (6 agents)
 - **Haiku** -- not currently used, suitable for simple formatting or lookup tasks
+
+Some commands support `--quick` (routes to sonnet-tier lite agent) and `--thorough` (routes to opus) flags. See `docs/MODEL-ROUTING.md` for the full routing table.
 
 ### Tool Access
 
@@ -260,3 +265,52 @@ This structure follows Claude Code's discovery conventions:
 - **rules/** -- all files in this directory are loaded as context automatically
 
 Each component is a standalone Markdown file. No build step, no compilation, no registration. Drop files in the right directory and they work.
+
+---
+
+## Hook Kill Switch System
+
+All hooks source a shared library (`.claude/hooks/_lib.sh`) that provides environment variable overrides:
+
+```
+DISABLE_UNITY_HOOKS=1              All hooks exit 0 immediately
+DISABLE_HOOK_<NAME>=1              Specific hook exits 0 (name derived from filename, uppercased, hyphens→underscores)
+UNITY_HOOK_MODE=warn               Blocking hooks (exit 2) downgraded to warnings (exit 0)
+```
+
+The `unity_hook_block()` function replaces direct `exit 2` calls in blocking hooks. It respects `UNITY_HOOK_MODE=warn`, printing the block message as a warning instead.
+
+Configure overrides in `.claude/settings.local.json` (git-ignored) so they don't affect the team.
+
+---
+
+## Workflow Pipeline
+
+The `/unity-workflow` command implements a staged pipeline inspired by modern AI coding orchestrators:
+
+```
+Clarify → Plan → Execute → Verify
+```
+
+1. **Clarify** -- interview the user about requirements, constraints, and acceptance criteria
+2. **Plan** -- analyze the project, identify subsystems, choose agents, present an implementation plan
+3. **Execute** -- route to appropriate agent(s) (coder, prototyper, UI builder, etc.)
+4. **Verify** -- invoke the `unity-verifier` agent for an automated verify-fix loop
+
+### Verify-Fix Loop
+
+The `unity-verifier` agent runs a bounded loop (max 3 iterations):
+
+```
+Review changes → Classify issues → Auto-fix safe issues → Run tests → Re-verify
+```
+
+Auto-fixable issues include: missing `[FormerlySerializedAs]`, `?.` on Unity objects, uncached `GetComponent` in Update, `tag ==` instead of `CompareTag`, missing `#if UNITY_EDITOR` guards.
+
+Issues requiring human judgment (architecture, design patterns, ambiguous trade-offs) are reported but not auto-fixed.
+
+---
+
+## Version Management
+
+The `.claude/VERSION` file tracks the installed version. The `upgrade.sh` script compares source and target versions, creates a backup, preserves user customizations (settings.local.json, custom agents/commands/skills), and reports a diff of changes.

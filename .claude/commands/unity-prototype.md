@@ -46,6 +46,15 @@ Tell the user:
 - **Tweakable values** — which SerializeField parameters to adjust
 - **Next steps** — what to add for a fuller prototype
 
+## Step 6: Auto-Verify (Optional)
+
+After the prototype is complete, offer to run the `unity-verifier` agent:
+- Quick review of all prototype scripts for critical issues
+- Auto-fix serialization safety, null checks, and performance pitfalls
+- Skip architecture concerns (prototypes prioritize speed over structure)
+
+Suggest: "Prototype ready! Want me to run a quick verification pass?"
+
 ## Design Rules
 - 10-minute target — if it takes longer, you're overbuilding
 - Placeholder visuals — colored primitives, no art needed

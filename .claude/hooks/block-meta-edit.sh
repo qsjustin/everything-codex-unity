@@ -9,30 +9,33 @@
 # Exit: 2 = block, 0 = allow
 # ============================================================================
 
-# set -euo pipefail
+set -euo pipefail
 
-# INPUT=$(cat)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/_lib.sh"
 
-# FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
+INPUT=$(cat)
 
-# if [ -z "$FILE_PATH" ]; then
-#     exit 0
-# fi
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 
-# case "$FILE_PATH" in
-#     *.meta)
-#         echo "BLOCKED: Editing .meta files breaks asset references across the entire project." >&2
-#         echo "" >&2
-#         echo "  File: $FILE_PATH" >&2
-#         echo "" >&2
-#         echo "  .meta files contain GUIDs that Unity uses to track assets." >&2
-#         echo "  Modifying them will break every reference to this asset in" >&2
-#         echo "  all scenes, prefabs, and ScriptableObjects." >&2
-#         echo "" >&2
-#         echo "  Unity manages these files automatically — never edit them manually." >&2
-#         exit 2
-#         ;;
-#     *)
-#         exit 0
-#         ;;
-# esac
+if [ -z "$FILE_PATH" ]; then
+    exit 0
+fi
+
+case "$FILE_PATH" in
+    *.meta)
+        MSG="Editing .meta files breaks asset references across the entire project."
+        echo "" >&2
+        echo "  File: $FILE_PATH" >&2
+        echo "" >&2
+        echo "  .meta files contain GUIDs that Unity uses to track assets." >&2
+        echo "  Modifying them will break every reference to this asset in" >&2
+        echo "  all scenes, prefabs, and ScriptableObjects." >&2
+        echo "" >&2
+        echo "  Unity manages these files automatically — never edit them manually." >&2
+        unity_hook_block "$MSG"
+        ;;
+    *)
+        exit 0
+        ;;
+esac

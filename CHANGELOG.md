@@ -2,6 +2,60 @@
 
 All notable changes to everything-claude-unity will be documented in this file.
 
+## [1.1.0] — 2026-04-06
+
+### Added
+
+**New Commands (2)**
+- `/unity-workflow` — full development pipeline: clarify → plan → execute → verify
+- `/unity-doctor` — diagnostic health check (MCP connectivity, .claude/ integrity, hook registration, project structure, skill/package alignment)
+
+**New Agents (3)**
+- `unity-verifier` — verify-fix loop agent: reviews changes, auto-fixes safe issues, re-verifies up to 3 iterations
+- `unity-coder-lite` — sonnet-tier lightweight coder for simple feature additions
+- `unity-fixer-lite` — sonnet-tier lightweight fixer for obvious bugs
+
+**New Hook (1)**
+- `suggest-verify` — advisory hook that suggests running `/unity-review` after 5+ C# files modified
+
+**New Templates (5)**
+- `Model.cs.template` — pure C# data class with ReactiveProperty (MVS architecture)
+- `System.cs.template` — plain C# class with VContainer injection and IDisposable
+- `View.cs.template` — MonoBehaviour observing Model via Subscribe, VContainer method injection
+- `LifetimeScope.cs.template` — VContainer composition root with Model/System/View/MessagePipe registration
+- `Message.cs.template` — readonly struct for MessagePipe (zero allocation)
+
+**New Validation Scripts (2)**
+- `validate-serialization.sh` — detects serialized field renames missing `[FormerlySerializedAs]`
+- `validate-architecture.sh` — checks MVS pattern compliance (dependency direction, no singletons, no coroutines, injection patterns)
+
+**New Lifecycle Scripts (2)**
+- `upgrade.sh` — upgrade existing installation with version detection, backup, and customization preservation
+- `uninstall.sh` — clean removal with backup, .gitignore cleanup, and optional settings preservation
+
+**New Documentation (1)**
+- `docs/MODEL-ROUTING.md` — guide to agent model assignments, `--quick`/`--thorough` flags, and cost/latency trade-offs
+
+**Hook Kill Switch System**
+- Shared `_lib.sh` library sourced by all hooks
+- `DISABLE_UNITY_HOOKS=1` — bypass all hooks
+- `UNITY_HOOK_MODE=warn` — downgrade blocking hooks to warnings
+- `DISABLE_HOOK_<NAME>=1` — disable individual hooks
+- Version tracking via `.claude/VERSION`
+
+### Changed
+
+- `/unity-feature` — added optional verification phase (Phase 4) and `--quick` routing to `unity-coder-lite`
+- `/unity-fix` — added `--quick` routing to `unity-fixer-lite`
+- `/unity-review` — added `--thorough` routing to opus model
+- `/unity-prototype` — added optional verification phase (Step 6)
+- `block-meta-edit.sh` — uncommented and activated (was disabled in v1.0.0)
+- All 8 hooks now source `_lib.sh` for kill switch support
+- `settings.local.json.template` — added kill switch environment variable documentation
+- `settings.json` — registered `suggest-verify.sh` hook
+
+---
+
 ## [1.0.0] — 2026-04-01
 
 ### Added

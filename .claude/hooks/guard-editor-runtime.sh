@@ -11,6 +11,9 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/_lib.sh"
+
 INPUT=$(cat)
 
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
@@ -36,7 +39,7 @@ fi
 if echo "$NEW_CONTENT" | grep -qE '(using\s+UnityEditor|UnityEditor\.)'; then
     # Check if it's properly guarded with #if UNITY_EDITOR
     if ! echo "$NEW_CONTENT" | grep -qE '#if\s+UNITY_EDITOR'; then
-        echo "BLOCKED: UnityEditor namespace used in runtime code without #if UNITY_EDITOR guard." >&2
+        MSG="UnityEditor namespace used in runtime code without #if UNITY_EDITOR guard."
         echo "" >&2
         echo "  File: $FILE_PATH" >&2
         echo "" >&2
@@ -47,7 +50,7 @@ if echo "$NEW_CONTENT" | grep -qE '(using\s+UnityEditor|UnityEditor\.)'; then
         echo "       #if UNITY_EDITOR" >&2
         echo "       using UnityEditor;" >&2
         echo "       #endif" >&2
-        exit 2
+        unity_hook_block "$MSG"
     fi
 fi
 
