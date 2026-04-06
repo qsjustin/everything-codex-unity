@@ -1,10 +1,10 @@
 # everything-claude-unity
 
-**The ultimate Claude Code plugin for Unity mobile game development.**
+**The ultimate Claude Code toolkit for Unity game development.**
 
-A production-ready, plug-and-play automation system that gives Claude Code deep Unity expertise for mobile games — from writing performant C# to building scenes, profiling performance, and triggering iOS/Android builds — all through natural language.
+A production-ready, plug-and-play system that gives Claude Code deep Unity expertise — from writing performant C# to building scenes, profiling performance, and triggering iOS/Android builds — all through natural language.
 
-Built for **solo indie mobile game developers**. Follows the proven architecture of [everything-claude-code](https://github.com/affaan-m/everything-claude-code) (122k+ stars).
+Built for **solo indie mobile game developers**. Drop it into any Unity project and it works.
 
 ---
 
@@ -12,25 +12,46 @@ Built for **solo indie mobile game developers**. Follows the proven architecture
 
 | Component | Count | Purpose |
 |-----------|-------|---------|
-| **Agents** | 15 | Specialized sub-agents for coding, scene building, profiling, testing, verification |
-| **Commands** | 17 | Slash commands like `/unity-prototype`, `/unity-workflow`, `/unity-doctor` |
-| **Skills** | 34 | Knowledge modules for Unity systems, gameplay patterns, and mobile genres |
+| **Agents** | 15 | Specialized sub-agents for coding, verification, scene building, profiling, testing |
+| **Commands** | 17 | Slash commands like `/unity-workflow`, `/unity-prototype`, `/unity-doctor` |
+| **Skills** | 35 | Knowledge modules for Unity systems, gameplay patterns, and mobile genres |
 | **Hooks** | 9 | Safety net — blocks scene/meta corruption, warns on serialization, suggests review |
-| **Rules** | 5 | C# coding standards, performance rules, architecture patterns |
+| **Rules** | 5 | C# coding standards, performance rules, MVS architecture patterns |
 | **Scripts** | 8 | Validation tools for meta files, code quality, serialization, architecture |
 | **Templates** | 10 | C# templates for MVS pattern (Model, View, System, LifetimeScope, Message) |
 
-### The Killer Feature: `/unity-prototype`
+---
 
-One prompt to playable prototype. Describe a mechanic, and Claude:
-1. Writes the C# scripts (player controller, physics, game logic)
-2. Builds the scene via MCP (GameObjects, colliders, lighting)
-3. Sets up physics layers and collision matrix
-4. Configures the camera (Cinemachine follow)
-5. Runs tests to verify it works
+## Highlights
+
+### `/unity-workflow` — Full Development Pipeline
+
+A structured 4-phase pipeline for any feature: **Clarify** requirements, **Plan** the implementation, **Execute** with specialized agents, **Verify** with automated review + fix loop.
+
+```
+/unity-workflow "add a combo scoring system with multipliers and visual feedback"
+```
+
+### `/unity-prototype` — One Prompt to Playable
+
+Describe a mechanic, and Claude writes the C# scripts, builds the scene via MCP, sets up physics layers, configures the camera, and verifies it compiles.
 
 ```
 /unity-prototype "2D platformer with wall jumping and dash"
+```
+
+### Verify-Fix Loop
+
+The `unity-verifier` agent automatically reviews your code changes, fixes safe issues (missing `[FormerlySerializedAs]`, uncached `GetComponent`, `?.` on Unity objects), and re-verifies — up to 3 iterations until clean. Built into `/unity-workflow` and available as an optional step in `/unity-feature` and `/unity-prototype`.
+
+### Hook Kill Switches
+
+All safety hooks support environment variable overrides for power users and CI:
+
+```bash
+DISABLE_UNITY_HOOKS=1              # Bypass all hooks
+UNITY_HOOK_MODE=warn               # Downgrade blocks to warnings
+DISABLE_HOOK_BLOCK_SCENE_EDIT=1    # Disable a specific hook
 ```
 
 ---
@@ -53,32 +74,32 @@ rm -rf /tmp/ecu
 
 Or manually:
 ```bash
-# Clone and copy .claude/ into your project
-git clone https://github.com/<user>/everything-claude-unity.git
+git clone https://github.com/XeldarAlz/everything-claude-unity.git
 cp -r everything-claude-unity/.claude your-unity-project/.claude
+chmod +x your-unity-project/.claude/hooks/*.sh
 ```
 
 ### Upgrade / Uninstall
 
 ```bash
-# Upgrade to latest version (preserves your customizations)
+# Upgrade to latest (preserves your customizations, creates backup)
 ./upgrade.sh --project-dir .
 
-# Preview what would change before upgrading
+# Preview changes before upgrading
 ./upgrade.sh --project-dir . --dry-run
 
-# Remove everything-claude-unity
+# Clean removal (with backup)
 ./uninstall.sh --project-dir .
 ```
 
 ### Setup Unity MCP (Recommended)
 
-The unity-mcp server gives Claude direct control over the Unity Editor — scene building, profiling, builds, and more.
+The MCP bridge gives Claude direct control over the Unity Editor — scene building, profiling, builds, and more.
 
 1. In Unity: `Window > Package Manager > + > Add package from git URL`
 2. Paste: `https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main`
 3. Open `Window > MCP for Unity` and click **Start Server**
-4. Claude Code auto-connects via the config in `.claude/settings.json`
+4. Claude Code auto-connects via `.claude/settings.json`
 
 ### First Run
 
@@ -86,9 +107,12 @@ The unity-mcp server gives Claude direct control over the Unity Editor — scene
 cd your-unity-project
 claude
 
-# Try these:
+# Verify installation:
+/unity-doctor         # Check MCP, hooks, project structure
+
+# Start working:
 /unity-audit          # Full project health check
-/unity-review         # Code review with Unity-specific checks
+/unity-workflow       # Full pipeline: clarify → plan → execute → verify
 /unity-prototype      # Rapid prototype a game mechanic
 ```
 
@@ -97,28 +121,37 @@ claude
 ## Agents
 
 ### Code Agents
-| Agent | What It Does |
-|-------|-------------|
-| `unity-coder` | Implements features with Unity subsystem awareness, auto-loads relevant skills |
-| `unity-fixer` | Diagnoses bugs using Unity-specific patterns (missing refs, execution order, coroutine lifecycle) |
-| `unity-reviewer` | Code review checking serialization safety, GC in hot paths, lifecycle ordering |
-| `unity-shader-dev` | HLSL/ShaderGraph development optimized for mobile GPUs, live testing via MCP |
+| Agent | Model | What It Does |
+|-------|-------|-------------|
+| `unity-coder` | opus | Implements features with Unity subsystem awareness, loads relevant skills |
+| `unity-coder-lite` | sonnet | Lightweight variant for simple additions (fields, methods, straightforward components) |
+| `unity-fixer` | opus | Diagnoses bugs using Unity-specific patterns (missing refs, execution order, coroutine lifecycle) |
+| `unity-fixer-lite` | sonnet | Quick fixes for obvious issues (typos, missing imports, simple errors) |
+| `unity-reviewer` | sonnet | Code review checking serialization safety, GC in hot paths, lifecycle ordering |
+| `unity-shader-dev` | opus | HLSL/ShaderGraph development optimized for mobile GPUs, live testing via MCP |
+
+### Orchestration Agents
+| Agent | Model | What It Does |
+|-------|-------|-------------|
+| `unity-verifier` | opus | Verify-fix loop: reviews changes, auto-fixes safe issues, re-verifies (max 3 iterations) |
+| `unity-prototyper` | opus | End-to-end prototyping: writes code + builds scene + physics + camera |
 
 ### MCP-Powered Agents
-| Agent | What It Does | Key MCP Tools |
-|-------|-------------|---------------|
-| `unity-scene-builder` | Builds scenes from descriptions | `manage_scene`, `manage_gameobject`, `batch_execute` |
-| `unity-test-runner` | Writes + runs tests, reports results | `run_tests`, `read_console` |
-| `unity-build-runner` | Configures and triggers builds | `manage_build`, `manage_packages` |
-| `unity-optimizer` | Profiles and fixes performance issues | `manage_profiler`, `manage_graphics` |
+| Agent | Model | What It Does | Key MCP Tools |
+|-------|-------|-------------|---------------|
+| `unity-scene-builder` | opus | Builds scenes from descriptions | `manage_scene`, `batch_execute` |
+| `unity-test-runner` | sonnet | Writes + runs tests, reports results | `run_tests`, `read_console` |
+| `unity-build-runner` | sonnet | Configures and triggers builds | `manage_build`, `manage_packages` |
+| `unity-optimizer` | opus | Profiles and fixes performance issues | `manage_profiler`, `manage_graphics` |
 
 ### Hybrid Agents
-| Agent | What It Does |
-|-------|-------------|
-| `unity-prototyper` | End-to-end prototyping: writes code + builds scene + sets up physics + camera |
-| `unity-ui-builder` | Builds UI screens with code + visual setup via MCP |
-| `unity-network-dev` | Implements multiplayer with Netcode/Mirror/Photon |
-| `unity-migrator` | Unity version and render pipeline migration |
+| Agent | Model | What It Does |
+|-------|-------|-------------|
+| `unity-ui-builder` | opus | Builds UI screens with code + visual setup via MCP |
+| `unity-network-dev` | opus | Implements multiplayer with Netcode/Mirror/Photon/Fish-Net |
+| `unity-migrator` | sonnet | Unity version and render pipeline migration |
+
+Commands support `--quick` (routes to sonnet lite agent) and `--thorough` (routes to opus) flags. See [docs/MODEL-ROUTING.md](docs/MODEL-ROUTING.md) for the full routing table.
 
 ---
 
@@ -126,7 +159,7 @@ claude
 
 ### Full Pipeline
 ```
-/unity-workflow <description>   Complete pipeline: clarify → plan → execute → verify
+/unity-workflow <description>   Clarify → Plan → Execute → Verify (the recommended workflow)
 ```
 
 ### Daily Workflow
@@ -180,22 +213,23 @@ These hooks prevent the most common AI mistakes in Unity projects:
 | `validate-commit` | Missing .meta files, code quality issues on commit |
 | `suggest-verify` | Suggests `/unity-review` after 5+ C# files modified |
 
-### Hook Kill Switches
+All hooks support kill switches via environment variables or `.claude/settings.local.json`. See the [Hook Kill Switches](#hook-kill-switches) section above.
 
-All hooks support environment variable overrides:
+---
 
-```bash
-# Bypass ALL hooks (for experienced users or CI)
-DISABLE_UNITY_HOOKS=1
+## MVS Architecture Templates
 
-# Downgrade blocking hooks to warnings
-UNITY_HOOK_MODE=warn
+Templates for the **Model-View-System** pattern with VContainer, MessagePipe, and UniTask:
 
-# Disable a specific hook
-DISABLE_HOOK_BLOCK_SCENE_EDIT=1
-```
+| Template | Purpose |
+|----------|---------|
+| `Model.cs.template` | Pure C# data class with `ReactiveProperty<T>` — no Unity dependencies |
+| `System.cs.template` | Plain C# class with VContainer constructor injection, `IDisposable` |
+| `View.cs.template` | MonoBehaviour observing Model via `Subscribe()`, method injection |
+| `LifetimeScope.cs.template` | VContainer composition root with Model/System/View/MessagePipe registration |
+| `Message.cs.template` | `readonly struct` for MessagePipe — zero heap allocation |
 
-Configure in `.claude/settings.local.json` — see the template for all options.
+Plus the original templates: `MonoBehaviour.cs`, `ScriptableObject.cs`, `EditModeTest.cs`, `PlayModeTest.cs`, `AssemblyDefinition.asmdef`.
 
 ---
 
@@ -215,7 +249,7 @@ URP pipeline, Input System, Addressables, Cinemachine, Animation, Audio, Physics
 ### Gameplay Patterns (6)
 Character controller (2D/3D), inventory system, dialogue system, save system, state machine, procedural generation
 
-### Genre Blueprints (7) — Mobile-Focused
+### Genre Blueprints (8) — Mobile-Focused
 Hyper-casual, Match-3, Idle/Clicker, Endless Runner, Puzzle, RPG, 2D Platformer, Top-down
 
 ### Third-Party (5)
@@ -228,12 +262,12 @@ Mobile optimization (iOS + Android) — touch input, safe areas, ASTC textures, 
 
 ## Coding Rules
 
-The plugin enforces Unity best practices through 5 rules files:
+The toolkit enforces Unity best practices through 5 always-loaded rule files:
 
-- **csharp-unity** — `[SerializeField] private`, explicit types, sealed by default
+- **csharp-unity** — `[SerializeField] private` with `m_` prefix, sealed by default, explicit types
 - **performance** — Zero-alloc Update, cache GetComponent, pool objects, no LINQ in gameplay
 - **serialization** — `[FormerlySerializedAs]` on renames, `obj == null` not `obj?.`
-- **architecture** — Composition over inheritance, SO for data, events for communication
+- **architecture** — MVS pattern, VContainer for DI, MessagePipe for events, UniTask for async
 - **unity-specifics** — Editor/Runtime separation, threading, coroutine lifecycle, `?.` danger
 
 ---
@@ -243,29 +277,14 @@ The plugin enforces Unity best practices through 5 rules files:
 Run these to check project health:
 
 ```bash
-# Check .meta file integrity (missing, orphaned, duplicate GUIDs)
-./scripts/validate-meta-integrity.sh --all
-
-# Scan C# code for performance issues
-./scripts/validate-code-quality.sh
-
-# Check assembly definition graph for circular dependencies
-./scripts/validate-asmdefs.sh
-
-# Find broken references in scenes/prefabs
-./scripts/detect-missing-refs.sh
-
-# Analyze build size from Editor.log
-./scripts/analyze-build-size.sh
-
-# Check for serialized field renames missing FormerlySerializedAs
-./scripts/validate-serialization.sh
-
-# Check MVS architecture compliance
-./scripts/validate-architecture.sh
-
-# Auto-generate CLAUDE.md from project scan
-./scripts/generate-claude-md.sh > CLAUDE.md
+./scripts/validate-meta-integrity.sh --all    # Missing/orphaned .meta files, duplicate GUIDs
+./scripts/validate-code-quality.sh            # Performance pitfalls in C# code
+./scripts/validate-asmdefs.sh                 # Circular assembly definition dependencies
+./scripts/detect-missing-refs.sh              # Broken references in scenes/prefabs
+./scripts/analyze-build-size.sh               # Build size analysis from Editor.log
+./scripts/validate-serialization.sh           # Field renames missing FormerlySerializedAs
+./scripts/validate-architecture.sh            # MVS pattern compliance checks
+./scripts/generate-claude-md.sh > CLAUDE.md   # Auto-generate project CLAUDE.md
 ```
 
 ---
@@ -285,6 +304,19 @@ Pre-built configurations for mobile game types:
 
 ## Architecture
 
+### Workflow Pipeline
+
+```
+/unity-workflow "add combo scoring"
+    │
+    ├─ Phase 1: Clarify   ── interview about requirements, constraints, platform
+    ├─ Phase 2: Plan      ── scan project, choose agents, present implementation plan
+    ├─ Phase 3: Execute   ── route to unity-coder / unity-prototyper / unity-ui-builder
+    └─ Phase 4: Verify    ── unity-verifier runs review → auto-fix → re-verify loop
+```
+
+### Agent Interaction
+
 ```
 User prompt
     │
@@ -295,22 +327,39 @@ Command (orchestrates the workflow)
     │       │
     │       └──▶ MCP Tools (creates GameObjects, configures components)
     │
+    ├──▶ Verifier Agent (reviews changes, auto-fixes, re-verifies)
+    │
     ├──▶ Test Agent (writes + runs tests via MCP)
     │
     └──▶ Optimizer Agent (profiles via MCP, fixes bottlenecks)
 ```
 
-Hooks run on every tool use, providing a safety net:
+### Hook Safety Net
+
 ```
 Claude attempts to edit PlayerController.cs
     │
     ├──▶ PreToolUse: guard-editor-runtime.sh checks for UnityEditor usage
+    │                 (_lib.sh checks kill switches first)
     │
     ├──▶ [Edit happens]
     │
     └──▶ PostToolUse: warn-serialization.sh checks for field renames
                        warn-filename.sh checks file/class name match
+                       suggest-verify.sh tracks edit count
 ```
+
+---
+
+## Documentation
+
+| Guide | Purpose |
+|-------|---------|
+| [Getting Started](docs/GETTING-STARTED.md) | Installation, first run, troubleshooting |
+| [Architecture](docs/ARCHITECTURE.md) | Design philosophy, component overview, hook system, workflow pipeline |
+| [Agent Guide](docs/AGENT-GUIDE.md) | All 15 agents, when to use each, customization |
+| [Model Routing](docs/MODEL-ROUTING.md) | Agent model assignments, `--quick`/`--thorough` flags, cost trade-offs |
+| [MCP Setup](docs/MCP-SETUP.md) | unity-mcp installation, verification, troubleshooting |
 
 ---
 
@@ -330,7 +379,3 @@ Key areas where contributions are welcome:
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
-
----
-
-Built with Claude Code. Inspired by [everything-claude-code](https://github.com/affaan-m/everything-claude-code).
