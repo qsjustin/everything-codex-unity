@@ -11,12 +11,12 @@ This is the single most important skill. Serialization mistakes cause **silent d
 ## Rule 1: FormerlySerializedAs on ANY Rename
 
 ```csharp
-// BEFORE: field is called m_Speed
-[SerializeField] private float m_Speed = 5f;
+// BEFORE: field is called _speed
+[SerializeField] private float _speed = 5f;
 
-// AFTER: renaming to m_MoveSpeed — MUST add FormerlySerializedAs
-[FormerlySerializedAs("m_Speed")]
-[SerializeField] private float m_MoveSpeed = 5f;
+// AFTER: renaming to _moveSpeed — MUST add FormerlySerializedAs
+[FormerlySerializedAs("_speed")]
+[SerializeField] private float _moveSpeed = 5f;
 ```
 
 **Why:** Unity serializes fields by name. Renaming breaks the name → value mapping. Every scene, prefab, and SO that configured this field silently loses its value. `[FormerlySerializedAs]` tells Unity "this field used to be called X."
@@ -27,13 +27,13 @@ The attribute stays **forever**. Never remove it.
 
 ```csharp
 // CORRECT — Unity overrides == to detect destroyed objects
-if (m_Target == null) return;
-if (m_Target != null) m_Target.TakeDamage(10);
+if (_target == null) return;
+if (_target != null) _target.TakeDamage(10);
 
 // WRONG — bypasses Unity's destroyed-object detection
-if (m_Target is null) return;        // C# null check, misses destroyed
-m_Target?.TakeDamage(10);            // ?. bypasses Unity ==, calls on destroyed
-m_Target ??= FindNewTarget();        // ??= uses C# null, not Unity null
+if (_target is null) return;        // C# null check, misses destroyed
+_target?.TakeDamage(10);            // ?. bypasses Unity ==, calls on destroyed
+_target ??= FindNewTarget();        // ??= uses C# null, not Unity null
 ```
 
 **Why:** Unity objects can be "destroyed" (C++ side freed) but not yet garbage collected (C# reference still exists). Unity overrides `==` to return `true` for destroyed objects. C# pattern matching (`is null`, `?.`, `??`) uses reference equality, which returns `false` — so you call methods on destroyed objects, causing crashes or undefined behavior.
@@ -58,8 +58,8 @@ m_Target ??= FindNewTarget();        // ??= uses C# null, not Unity null
 
 ```csharp
 // GOOD — controlled exposure
-[SerializeField] private float m_Health = 100f;
-public float Health => m_Health; // Read-only access
+[SerializeField] private float _health = 100f;
+public float Health => _health; // Read-only access
 
 // BAD — anyone can modify, clutters API
 public float health = 100f;
@@ -69,10 +69,10 @@ public float health = 100f;
 
 ```csharp
 // Without SerializeReference: Unity serializes as base type, losing derived data
-[SerializeField] private IAbility m_Ability; // ERROR: interfaces not serialized
+[SerializeField] private IAbility _ability; // ERROR: interfaces not serialized
 
 // With SerializeReference: polymorphic serialization
-[SerializeReference] private IAbility m_Ability; // Works: stores concrete type
+[SerializeReference] private IAbility _ability; // Works: stores concrete type
 ```
 
 ## Rule 6: NonSerialized for Cached Data
@@ -80,11 +80,11 @@ public float health = 100f;
 ```csharp
 public class Enemy : MonoBehaviour
 {
-    [SerializeField] private float m_MaxHealth = 100f;
+    [SerializeField] private float _maxHealth = 100f;
 
     [NonSerialized] public float CurrentHealth; // Runtime-only, not saved
     
-    private Transform m_CachedTransform; // Private non-serialized by default (good)
+    private Transform _cachedTransform; // Private non-serialized by default (good)
 }
 ```
 
@@ -94,29 +94,29 @@ public class Enemy : MonoBehaviour
 public class DataStore : MonoBehaviour, ISerializationCallbackReceiver
 {
     // Unity serializes these lists
-    [SerializeField] private List<string> m_Keys = new();
-    [SerializeField] private List<float> m_Values = new();
+    [SerializeField] private List<string> _keys = new();
+    [SerializeField] private List<float> _values = new();
 
     // Runtime dictionary (not serialized directly)
-    private Dictionary<string, float> m_Data = new();
+    private Dictionary<string, float> _data = new();
 
     public void OnBeforeSerialize()
     {
-        m_Keys.Clear();
-        m_Values.Clear();
-        foreach (KeyValuePair<string, float> pair in m_Data)
+        _keys.Clear();
+        _values.Clear();
+        foreach (KeyValuePair<string, float> pair in _data)
         {
-            m_Keys.Add(pair.Key);
-            m_Values.Add(pair.Value);
+            _keys.Add(pair.Key);
+            _values.Add(pair.Value);
         }
     }
 
     public void OnAfterDeserialize()
     {
-        m_Data = new Dictionary<string, float>();
-        for (int i = 0; i < m_Keys.Count; i++)
+        _data = new Dictionary<string, float>();
+        for (int i = 0; i < _keys.Count; i++)
         {
-            m_Data[m_Keys[i]] = m_Values[i];
+            _data[_keys[i]] = _values[i];
         }
     }
 }

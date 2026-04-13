@@ -15,21 +15,21 @@ globs: ["**/*Nav*.cs", "**/*Pathfind*.cs", "**/*Agent*.cs"]
 ## NavMeshAgent Configuration
 
 ```csharp
-[SerializeField] private NavMeshAgent m_Agent;
+[SerializeField] private NavMeshAgent _agent;
 
 private void Awake()
 {
-    m_Agent = GetComponent<NavMeshAgent>();
-    m_Agent.speed = 3.5f;
-    m_Agent.acceleration = 8f;
-    m_Agent.angularSpeed = 120f;
-    m_Agent.stoppingDistance = 0.5f;
-    m_Agent.autoBraking = true;
+    _agent = GetComponent<NavMeshAgent>();
+    _agent.speed = 3.5f;
+    _agent.acceleration = 8f;
+    _agent.angularSpeed = 120f;
+    _agent.stoppingDistance = 0.5f;
+    _agent.autoBraking = true;
 }
 
 public void MoveTo(Vector3 destination)
 {
-    m_Agent.SetDestination(destination);
+    _agent.SetDestination(destination);
 }
 ```
 
@@ -38,9 +38,9 @@ public void MoveTo(Vector3 destination)
 ```csharp
 private void Update()
 {
-    if (m_Agent.pathPending) return; // Still calculating
+    if (_agent.pathPending) return; // Still calculating
 
-    switch (m_Agent.pathStatus)
+    switch (_agent.pathStatus)
     {
         case NavMeshPathStatus.PathComplete:
             // Full path found
@@ -54,7 +54,7 @@ private void Update()
     }
 
     // Check if arrived
-    if (!m_Agent.pathPending && m_Agent.remainingDistance <= m_Agent.stoppingDistance)
+    if (!_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance)
     {
         // Arrived at destination
     }
@@ -66,25 +66,25 @@ private void Update()
 ```csharp
 public sealed class PatrolBehavior : MonoBehaviour
 {
-    [SerializeField] private Transform[] m_Waypoints;
-    [SerializeField] private float m_WaitTime = 2f;
+    [SerializeField] private Transform[] _waypoints;
+    [SerializeField] private float _waitTime = 2f;
 
-    private NavMeshAgent m_Agent;
-    private int m_CurrentWaypoint;
-    private float m_WaitTimer;
+    private NavMeshAgent _agent;
+    private int _currentWaypoint;
+    private float _waitTimer;
 
     private void Update()
     {
-        if (m_Agent.pathPending) return;
+        if (_agent.pathPending) return;
 
-        if (m_Agent.remainingDistance <= m_Agent.stoppingDistance)
+        if (_agent.remainingDistance <= _agent.stoppingDistance)
         {
-            m_WaitTimer -= Time.deltaTime;
-            if (m_WaitTimer <= 0f)
+            _waitTimer -= Time.deltaTime;
+            if (_waitTimer <= 0f)
             {
-                m_CurrentWaypoint = (m_CurrentWaypoint + 1) % m_Waypoints.Length;
-                m_Agent.SetDestination(m_Waypoints[m_CurrentWaypoint].position);
-                m_WaitTimer = m_WaitTime;
+                _currentWaypoint = (_currentWaypoint + 1) % _waypoints.Length;
+                _agent.SetDestination(_waypoints[_currentWaypoint].position);
+                _waitTimer = _waitTime;
             }
         }
     }
@@ -106,15 +106,15 @@ For jumps, ladders, teleporters — connections between disconnected NavMesh are
 
 ```csharp
 // Rebake at runtime (e.g., after terrain change)
-m_NavMeshSurface.BuildNavMesh();
+_navMeshSurface.BuildNavMesh();
 
 // Or update only:
-m_NavMeshSurface.UpdateNavMesh(m_NavMeshSurface.navMeshData);
+_navMeshSurface.UpdateNavMesh(_navMeshSurface.navMeshData);
 ```
 
 ## Areas and Costs
 
 - Define areas: Walkable, Water, Road (in Navigation settings)
 - Set area cost: higher cost = agents avoid that area
-- Override per-agent: `m_Agent.SetAreaCost(areaIndex, cost)`
+- Override per-agent: `_agent.SetAreaCost(areaIndex, cost)`
 - Use for: roads (low cost = preferred), mud (high cost = avoided)

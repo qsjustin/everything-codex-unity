@@ -18,8 +18,8 @@ TextMeshPro (TMP) is Unity's standard text solution, replacing the legacy Text c
 ```csharp
 using TMPro;
 
-[SerializeField] private TextMeshProUGUI m_UIText;     // Canvas text
-[SerializeField] private TextMeshPro m_WorldText;       // 3D world text
+[SerializeField] private TextMeshProUGUI _uiText;     // Canvas text
+[SerializeField] private TextMeshPro _worldText;       // 3D world text
 ```
 
 ## Font Asset Creation
@@ -67,17 +67,17 @@ Material presets add visual effects (outline, shadow, glow) without modifying th
 ### Applying Material Presets in Code
 
 ```csharp
-[SerializeField] private Material m_DamageMaterial;  // Red outline preset
-[SerializeField] private Material m_DefaultMaterial;
+[SerializeField] private Material _damageMaterial;  // Red outline preset
+[SerializeField] private Material _defaultMaterial;
 
 public void ShowDamageText()
 {
-    m_UIText.fontSharedMaterial = m_DamageMaterial;
+    _uiText.fontSharedMaterial = _damageMaterial;
 }
 
 public void ResetTextAppearance()
 {
-    m_UIText.fontSharedMaterial = m_DefaultMaterial;
+    _uiText.fontSharedMaterial = _defaultMaterial;
 }
 ```
 
@@ -187,10 +187,10 @@ Embed icons, emojis, or custom images inline with text.
 
 ```csharp
 // In text strings
-m_UIText.text = "Gold: <sprite name=\"coin\"> 500";
+_uiText.text = "Gold: <sprite name=\"coin\"> 500";
 
 // With tinting (inherits text color)
-m_UIText.text = "<sprite name=\"heart\" tint=1>";
+_uiText.text = "<sprite name=\"heart\" tint=1>";
 ```
 
 ## Code Access Patterns
@@ -198,39 +198,39 @@ m_UIText.text = "<sprite name=\"heart\" tint=1>";
 ### Setting Text Efficiently
 
 ```csharp
-[SerializeField] private TextMeshProUGUI m_ScoreText;
-[SerializeField] private TextMeshProUGUI m_TimerText;
+[SerializeField] private TextMeshProUGUI _scoreText;
+[SerializeField] private TextMeshProUGUI _timerText;
 
 // GOOD — SetText with format args avoids string allocation
-m_ScoreText.SetText("Score: {0}", score);
-m_TimerText.SetText("{0}:{1:00}", minutes, seconds);
+_scoreText.SetText("Score: {0}", score);
+_timerText.SetText("{0}:{1:00}", minutes, seconds);
 
 // GOOD — SetText with float formatting
-m_ScoreText.SetText("DPS: {0:2}", damagePerSecond); // 2 decimal places
+_scoreText.SetText("DPS: {0:2}", damagePerSecond); // 2 decimal places
 
 // OK for infrequent updates
-m_ScoreText.text = $"Score: {score}";
+_scoreText.text = $"Score: {score}";
 
 // BAD for frequent updates — allocates every frame
 void Update()
 {
-    m_ScoreText.text = "FPS: " + (1f / Time.deltaTime).ToString("F1"); // Allocates
+    _scoreText.text = "FPS: " + (1f / Time.deltaTime).ToString("F1"); // Allocates
 }
 
 // GOOD for frequent updates
 void Update()
 {
-    m_ScoreText.SetText("FPS: {0:1}", 1f / Time.deltaTime); // Zero alloc
+    _scoreText.SetText("FPS: {0:1}", 1f / Time.deltaTime); // Zero alloc
 }
 ```
 
 ### SetText Format Specifiers
 
 ```csharp
-m_Text.SetText("{0}", intValue);          // Integer
-m_Text.SetText("{0:1}", floatValue);      // 1 decimal place
-m_Text.SetText("{0:2}", floatValue);      // 2 decimal places
-m_Text.SetText("{0:00}", intValue);       // Zero-padded (use string format for this)
+_text.SetText("{0}", intValue);          // Integer
+_text.SetText("{0:1}", floatValue);      // 1 decimal place
+_text.SetText("{0:2}", floatValue);      // 2 decimal places
+_text.SetText("{0:00}", intValue);       // Zero-padded (use string format for this)
 ```
 
 Note: `SetText` format is NOT the same as `string.Format`. The number after `:` is decimal places, not format specifier.
@@ -239,32 +239,32 @@ Note: `SetText` format is NOT the same as `string.Format`. The number after `:` 
 
 ```csharp
 // Font and style
-m_Text.font = myFontAsset;
-m_Text.fontSize = 36;
-m_Text.fontStyle = FontStyles.Bold | FontStyles.Italic;
-m_Text.characterSpacing = 2f;
-m_Text.lineSpacing = 10f;
-m_Text.wordSpacing = 5f;
+_text.font = myFontAsset;
+_text.fontSize = 36;
+_text.fontStyle = FontStyles.Bold | FontStyles.Italic;
+_text.characterSpacing = 2f;
+_text.lineSpacing = 10f;
+_text.wordSpacing = 5f;
 
 // Color
-m_Text.color = Color.white;
-m_Text.faceColor = new Color32(255, 255, 255, 200); // Face color with alpha
-m_Text.outlineColor = Color.black;
-m_Text.outlineWidth = 0.2f;
+_text.color = Color.white;
+_text.faceColor = new Color32(255, 255, 255, 200); // Face color with alpha
+_text.outlineColor = Color.black;
+_text.outlineWidth = 0.2f;
 
 // Alignment
-m_Text.alignment = TextAlignmentOptions.Center;
-m_Text.alignment = TextAlignmentOptions.TopLeft;
+_text.alignment = TextAlignmentOptions.Center;
+_text.alignment = TextAlignmentOptions.TopLeft;
 
 // Overflow
-m_Text.overflowMode = TextOverflowModes.Ellipsis;
-m_Text.overflowMode = TextOverflowModes.Truncate;
-m_Text.enableWordWrapping = true;
+_text.overflowMode = TextOverflowModes.Ellipsis;
+_text.overflowMode = TextOverflowModes.Truncate;
+_text.enableWordWrapping = true;
 
 // Sizing
-m_Text.enableAutoSizing = true;
-m_Text.fontSizeMin = 12;
-m_Text.fontSizeMax = 48;
+_text.enableAutoSizing = true;
+_text.fontSizeMin = 12;
+_text.fontSizeMax = 48;
 ```
 
 ## Link Handling
@@ -278,17 +278,17 @@ using UnityEngine.EventSystems;
 
 public class LinkHandler : MonoBehaviour, IPointerClickHandler
 {
-    [SerializeField] private TextMeshProUGUI m_Text;
+    [SerializeField] private TextMeshProUGUI _text;
 
     public void OnPointerClick(PointerEventData eventData)
     {
         int linkIndex = TMP_TextUtilities.FindIntersectingLink(
-            m_Text, eventData.position, null // null = main camera
+            _text, eventData.position, null // null = main camera
         );
 
         if (linkIndex >= 0)
         {
-            TMP_LinkInfo linkInfo = m_Text.textInfo.linkInfo[linkIndex];
+            TMP_LinkInfo linkInfo = _text.textInfo.linkInfo[linkIndex];
             string linkId = linkInfo.GetLinkID();
             string linkText = linkInfo.GetLinkText();
 
@@ -322,7 +322,7 @@ Every TMP component with Raycast Target enabled participates in UI raycasting. D
 ```csharp
 // In inspector: uncheck "Raycast Target" on non-interactive text
 // Or in code:
-m_Text.raycastTarget = false;
+_text.raycastTarget = false;
 ```
 
 ### Canvas Optimization
@@ -337,17 +337,17 @@ m_Text.raycastTarget = false;
 // BAD — triggers mesh rebuild every frame even if value has not changed
 void Update()
 {
-    m_ScoreText.text = $"Score: {m_Score}";
+    _scoreText.text = $"Score: {_score}";
 }
 
 // GOOD — only update when value changes
-private int m_LastDisplayedScore = -1;
+private int _lastDisplayedScore = -1;
 void Update()
 {
-    if (m_Score != m_LastDisplayedScore)
+    if (_score != _lastDisplayedScore)
     {
-        m_LastDisplayedScore = m_Score;
-        m_ScoreText.SetText("Score: {0}", m_Score);
+        _lastDisplayedScore = _score;
+        _scoreText.SetText("Score: {0}", _score);
     }
 }
 ```
@@ -356,9 +356,9 @@ void Update()
 
 ```csharp
 // Access character, word, and line info after text is set
-m_Text.ForceMeshUpdate(); // Ensure text info is current
+_text.ForceMeshUpdate(); // Ensure text info is current
 
-TMP_TextInfo textInfo = m_Text.textInfo;
+TMP_TextInfo textInfo = _text.textInfo;
 int charCount = textInfo.characterCount;
 int wordCount = textInfo.wordCount;
 int lineCount = textInfo.lineCount;

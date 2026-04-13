@@ -103,8 +103,8 @@ canvasGroup.DOFade(0f, 0.3f).SetEase(Ease.InQuad);             // Accelerate out
 ### Custom Ease Curves
 
 ```csharp
-[SerializeField] private AnimationCurve m_CustomEase;
-transform.DOMove(target, 1f).SetEase(m_CustomEase);
+[SerializeField] private AnimationCurve _customEase;
+transform.DOMove(target, 1f).SetEase(_customEase);
 ```
 
 ## CRITICAL: Tween Lifecycle and Kill Strategy
@@ -114,13 +114,13 @@ transform.DOMove(target, 1f).SetEase(m_CustomEase);
 ```csharp
 public class AnimatedElement : MonoBehaviour
 {
-    private Tween m_ActiveTween;
+    private Tween _activeTween;
 
     public void PlayAnimation()
     {
         // Kill any existing tween before starting a new one
-        m_ActiveTween?.Kill();
-        m_ActiveTween = transform.DOScale(1.2f, 0.3f)
+        _activeTween?.Kill();
+        _activeTween = transform.DOScale(1.2f, 0.3f)
             .SetEase(Ease.OutBack);
     }
 
@@ -133,7 +133,7 @@ public class AnimatedElement : MonoBehaviour
         // DOTween.Kill(this);
 
         // Or kill a specific stored tween:
-        // m_ActiveTween?.Kill();
+        // _activeTween?.Kill();
     }
 }
 ```
@@ -168,11 +168,11 @@ DOTween.Play(this);
 By default, tweens auto-destroy on completion. Disable for reusable tweens.
 
 ```csharp
-private Tween m_BounceTween;
+private Tween _bounceTween;
 
 private void Awake()
 {
-    m_BounceTween = transform.DOScale(1.2f, 0.15f)
+    _bounceTween = transform.DOScale(1.2f, 0.15f)
         .SetEase(Ease.OutBack)
         .SetAutoKill(false)
         .SetLoops(2, LoopType.Yoyo)
@@ -181,12 +181,12 @@ private void Awake()
 
 public void Bounce()
 {
-    m_BounceTween.Restart();         // Replay from beginning
+    _bounceTween.Restart();         // Replay from beginning
 }
 
 private void OnDestroy()
 {
-    m_BounceTween?.Kill();           // Must kill manually since AutoKill is off
+    _bounceTween?.Kill();           // Must kill manually since AutoKill is off
 }
 ```
 
@@ -261,12 +261,12 @@ transform.DOPath(waypoints, 3f, PathType.CatmullRom)
 ```csharp
 public class ButtonFeedback : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
-    private readonly Vector3 k_PressScale = Vector3.one * 0.9f;
+    private static readonly Vector3 PressScale = Vector3.one * 0.9f;
 
     public void OnPointerDown(PointerEventData eventData)
     {
         transform.DOKill();
-        transform.DOScale(k_PressScale, 0.1f).SetEase(Ease.OutQuad);
+        transform.DOScale(PressScale, 0.1f).SetEase(Ease.OutQuad);
     }
 
     public void OnPointerUp(PointerEventData eventData)
@@ -284,32 +284,32 @@ public class ButtonFeedback : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 ```csharp
 public class ScreenTransition : MonoBehaviour
 {
-    [SerializeField] private CanvasGroup m_CanvasGroup;
-    [SerializeField] private RectTransform m_Panel;
+    [SerializeField] private CanvasGroup _canvasGroup;
+    [SerializeField] private RectTransform _panel;
 
     public Tween Show()
     {
-        m_CanvasGroup.alpha = 0f;
-        m_Panel.anchoredPosition = new Vector2(0, -50f);
+        _canvasGroup.alpha = 0f;
+        _panel.anchoredPosition = new Vector2(0, -50f);
 
         Sequence seq = DOTween.Sequence();
-        seq.Append(m_CanvasGroup.DOFade(1f, 0.25f));
-        seq.Join(m_Panel.DOAnchorPos(Vector2.zero, 0.3f).SetEase(Ease.OutQuad));
+        seq.Append(_canvasGroup.DOFade(1f, 0.25f));
+        seq.Join(_panel.DOAnchorPos(Vector2.zero, 0.3f).SetEase(Ease.OutQuad));
         return seq;
     }
 
     public Tween Hide()
     {
         Sequence seq = DOTween.Sequence();
-        seq.Append(m_CanvasGroup.DOFade(0f, 0.2f));
-        seq.Join(m_Panel.DOAnchorPos(new Vector2(0, 50f), 0.25f).SetEase(Ease.InQuad));
+        seq.Append(_canvasGroup.DOFade(0f, 0.2f));
+        seq.Join(_panel.DOAnchorPos(new Vector2(0, 50f), 0.25f).SetEase(Ease.InQuad));
         return seq;
     }
 
     private void OnDestroy()
     {
-        m_CanvasGroup.DOKill();
-        m_Panel.DOKill();
+        _canvasGroup.DOKill();
+        _panel.DOKill();
     }
 }
 ```
@@ -352,11 +352,11 @@ private void Update()
 }
 
 // GOOD — create once, update target differently
-private Tween m_MoveTween;
+private Tween _moveTween;
 public void MoveTo(Vector3 target)
 {
-    m_MoveTween?.Kill();
-    m_MoveTween = transform.DOMove(target, 0.5f);
+    _moveTween?.Kill();
+    _moveTween = transform.DOMove(target, 0.5f);
 }
 ```
 
@@ -381,10 +381,10 @@ transform.DORotate(new Vector3(0, 360, 0), 2f, RotateMode.FastBeyond360)
     .SetLoops(-1, LoopType.Restart);
 
 // GOOD — store reference and kill in OnDestroy
-private Tween m_SpinTween;
+private Tween _spinTween;
 private void Start()
 {
-    m_SpinTween = transform.DORotate(new Vector3(0, 360, 0), 2f, RotateMode.FastBeyond360)
+    _spinTween = transform.DORotate(new Vector3(0, 360, 0), 2f, RotateMode.FastBeyond360)
         .SetLoops(-1, LoopType.Restart)
         .SetId(this);
 }

@@ -11,41 +11,41 @@ globs: ["**/Runner*.cs", "**/Endless*.cs", "**/Chunk*.cs", "**/Obstacle*.cs", "*
 ```csharp
 public sealed class ChunkSpawner : MonoBehaviour
 {
-    [SerializeField] private GameObject[] m_ChunkPrefabs;
-    [SerializeField] private float m_ChunkLength = 20f;
-    [SerializeField] private int m_ActiveChunkCount = 5;
-    [SerializeField] private Transform m_Player;
+    [SerializeField] private GameObject[] _chunkPrefabs;
+    [SerializeField] private float _chunkLength = 20f;
+    [SerializeField] private int _activeChunkCount = 5;
+    [SerializeField] private Transform _player;
 
-    private readonly Queue<GameObject> m_ActiveChunks = new();
-    private float m_SpawnZ;
-    private ObjectPool<GameObject>[] m_ChunkPools;
+    private readonly Queue<GameObject> _activeChunks = new();
+    private float _spawnZ;
+    private ObjectPool<GameObject>[] _chunkPools;
 
     private void Awake()
     {
-        m_SpawnZ = 0f;
+        _spawnZ = 0f;
         // Initialize pools for each chunk type
     }
 
     private void Update()
     {
-        float playerZ = m_Player.position.z;
-        float despawnZ = playerZ - m_ChunkLength;
+        float playerZ = _player.position.z;
+        float despawnZ = playerZ - _chunkLength;
 
         // Recycle chunks behind player
-        while (m_ActiveChunks.Count > 0)
+        while (_activeChunks.Count > 0)
         {
-            GameObject oldest = m_ActiveChunks.Peek();
+            GameObject oldest = _activeChunks.Peek();
             if (oldest.transform.position.z < despawnZ)
             {
-                m_ActiveChunks.Dequeue();
+                _activeChunks.Dequeue();
                 oldest.SetActive(false); // return to pool
             }
             else break;
         }
 
         // Spawn chunks ahead
-        float spawnThreshold = playerZ + m_ChunkLength * m_ActiveChunkCount;
-        while (m_SpawnZ < spawnThreshold)
+        float spawnThreshold = playerZ + _chunkLength * _activeChunkCount;
+        while (_spawnZ < spawnThreshold)
         {
             SpawnChunk();
         }
@@ -53,18 +53,18 @@ public sealed class ChunkSpawner : MonoBehaviour
 
     private void SpawnChunk()
     {
-        int index = Random.Range(0, m_ChunkPrefabs.Length);
+        int index = Random.Range(0, _chunkPrefabs.Length);
         GameObject chunk = GetFromPool(index);
-        chunk.transform.position = new Vector3(0f, 0f, m_SpawnZ);
+        chunk.transform.position = new Vector3(0f, 0f, _spawnZ);
         chunk.SetActive(true);
-        m_ActiveChunks.Enqueue(chunk);
-        m_SpawnZ += m_ChunkLength;
+        _activeChunks.Enqueue(chunk);
+        _spawnZ += _chunkLength;
     }
 
     private GameObject GetFromPool(int index)
     {
         // Use ObjectPool<T> or custom pool
-        return Instantiate(m_ChunkPrefabs[index]); // placeholder — use pool
+        return Instantiate(_chunkPrefabs[index]); // placeholder — use pool
     }
 }
 ```
@@ -75,78 +75,78 @@ public sealed class ChunkSpawner : MonoBehaviour
 public sealed class LaneRunner : MonoBehaviour
 {
     [Header("Lanes")]
-    [SerializeField] private float m_LaneWidth = 2.5f;
-    [SerializeField] private float m_LaneSwitchSpeed = 15f;
+    [SerializeField] private float _laneWidth = 2.5f;
+    [SerializeField] private float _laneSwitchSpeed = 15f;
 
     [Header("Jump")]
-    [SerializeField] private float m_JumpForce = 10f;
-    [SerializeField] private float m_Gravity = -30f;
+    [SerializeField] private float _jumpForce = 10f;
+    [SerializeField] private float _gravity = -30f;
 
     [Header("Slide")]
-    [SerializeField] private float m_SlideDuration = 0.5f;
+    [SerializeField] private float _slideDuration = 0.5f;
 
-    private int m_CurrentLane; // -1, 0, 1
-    private float m_TargetX;
-    private float m_VerticalVelocity;
-    private bool m_IsGrounded = true;
-    private bool m_IsSliding;
-    private CharacterController m_Controller;
+    private int _currentLane; // -1, 0, 1
+    private float _targetX;
+    private float _verticalVelocity;
+    private bool _isGrounded = true;
+    private bool _isSliding;
+    private CharacterController _controller;
 
     private void Awake()
     {
-        m_Controller = GetComponent<CharacterController>();
-        m_CurrentLane = 0;
+        _controller = GetComponent<CharacterController>();
+        _currentLane = 0;
     }
 
     public void SwitchLane(int direction) // -1 left, +1 right
     {
-        m_CurrentLane = Mathf.Clamp(m_CurrentLane + direction, -1, 1);
-        m_TargetX = m_CurrentLane * m_LaneWidth;
+        _currentLane = Mathf.Clamp(_currentLane + direction, -1, 1);
+        _targetX = _currentLane * _laneWidth;
     }
 
     public void Jump()
     {
-        if (!m_IsGrounded) return;
-        m_VerticalVelocity = m_JumpForce;
-        m_IsGrounded = false;
+        if (!_isGrounded) return;
+        _verticalVelocity = _jumpForce;
+        _isGrounded = false;
     }
 
     public void Slide()
     {
-        if (m_IsSliding) return;
+        if (_isSliding) return;
         StartCoroutine(SlideCoroutine());
     }
 
     private IEnumerator SlideCoroutine()
     {
-        m_IsSliding = true;
-        m_Controller.height = 0.5f;
-        m_Controller.center = new Vector3(0f, 0.25f, 0f);
+        _isSliding = true;
+        _controller.height = 0.5f;
+        _controller.center = new Vector3(0f, 0.25f, 0f);
 
-        yield return new WaitForSeconds(m_SlideDuration);
+        yield return new WaitForSeconds(_slideDuration);
 
-        m_Controller.height = 2f;
-        m_Controller.center = new Vector3(0f, 1f, 0f);
-        m_IsSliding = false;
+        _controller.height = 2f;
+        _controller.center = new Vector3(0f, 1f, 0f);
+        _isSliding = false;
     }
 
     private void Update()
     {
         // Lateral movement
         float currentX = transform.position.x;
-        float newX = Mathf.MoveTowards(currentX, m_TargetX, m_LaneSwitchSpeed * Time.deltaTime);
+        float newX = Mathf.MoveTowards(currentX, _targetX, _laneSwitchSpeed * Time.deltaTime);
 
         // Vertical
-        if (m_IsGrounded && m_VerticalVelocity < 0f)
+        if (_isGrounded && _verticalVelocity < 0f)
         {
-            m_VerticalVelocity = -1f;
+            _verticalVelocity = -1f;
         }
-        m_VerticalVelocity += m_Gravity * Time.deltaTime;
+        _verticalVelocity += _gravity * Time.deltaTime;
 
-        Vector3 move = new Vector3(newX - currentX, m_VerticalVelocity * Time.deltaTime, 0f);
-        m_Controller.Move(move);
+        Vector3 move = new Vector3(newX - currentX, _verticalVelocity * Time.deltaTime, 0f);
+        _controller.Move(move);
 
-        m_IsGrounded = m_Controller.isGrounded;
+        _isGrounded = _controller.isGrounded;
     }
 }
 ```
@@ -156,10 +156,10 @@ public sealed class LaneRunner : MonoBehaviour
 ```csharp
 public sealed class RunnerInput : MonoBehaviour
 {
-    [SerializeField] private LaneRunner m_Runner;
-    [SerializeField] private float m_SwipeThreshold = 50f;
+    [SerializeField] private LaneRunner _runner;
+    [SerializeField] private float _swipeThreshold = 50f;
 
-    private Vector2 m_TouchStart;
+    private Vector2 _touchStart;
 
     private void Update()
     {
@@ -170,26 +170,26 @@ public sealed class RunnerInput : MonoBehaviour
 
         if (touch.press.wasPressedThisFrame)
         {
-            m_TouchStart = touch.position.ReadValue();
+            _touchStart = touch.position.ReadValue();
         }
 
         if (touch.press.wasReleasedThisFrame)
         {
-            Vector2 delta = touch.position.ReadValue() - m_TouchStart;
+            Vector2 delta = touch.position.ReadValue() - _touchStart;
 
-            if (delta.magnitude > m_SwipeThreshold)
+            if (delta.magnitude > _swipeThreshold)
             {
                 if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
                 {
-                    m_Runner.SwitchLane(delta.x > 0f ? 1 : -1);
+                    _runner.SwitchLane(delta.x > 0f ? 1 : -1);
                 }
                 else if (delta.y > 0f)
                 {
-                    m_Runner.Jump();
+                    _runner.Jump();
                 }
                 else
                 {
-                    m_Runner.Slide();
+                    _runner.Slide();
                 }
             }
         }
@@ -202,25 +202,25 @@ public sealed class RunnerInput : MonoBehaviour
 ```csharp
 public sealed class SpeedManager : MonoBehaviour
 {
-    [SerializeField] private float m_StartSpeed = 8f;
-    [SerializeField] private float m_MaxSpeed = 25f;
-    [SerializeField] private float m_AccelerationPerSecond = 0.1f;
+    [SerializeField] private float _startSpeed = 8f;
+    [SerializeField] private float _maxSpeed = 25f;
+    [SerializeField] private float _accelerationPerSecond = 0.1f;
 
-    private float m_CurrentSpeed;
-    private float m_PlayTime;
+    private float _currentSpeed;
+    private float _playTime;
 
-    public float CurrentSpeed => m_CurrentSpeed;
+    public float CurrentSpeed => _currentSpeed;
 
     private void Update()
     {
-        m_PlayTime += Time.deltaTime;
-        m_CurrentSpeed = Mathf.Min(m_StartSpeed + m_AccelerationPerSecond * m_PlayTime, m_MaxSpeed);
+        _playTime += Time.deltaTime;
+        _currentSpeed = Mathf.Min(_startSpeed + _accelerationPerSecond * _playTime, _maxSpeed);
     }
 
     public void ResetSpeed()
     {
-        m_PlayTime = 0f;
-        m_CurrentSpeed = m_StartSpeed;
+        _playTime = 0f;
+        _currentSpeed = _startSpeed;
     }
 }
 ```

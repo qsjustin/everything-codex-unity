@@ -68,10 +68,10 @@ Catch configuration errors in the inspector before they become runtime bugs.
 public class UIManager : MonoBehaviour
 {
     [Required]
-    [SerializeField] private Canvas m_MainCanvas;
+    [SerializeField] private Canvas _mainCanvas;
 
     [Required("Assign the health bar prefab!")]
-    [SerializeField] private GameObject m_HealthBarPrefab;
+    [SerializeField] private GameObject _healthBarPrefab;
 }
 ```
 
@@ -364,17 +364,17 @@ private IEnumerable<ValueDropdownItem<int>> GetDifficultyOptions()
 ```csharp
 // Show properties and computed values in the inspector (read-only display, not saved)
 [ShowInInspector]
-public int CurrentHealth => m_Health;
+public int CurrentHealth => _health;
 
 [ShowInInspector]
-private static int s_InstanceCount;
+private static int _instanceCount;
 
 [ShowInInspector]
 public float DamagePerSecond => Attack * AttackSpeed;
 
 // Show non-serialized runtime state
 [ShowInInspector, ReadOnly]
-private FSMState m_CurrentState;
+private FSMState _currentState;
 ```
 
 ## Editor Windows with Odin
@@ -543,12 +543,12 @@ public class TurretController : MonoBehaviour
 
     [ShowInInspector, ReadOnly]
     [BoxGroup("Runtime")]
-    private Transform m_CurrentTarget;
+    private Transform _currentTarget;
 
     [ShowInInspector, ReadOnly]
     [BoxGroup("Runtime")]
     [ProgressBar(0, 1)]
-    private float m_ReloadProgress;
+    private float _reloadProgress;
 }
 ```
 

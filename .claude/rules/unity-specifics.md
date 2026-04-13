@@ -42,12 +42,12 @@ private void OnValidate()
 
 ```csharp
 // DANGEROUS — bypasses Unity's destroyed-object detection
-m_Target?.TakeDamage(10);  // Calls TakeDamage on destroyed objects!
+_target?.TakeDamage(10);  // Calls TakeDamage on destroyed objects!
 
 // SAFE — Unity's == operator detects destroyed objects
-if (m_Target != null)
+if (_target != null)
 {
-    m_Target.TakeDamage(10);
+    _target.TakeDamage(10);
 }
 ```
 
@@ -149,9 +149,9 @@ Use the new Input System package, not legacy `Input.GetKey`:
 if (Input.GetKeyDown(KeyCode.Space)) Jump();
 
 // GOOD — Input System
-private PlayerControls m_Controls;
-private void OnEnable() => m_Controls.Enable();
-private void OnDisable() => m_Controls.Disable();
+private PlayerControls _controls;
+private void OnEnable() => _controls.Enable();
+private void OnDisable() => _controls.Disable();
 ```
 
 ## .meta Files

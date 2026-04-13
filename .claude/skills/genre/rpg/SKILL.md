@@ -31,51 +31,51 @@ public sealed class StatModifier
 [System.Serializable]
 public sealed class CharacterStat
 {
-    [SerializeField] private float m_BaseValue;
-    private readonly List<StatModifier> m_Modifiers = new();
-    private float m_CachedValue;
-    private bool m_IsDirty = true;
+    [SerializeField] private float _baseValue;
+    private readonly List<StatModifier> _modifiers = new();
+    private float _cachedValue;
+    private bool _isDirty = true;
 
     public float Value
     {
         get
         {
-            if (m_IsDirty)
+            if (_isDirty)
             {
-                m_CachedValue = CalculateFinalValue();
-                m_IsDirty = false;
+                _cachedValue = CalculateFinalValue();
+                _isDirty = false;
             }
-            return m_CachedValue;
+            return _cachedValue;
         }
     }
 
     public void AddModifier(StatModifier mod)
     {
-        m_Modifiers.Add(mod);
-        m_Modifiers.Sort((a, b) => a.Order.CompareTo(b.Order));
-        m_IsDirty = true;
+        _modifiers.Add(mod);
+        _modifiers.Sort((a, b) => a.Order.CompareTo(b.Order));
+        _isDirty = true;
     }
 
     public void RemoveAllModifiersFromSource(object source)
     {
-        for (int i = m_Modifiers.Count - 1; i >= 0; i--)
+        for (int i = _modifiers.Count - 1; i >= 0; i--)
         {
-            if (m_Modifiers[i].Source == source)
+            if (_modifiers[i].Source == source)
             {
-                m_Modifiers.RemoveAt(i);
-                m_IsDirty = true;
+                _modifiers.RemoveAt(i);
+                _isDirty = true;
             }
         }
     }
 
     private float CalculateFinalValue()
     {
-        float finalValue = m_BaseValue;
+        float finalValue = _baseValue;
         float percentAddSum = 0f;
 
-        for (int i = 0; i < m_Modifiers.Count; i++)
+        for (int i = 0; i < _modifiers.Count; i++)
         {
-            StatModifier mod = m_Modifiers[i];
+            StatModifier mod = _modifiers[i];
             switch (mod.Type)
             {
                 case StatModifierType.Flat:
@@ -83,7 +83,7 @@ public sealed class CharacterStat
                     break;
                 case StatModifierType.PercentAdd:
                     percentAddSum += mod.Value;
-                    if (i + 1 >= m_Modifiers.Count || m_Modifiers[i + 1].Type != StatModifierType.PercentAdd)
+                    if (i + 1 >= _modifiers.Count || _modifiers[i + 1].Type != StatModifierType.PercentAdd)
                     {
                         finalValue *= 1f + percentAddSum;
                         percentAddSum = 0f;
@@ -107,25 +107,25 @@ public sealed class CharacterStat
 ```csharp
 public sealed class LevelSystem
 {
-    private int m_CurrentLevel = 1;
-    private int m_CurrentXP;
-    private int m_MaxLevel = 99;
+    private int _currentLevel = 1;
+    private int _currentXP;
+    private int _maxLevel = 99;
 
     public event System.Action<int> OnLevelUp;
 
-    public int CurrentLevel => m_CurrentLevel;
-    public int CurrentXP => m_CurrentXP;
-    public int XPToNextLevel => GetXPForLevel(m_CurrentLevel + 1) - GetXPForLevel(m_CurrentLevel);
-    public float XPProgress => (float)m_CurrentXP / XPToNextLevel;
+    public int CurrentLevel => _currentLevel;
+    public int CurrentXP => _currentXP;
+    public int XPToNextLevel => GetXPForLevel(_currentLevel + 1) - GetXPForLevel(_currentLevel);
+    public float XPProgress => (float)_currentXP / XPToNextLevel;
 
     public void AddXP(int amount)
     {
-        m_CurrentXP += amount;
-        while (m_CurrentXP >= XPToNextLevel && m_CurrentLevel < m_MaxLevel)
+        _currentXP += amount;
+        while (_currentXP >= XPToNextLevel && _currentLevel < _maxLevel)
         {
-            m_CurrentXP -= XPToNextLevel;
-            m_CurrentLevel++;
-            OnLevelUp?.Invoke(m_CurrentLevel);
+            _currentXP -= XPToNextLevel;
+            _currentLevel++;
+            OnLevelUp?.Invoke(_currentLevel);
         }
     }
 
@@ -157,34 +157,34 @@ public sealed class QuestObjective
 [CreateAssetMenu(menuName = "RPG/Quest Definition")]
 public sealed class QuestDefinition : ScriptableObject
 {
-    [SerializeField] private string m_QuestId;
-    [SerializeField] private string m_Title;
-    [TextArea] [SerializeField] private string m_Description;
-    [SerializeField] private List<QuestObjective> m_Objectives;
-    [SerializeField] private int m_XPReward;
-    [SerializeField] private List<ItemDefinition> m_ItemRewards;
-    [SerializeField] private QuestDefinition[] m_Prerequisites;
+    [SerializeField] private string _questId;
+    [SerializeField] private string _title;
+    [TextArea] [SerializeField] private string _description;
+    [SerializeField] private List<QuestObjective> _objectives;
+    [SerializeField] private int _xpReward;
+    [SerializeField] private List<ItemDefinition> _itemRewards;
+    [SerializeField] private QuestDefinition[] _prerequisites;
 
-    public string QuestId => m_QuestId;
-    public string Title => m_Title;
-    public IReadOnlyList<QuestObjective> Objectives => m_Objectives;
-    public int XPReward => m_XPReward;
+    public string QuestId => _questId;
+    public string Title => _title;
+    public IReadOnlyList<QuestObjective> Objectives => _objectives;
+    public int XPReward => _xpReward;
 }
 
 public sealed class QuestTracker
 {
-    private readonly Dictionary<string, QuestDefinition> m_ActiveQuests = new();
+    private readonly Dictionary<string, QuestDefinition> _activeQuests = new();
 
     public event System.Action<QuestDefinition> OnQuestCompleted;
 
     public void StartQuest(QuestDefinition quest)
     {
-        m_ActiveQuests[quest.QuestId] = quest;
+        _activeQuests[quest.QuestId] = quest;
     }
 
     public void ReportProgress(ObjectiveType type, string targetId, int count = 1)
     {
-        foreach (KeyValuePair<string, QuestDefinition> kvp in m_ActiveQuests)
+        foreach (KeyValuePair<string, QuestDefinition> kvp in _activeQuests)
         {
             QuestDefinition quest = kvp.Value;
             bool allComplete = true;

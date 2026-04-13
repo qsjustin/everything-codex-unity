@@ -75,7 +75,7 @@ private void Update()
 
 ```csharp
 // Input System touch
-[SerializeField] private float m_SwipeThreshold = 50f;
+[SerializeField] private float _swipeThreshold = 50f;
 
 // Minimum tap target: 44x44 points (Apple HIG)
 // Minimum tap target: 48x48 dp (Material Design)

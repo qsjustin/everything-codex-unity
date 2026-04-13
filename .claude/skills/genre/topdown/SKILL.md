@@ -12,15 +12,15 @@ globs: ["**/TopDown*.cs", "**/Room*.cs", "**/Wave*.cs", "**/Spawn*.cs"]
 ```csharp
 public sealed class VirtualJoystickController : MonoBehaviour
 {
-    [SerializeField] private float m_MoveSpeed = 6f;
-    [SerializeField] private float m_JoystickDeadZone = 0.1f;
+    [SerializeField] private float _moveSpeed = 6f;
+    [SerializeField] private float _joystickDeadZone = 0.1f;
 
-    private Rigidbody2D m_Rb;
-    private Vector2 m_MoveInput;
+    private Rigidbody2D _rb;
+    private Vector2 _moveInput;
 
     private void Awake()
     {
-        m_Rb = GetComponent<Rigidbody2D>();
+        _rb = GetComponent<Rigidbody2D>();
     }
 
     /// <summary>
@@ -28,19 +28,19 @@ public sealed class VirtualJoystickController : MonoBehaviour
     /// </summary>
     public void SetMoveInput(Vector2 input)
     {
-        m_MoveInput = input.magnitude > m_JoystickDeadZone ? input : Vector2.zero;
+        _moveInput = input.magnitude > _joystickDeadZone ? input : Vector2.zero;
 
         // Auto-aim in move direction
-        if (m_MoveInput.sqrMagnitude > 0.01f)
+        if (_moveInput.sqrMagnitude > 0.01f)
         {
-            float angle = Mathf.Atan2(m_MoveInput.y, m_MoveInput.x) * Mathf.Rad2Deg - 90f;
+            float angle = Mathf.Atan2(_moveInput.y, _moveInput.x) * Mathf.Rad2Deg - 90f;
             transform.rotation = Quaternion.Euler(0f, 0f, angle);
         }
     }
 
     private void FixedUpdate()
     {
-        m_Rb.linearVelocity = m_MoveInput.normalized * m_MoveSpeed;
+        _rb.linearVelocity = _moveInput.normalized * _moveSpeed;
     }
 }
 ```
@@ -54,8 +54,8 @@ public sealed class VirtualJoystickController : MonoBehaviour
 
 ### Tap-to-Move (NavMeshAgent)
 ```csharp
-private NavMeshAgent m_Agent;
-private Camera m_Camera;
+private NavMeshAgent _agent;
+private Camera _camera;
 
 private void Update()
 {
@@ -67,10 +67,10 @@ private void Update()
     if (touch.press.wasPressedThisFrame)
     {
         Vector2 touchPos = touch.position.ReadValue();
-        Ray ray = m_Camera.ScreenPointToRay(touchPos);
-        if (Physics.Raycast(ray, out RaycastHit hit, 100f, m_GroundLayer))
+        Ray ray = _camera.ScreenPointToRay(touchPos);
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f, _groundLayer))
         {
-            m_Agent.SetDestination(hit.point);
+            _agent.SetDestination(hit.point);
         }
     }
 }
@@ -87,18 +87,18 @@ private void Update()
 ```csharp
 public sealed class RoomTransition : MonoBehaviour
 {
-    [SerializeField] private Transform m_SpawnPoint;
-    [SerializeField] private CinemachineConfiner2D m_NextRoomConfiner;
+    [SerializeField] private Transform _spawnPoint;
+    [SerializeField] private CinemachineConfiner2D _nextRoomConfiner;
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
-            other.transform.position = m_SpawnPoint.position;
+            other.transform.position = _spawnPoint.position;
             // Switch camera confiner to new room bounds
             CinemachineVirtualCamera vcam = FindFirstObjectByType<CinemachineVirtualCamera>();
             CinemachineConfiner2D confiner = vcam.GetComponent<CinemachineConfiner2D>();
-            confiner.m_BoundingShape2D = m_NextRoomConfiner.m_BoundingShape2D;
+            confiner.m_BoundingShape2D = _nextRoomConfiner.m_BoundingShape2D;
         }
     }
 }
@@ -124,26 +124,26 @@ public sealed class SpawnEntry
 
 public sealed class WaveManager : MonoBehaviour
 {
-    [SerializeField] private List<EnemyWave> m_Waves;
-    [SerializeField] private Transform[] m_SpawnPoints;
+    [SerializeField] private List<EnemyWave> _waves;
+    [SerializeField] private Transform[] _spawnPoints;
 
-    private int m_CurrentWave;
-    private int m_EnemiesAlive;
+    private int _currentWave;
+    private int _enemiesAlive;
 
     public event System.Action<int> OnWaveStarted;
     public event System.Action OnAllWavesComplete;
 
     public void StartNextWave()
     {
-        if (m_CurrentWave >= m_Waves.Count)
+        if (_currentWave >= _waves.Count)
         {
             OnAllWavesComplete?.Invoke();
             return;
         }
 
-        StartCoroutine(SpawnWave(m_Waves[m_CurrentWave]));
-        OnWaveStarted?.Invoke(m_CurrentWave);
-        m_CurrentWave++;
+        StartCoroutine(SpawnWave(_waves[_currentWave]));
+        OnWaveStarted?.Invoke(_currentWave);
+        _currentWave++;
     }
 
     private IEnumerator SpawnWave(EnemyWave wave)
@@ -155,9 +155,9 @@ public sealed class WaveManager : MonoBehaviour
             SpawnEntry entry = wave.Entries[i];
             for (int j = 0; j < entry.Count; j++)
             {
-                Transform spawnPoint = m_SpawnPoints[Random.Range(0, m_SpawnPoints.Length)];
+                Transform spawnPoint = _spawnPoints[Random.Range(0, _spawnPoints.Length)];
                 Instantiate(entry.Prefab, spawnPoint.position, Quaternion.identity);
-                m_EnemiesAlive++;
+                _enemiesAlive++;
                 yield return new WaitForSeconds(entry.SpawnDelay);
             }
         }
@@ -165,8 +165,8 @@ public sealed class WaveManager : MonoBehaviour
 
     public void OnEnemyDied()
     {
-        m_EnemiesAlive--;
-        if (m_EnemiesAlive <= 0)
+        _enemiesAlive--;
+        if (_enemiesAlive <= 0)
         {
             StartNextWave();
         }

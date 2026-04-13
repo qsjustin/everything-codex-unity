@@ -11,39 +11,39 @@ globs: ["**/Match*.cs", "**/Grid*.cs", "**/Tile*.cs", "**/Board*.cs", "**/Puzzle
 ```csharp
 public sealed class Board : MonoBehaviour
 {
-    [SerializeField] private int m_Width = 7;
-    [SerializeField] private int m_Height = 9;
-    [SerializeField] private float m_CellSize = 1f;
-    [SerializeField] private TileDefinition[] m_TileTypes;
+    [SerializeField] private int _width = 7;
+    [SerializeField] private int _height = 9;
+    [SerializeField] private float _cellSize = 1f;
+    [SerializeField] private TileDefinition[] _tileTypes;
 
-    private Tile[,] m_Grid;
+    private Tile[,] _grid;
 
     private void Awake()
     {
-        m_Grid = new Tile[m_Width, m_Height];
+        _grid = new Tile[_width, _height];
     }
 
     public Vector3 GridToWorld(int x, int y)
     {
-        float offsetX = (m_Width - 1) * 0.5f;
-        float offsetY = (m_Height - 1) * 0.5f;
-        return new Vector3((x - offsetX) * m_CellSize, (y - offsetY) * m_CellSize, 0f);
+        float offsetX = (_width - 1) * 0.5f;
+        float offsetY = (_height - 1) * 0.5f;
+        return new Vector3((x - offsetX) * _cellSize, (y - offsetY) * _cellSize, 0f);
     }
 
     public bool IsValidPosition(int x, int y)
     {
-        return x >= 0 && x < m_Width && y >= 0 && y < m_Height;
+        return x >= 0 && x < _width && y >= 0 && y < _height;
     }
 
     public Tile GetTile(int x, int y)
     {
         if (!IsValidPosition(x, y)) return null;
-        return m_Grid[x, y];
+        return _grid[x, y];
     }
 
     public void SetTile(int x, int y, Tile tile)
     {
-        m_Grid[x, y] = tile;
+        _grid[x, y] = tile;
         if (tile != null)
         {
             tile.GridX = x;
@@ -59,15 +59,15 @@ public sealed class Board : MonoBehaviour
 [CreateAssetMenu(menuName = "Match3/Tile Definition")]
 public sealed class TileDefinition : ScriptableObject
 {
-    [SerializeField] private string m_TileId;
-    [SerializeField] private Sprite m_Sprite;
-    [SerializeField] private Color m_Color = Color.white;
-    [SerializeField] private TileType m_Type = TileType.Normal;
+    [SerializeField] private string _tileId;
+    [SerializeField] private Sprite _sprite;
+    [SerializeField] private Color _color = Color.white;
+    [SerializeField] private TileType _type = TileType.Normal;
 
-    public string TileId => m_TileId;
-    public Sprite Sprite => m_Sprite;
-    public Color Color => m_Color;
-    public TileType Type => m_Type;
+    public string TileId => _tileId;
+    public Sprite Sprite => _sprite;
+    public Color Color => _color;
+    public TileType Type => _type;
 }
 
 public enum TileType
@@ -88,31 +88,31 @@ public enum TileType
 ```csharp
 public sealed class MatchDetector
 {
-    private readonly Board m_Board;
-    private readonly List<MatchResult> m_MatchBuffer = new(16);
+    private readonly Board _board;
+    private readonly List<MatchResult> _matchBuffer = new(16);
 
-    public MatchDetector(Board board) { m_Board = board; }
+    public MatchDetector(Board board) { _board = board; }
 
     public List<MatchResult> FindAllMatches()
     {
-        m_MatchBuffer.Clear();
+        _matchBuffer.Clear();
         FindHorizontalMatches();
         FindVerticalMatches();
-        return m_MatchBuffer;
+        return _matchBuffer;
     }
 
     private void FindHorizontalMatches()
     {
-        for (int y = 0; y < m_Board.Height; y++)
+        for (int y = 0; y < _board.Height; y++)
         {
             int matchStart = 0;
-            for (int x = 1; x <= m_Board.Width; x++)
+            for (int x = 1; x <= _board.Width; x++)
             {
-                bool matches = x < m_Board.Width &&
-                    m_Board.GetTile(x, y) != null &&
-                    m_Board.GetTile(matchStart, y) != null &&
-                    m_Board.GetTile(x, y).Definition.TileId ==
-                    m_Board.GetTile(matchStart, y).Definition.TileId;
+                bool matches = x < _board.Width &&
+                    _board.GetTile(x, y) != null &&
+                    _board.GetTile(matchStart, y) != null &&
+                    _board.GetTile(x, y).Definition.TileId ==
+                    _board.GetTile(matchStart, y).Definition.TileId;
 
                 if (!matches)
                 {
@@ -123,9 +123,9 @@ public sealed class MatchDetector
                         match.Direction = MatchDirection.Horizontal;
                         for (int mx = matchStart; mx < x; mx++)
                         {
-                            match.Tiles.Add(m_Board.GetTile(mx, y));
+                            match.Tiles.Add(_board.GetTile(mx, y));
                         }
-                        m_MatchBuffer.Add(match);
+                        _matchBuffer.Add(match);
                     }
                     matchStart = x;
                 }
@@ -135,16 +135,16 @@ public sealed class MatchDetector
 
     private void FindVerticalMatches()
     {
-        for (int x = 0; x < m_Board.Width; x++)
+        for (int x = 0; x < _board.Width; x++)
         {
             int matchStart = 0;
-            for (int y = 1; y <= m_Board.Height; y++)
+            for (int y = 1; y <= _board.Height; y++)
             {
-                bool matches = y < m_Board.Height &&
-                    m_Board.GetTile(x, y) != null &&
-                    m_Board.GetTile(x, matchStart) != null &&
-                    m_Board.GetTile(x, y).Definition.TileId ==
-                    m_Board.GetTile(x, matchStart).Definition.TileId;
+                bool matches = y < _board.Height &&
+                    _board.GetTile(x, y) != null &&
+                    _board.GetTile(x, matchStart) != null &&
+                    _board.GetTile(x, y).Definition.TileId ==
+                    _board.GetTile(x, matchStart).Definition.TileId;
 
                 if (!matches)
                 {
@@ -155,9 +155,9 @@ public sealed class MatchDetector
                         match.Direction = MatchDirection.Vertical;
                         for (int my = matchStart; my < y; my++)
                         {
-                            match.Tiles.Add(m_Board.GetTile(x, my));
+                            match.Tiles.Add(_board.GetTile(x, my));
                         }
-                        m_MatchBuffer.Add(match);
+                        _matchBuffer.Add(match);
                     }
                     matchStart = y;
                 }
@@ -180,7 +180,7 @@ After matches are cleared:
 // Coroutine-based cascade loop
 private IEnumerator CascadeLoop()
 {
-    List<MatchResult> matches = m_Detector.FindAllMatches();
+    List<MatchResult> matches = _detector.FindAllMatches();
     int comboCount = 0;
 
     while (matches.Count > 0)
@@ -189,7 +189,7 @@ private IEnumerator CascadeLoop()
         yield return StartCoroutine(DestroyMatches(matches, comboCount));
         yield return StartCoroutine(ApplyGravity());
         yield return StartCoroutine(RefillBoard());
-        matches = m_Detector.FindAllMatches();
+        matches = _detector.FindAllMatches();
     }
 
     CheckLevelObjective();
@@ -232,43 +232,43 @@ private IEnumerator CascadeLoop()
 ```csharp
 public sealed class LivesSystem : MonoBehaviour
 {
-    [SerializeField] private int m_MaxLives = 5;
-    [SerializeField] private int m_RegenMinutes = 30;
+    [SerializeField] private int _maxLives = 5;
+    [SerializeField] private int _regenMinutes = 30;
 
-    private int m_CurrentLives;
-    private System.DateTime m_LastLifeLostTime;
+    private int _currentLives;
+    private System.DateTime _lastLifeLostTime;
 
-    public int CurrentLives => m_CurrentLives;
-    public bool HasLives => m_CurrentLives > 0;
+    public int CurrentLives => _currentLives;
+    public bool HasLives => _currentLives > 0;
 
     public void UseLive()
     {
-        if (m_CurrentLives <= 0) return;
-        m_CurrentLives--;
-        if (m_CurrentLives < m_MaxLives)
+        if (_currentLives <= 0) return;
+        _currentLives--;
+        if (_currentLives < _maxLives)
         {
-            m_LastLifeLostTime = System.DateTime.UtcNow;
+            _lastLifeLostTime = System.DateTime.UtcNow;
         }
         Save();
     }
 
     public void CheckRegen()
     {
-        if (m_CurrentLives >= m_MaxLives) return;
-        System.TimeSpan elapsed = System.DateTime.UtcNow - m_LastLifeLostTime;
-        int livesRegened = (int)(elapsed.TotalMinutes / m_RegenMinutes);
+        if (_currentLives >= _maxLives) return;
+        System.TimeSpan elapsed = System.DateTime.UtcNow - _lastLifeLostTime;
+        int livesRegened = (int)(elapsed.TotalMinutes / _regenMinutes);
         if (livesRegened > 0)
         {
-            m_CurrentLives = Mathf.Min(m_MaxLives, m_CurrentLives + livesRegened);
-            m_LastLifeLostTime = m_LastLifeLostTime.AddMinutes(livesRegened * m_RegenMinutes);
+            _currentLives = Mathf.Min(_maxLives, _currentLives + livesRegened);
+            _lastLifeLostTime = _lastLifeLostTime.AddMinutes(livesRegened * _regenMinutes);
             Save();
         }
     }
 
     private void Save()
     {
-        PlayerPrefs.SetInt("Lives", m_CurrentLives);
-        PlayerPrefs.SetString("LastLifeLost", m_LastLifeLostTime.ToBinary().ToString());
+        PlayerPrefs.SetInt("Lives", _currentLives);
+        PlayerPrefs.SetString("LastLifeLost", _lastLifeLostTime.ToBinary().ToString());
         PlayerPrefs.Save();
     }
 }

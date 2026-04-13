@@ -39,13 +39,13 @@ Prototype code should be:
 public sealed class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private float m_MoveSpeed = 8f;
-    [SerializeField] private float m_JumpForce = 12f;
+    [SerializeField] private float _moveSpeed = 8f;
+    [SerializeField] private float _jumpForce = 12f;
 
     [Header("Ground Check")]
-    [SerializeField] private Transform m_GroundCheck;
-    [SerializeField] private float m_GroundCheckRadius = 0.2f;
-    [SerializeField] private LayerMask m_GroundLayer;
+    [SerializeField] private Transform _groundCheck;
+    [SerializeField] private float _groundCheckRadius = 0.2f;
+    [SerializeField] private LayerMask _groundLayer;
     // ... functional implementation
 }
 ```

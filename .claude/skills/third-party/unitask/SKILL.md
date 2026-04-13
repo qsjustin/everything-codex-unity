@@ -73,8 +73,8 @@ await UniTask.NextFrame(ct);                                          // Explici
 await UniTask.DelayFrame(5, cancellationToken: ct);                  // Wait N frames
 
 // Condition waits
-await UniTask.WaitUntil(() => m_IsReady, cancellationToken: ct);
-await UniTask.WaitWhile(() => m_IsLoading, cancellationToken: ct);
+await UniTask.WaitUntil(() => _isReady, cancellationToken: ct);
+await UniTask.WaitWhile(() => _isLoading, cancellationToken: ct);
 await UniTask.WaitUntilValueChanged(transform, t => t.position, cancellationToken: ct);
 
 // Unity async operation wrappers
@@ -110,19 +110,19 @@ public class SimpleAsync : MonoBehaviour
 ```csharp
 public class ManagedAsync : MonoBehaviour
 {
-    private CancellationTokenSource m_Cts;
+    private CancellationTokenSource _cts;
 
     private void OnEnable()
     {
-        m_Cts = new CancellationTokenSource();
-        RunLoopAsync(m_Cts.Token).Forget();
+        _cts = new CancellationTokenSource();
+        RunLoopAsync(_cts.Token).Forget();
     }
 
     private void OnDisable()
     {
-        m_Cts?.Cancel();
-        m_Cts?.Dispose();
-        m_Cts = null;
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
     }
 
     private async UniTask RunLoopAsync(CancellationToken ct)
@@ -141,19 +141,19 @@ public class ManagedAsync : MonoBehaviour
 ```csharp
 public class LinkedTokenExample : MonoBehaviour
 {
-    private CancellationTokenSource m_ActionCts;
+    private CancellationTokenSource _actionCts;
 
     public async UniTask PerformActionAsync()
     {
         // Cancel previous action if still running
-        m_ActionCts?.Cancel();
-        m_ActionCts?.Dispose();
-        m_ActionCts = new CancellationTokenSource();
+        _actionCts?.Cancel();
+        _actionCts?.Dispose();
+        _actionCts = new CancellationTokenSource();
 
         // Link with destroy token so it cancels on either condition
         CancellationToken destroyCt = this.GetCancellationTokenOnDestroy();
         CancellationTokenSource linked = CancellationTokenSource.CreateLinkedTokenSource(
-            m_ActionCts.Token, destroyCt);
+            _actionCts.Token, destroyCt);
 
         try
         {
@@ -259,22 +259,22 @@ For wrapping callback-based APIs or creating custom awaitable operations.
 ```csharp
 public class DialogSystem : MonoBehaviour
 {
-    private UniTaskCompletionSource<DialogResult> m_DialogTcs;
+    private UniTaskCompletionSource<DialogResult> _dialogTcs;
 
     public async UniTask<DialogResult> ShowDialogAsync(string message, CancellationToken ct)
     {
-        m_DialogTcs = new UniTaskCompletionSource<DialogResult>();
+        _dialogTcs = new UniTaskCompletionSource<DialogResult>();
 
         // Register cancellation
-        ct.Register(() => m_DialogTcs.TrySetCanceled());
+        ct.Register(() => _dialogTcs.TrySetCanceled());
 
         ShowDialogUI(message);
-        return await m_DialogTcs.Task;
+        return await _dialogTcs.Task;
     }
 
     // Called by UI buttons
-    public void OnConfirmClicked() => m_DialogTcs.TrySetResult(DialogResult.Confirm);
-    public void OnCancelClicked() => m_DialogTcs.TrySetResult(DialogResult.Cancel);
+    public void OnConfirmClicked() => _dialogTcs.TrySetResult(DialogResult.Confirm);
+    public void OnCancelClicked() => _dialogTcs.TrySetResult(DialogResult.Cancel);
 }
 ```
 
@@ -376,18 +376,18 @@ public class GameBootstrap : MonoBehaviour
 ```csharp
 public class EnemyAI : MonoBehaviour
 {
-    private CancellationTokenSource m_Cts;
+    private CancellationTokenSource _cts;
 
     private void OnEnable()
     {
-        m_Cts = new CancellationTokenSource();
-        RunAIAsync(m_Cts.Token).Forget();
+        _cts = new CancellationTokenSource();
+        RunAIAsync(_cts.Token).Forget();
     }
 
     private void OnDisable()
     {
-        m_Cts?.Cancel();
-        m_Cts?.Dispose();
+        _cts?.Cancel();
+        _cts?.Dispose();
     }
 
     private async UniTask RunAIAsync(CancellationToken ct)

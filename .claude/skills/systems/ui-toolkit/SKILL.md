@@ -82,11 +82,11 @@ globs: ["**/*.uxml", "**/*.uss", "**/UIDocument*"]
 ```csharp
 public sealed class MainMenuController : MonoBehaviour
 {
-    [SerializeField] private UIDocument m_Document;
+    [SerializeField] private UIDocument _document;
 
     private void OnEnable()
     {
-        VisualElement root = m_Document.rootVisualElement;
+        VisualElement root = _document.rootVisualElement;
 
         root.Q<Button>("btn-play").clicked += OnPlayClicked;
         root.Q<Button>("btn-settings").clicked += OnSettingsClicked;
@@ -106,7 +106,7 @@ public sealed class MainMenuController : MonoBehaviour
 ## UQuery
 
 ```csharp
-VisualElement root = m_Document.rootVisualElement;
+VisualElement root = _document.rootVisualElement;
 
 // By name
 Button playBtn = root.Q<Button>("btn-play");
@@ -128,9 +128,9 @@ ListView listView = root.Q<ListView>("inventory-list");
 listView.makeItem = () => new Label(); // Create UI element
 listView.bindItem = (element, index) =>
 {
-    ((Label)element).text = m_Items[index].Name;
+    ((Label)element).text = _items[index].Name;
 };
-listView.itemsSource = m_Items;
+listView.itemsSource = _items;
 listView.fixedItemHeight = 40;
 listView.selectionType = SelectionType.Single;
 listView.selectionChanged += OnSelectionChanged;
@@ -141,19 +141,19 @@ listView.selectionChanged += OnSelectionChanged;
 ```csharp
 public sealed class HealthBar : VisualElement
 {
-    private VisualElement m_Fill;
+    private VisualElement _fill;
 
     public float Value
     {
-        set => m_Fill.style.width = new Length(value * 100f, LengthUnit.Percent);
+        set => _fill.style.width = new Length(value * 100f, LengthUnit.Percent);
     }
 
     public HealthBar()
     {
         AddToClassList("health-bar");
-        m_Fill = new VisualElement();
-        m_Fill.AddToClassList("health-fill");
-        Add(m_Fill);
+        _fill = new VisualElement();
+        _fill.AddToClassList("health-fill");
+        Add(_fill);
     }
 
     // Required for UXML instantiation

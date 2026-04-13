@@ -3,17 +3,67 @@
 ## Field Declarations
 
 - `[SerializeField] private` for inspector-exposed fields — never public
-- `private` fields use `m_` prefix: `m_MoveSpeed`, `m_Health`
-- `static` fields use `s_` prefix: `s_Instance`
-- `const` and `static readonly` use `k_` prefix: `k_MaxHealth`, `k_JumpHash`
+- Private/protected fields use `_lowerCamelCase`: `_moveSpeed`, `_health`
+- Public fields use `lowerCamelCase`: `moveSpeed`, `health`
+- Properties (public and private) use `UpperCamelCase`: `MoveSpeed`, `Health`
+- `static readonly` fields use `UpperCamelCase`: `JumpHash`, `DefaultColor`
+- `const` fields use `UPPER_SNAKE_CASE`: `MAX_HEALTH`, `MAX_PLAYER_COUNT`
 - `readonly` for fields set only in constructor or Awake
 
 ```csharp
-[SerializeField] private float m_MoveSpeed = 5f;
-[SerializeField] private Transform m_SpawnPoint;
+[SerializeField] private float _moveSpeed = 5f;
+[SerializeField] private Transform _spawnPoint;
 
-private Rigidbody m_Rigidbody;
-private static readonly int k_JumpHash = Animator.StringToHash("Jump");
+private Rigidbody _rigidbody;
+private static readonly int JumpHash = Animator.StringToHash("Jump");
+private const int MAX_JUMP_COUNT = 3;
+```
+
+## Encapsulation (NON-NEGOTIABLE)
+
+**Minimum visibility principle: everything is `private` unless proven otherwise.**
+
+- Fields: `private` by default. Only use `[SerializeField] private` if the field MUST be configured in the Inspector. Do NOT add `[SerializeField]` speculatively — only when a designer/developer actually needs to tweak that value in the Inspector.
+- Methods: `private` by default. Only make `public` if another class actually calls it. "Might be useful later" is NOT a reason.
+- Properties: `private` by default. Expose a public getter only when another class reads it. Expose a public setter only when another class writes it.
+- Classes/structs: `internal` by default when inside an assembly. Only `public` when consumed by other assemblies.
+- Nested types: `private` unless external access is required.
+
+**The test:** Before making anything non-private, identify the caller. If you can't name a concrete caller in the current codebase, it stays `private`. Agents must not generate speculative public API surface.
+
+```csharp
+// BAD — everything public "just in case"
+public class EnemySystem
+{
+    public EnemyModel Model;                    // Should be private
+    public void Initialize() { }                // Only called internally
+    public int CalculateDamage() { return 5; }  // Only called internally
+    public void TakeDamage(int amount) { }      // Actually called by CombatSystem — this one is fine
+}
+
+// GOOD — minimum viable visibility
+public sealed class EnemySystem
+{
+    private readonly EnemyModel _model;
+    
+    private void Initialize() { }
+    private int CalculateDamage() => 5;
+    public void TakeDamage(int amount) { }  // CombatSystem calls this
+}
+```
+
+**`[SerializeField]` discipline:**
+```csharp
+// BAD — serializing fields that don't need Inspector exposure
+[SerializeField] private int _currentHealth;      // Runtime state, not config — don't serialize
+[SerializeField] private bool _isInitialized;     // Internal flag — don't serialize
+[SerializeField] private Transform _cachedTransform; // Cached ref — don't serialize
+
+// GOOD — only serialize what designers configure
+[SerializeField] private float _moveSpeed = 5f;   // Designer tweaks this in Inspector
+[SerializeField] private GameObject _bulletPrefab; // Set via Inspector reference
+private int _currentHealth;                         // Runtime state — plain private
+private bool _isInitialized;                        // Internal flag — plain private
 ```
 
 ## Types and Naming

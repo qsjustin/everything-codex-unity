@@ -20,15 +20,15 @@ globs: ["**/HyperCasual*.cs", "**/Level*.cs", "**/GameManager*.cs"]
 public sealed class TapController : MonoBehaviour
 {
     [Header("Input")]
-    [SerializeField] private float m_TapForce = 10f;
-    [SerializeField] private float m_HoldForceMultiplier = 0.5f;
+    [SerializeField] private float _tapForce = 10f;
+    [SerializeField] private float _holdForceMultiplier = 0.5f;
 
-    private Rigidbody m_Rb;
-    private bool m_IsTouching;
+    private Rigidbody _rb;
+    private bool _isTouching;
 
     private void Awake()
     {
-        m_Rb = GetComponent<Rigidbody>();
+        _rb = GetComponent<Rigidbody>();
     }
 
     private void Update()
@@ -43,21 +43,21 @@ public sealed class TapController : MonoBehaviour
             OnTap();
         }
 
-        m_IsTouching = touch.press.isPressed;
+        _isTouching = touch.press.isPressed;
     }
 
     private void FixedUpdate()
     {
-        if (m_IsTouching)
+        if (_isTouching)
         {
-            m_Rb.AddForce(Vector3.up * m_HoldForceMultiplier, ForceMode.Acceleration);
+            _rb.AddForce(Vector3.up * _holdForceMultiplier, ForceMode.Acceleration);
         }
     }
 
     private void OnTap()
     {
-        m_Rb.linearVelocity = Vector3.zero;
-        m_Rb.AddForce(Vector3.up * m_TapForce, ForceMode.Impulse);
+        _rb.linearVelocity = Vector3.zero;
+        _rb.AddForce(Vector3.up * _tapForce, ForceMode.Impulse);
     }
 }
 ```
@@ -67,12 +67,12 @@ public sealed class TapController : MonoBehaviour
 ```csharp
 public sealed class SwipeController : MonoBehaviour
 {
-    [SerializeField] private float m_SwipeThreshold = 50f;
-    [SerializeField] private float m_MoveSpeed = 10f;
-    [SerializeField] private float m_LaneSwitchDuration = 0.15f;
+    [SerializeField] private float _swipeThreshold = 50f;
+    [SerializeField] private float _moveSpeed = 10f;
+    [SerializeField] private float _laneSwitchDuration = 0.15f;
 
-    private Vector2 m_TouchStartPos;
-    private bool m_IsSwiping;
+    private Vector2 _touchStartPos;
+    private bool _isSwiping;
 
     private void Update()
     {
@@ -83,16 +83,16 @@ public sealed class SwipeController : MonoBehaviour
 
         if (touch.press.wasPressedThisFrame)
         {
-            m_TouchStartPos = touch.position.ReadValue();
-            m_IsSwiping = true;
+            _touchStartPos = touch.position.ReadValue();
+            _isSwiping = true;
         }
 
-        if (touch.press.wasReleasedThisFrame && m_IsSwiping)
+        if (touch.press.wasReleasedThisFrame && _isSwiping)
         {
-            Vector2 delta = touch.position.ReadValue() - m_TouchStartPos;
-            m_IsSwiping = false;
+            Vector2 delta = touch.position.ReadValue() - _touchStartPos;
+            _isSwiping = false;
 
-            if (delta.magnitude > m_SwipeThreshold)
+            if (delta.magnitude > _swipeThreshold)
             {
                 if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
                 {
@@ -122,41 +122,41 @@ public sealed class SwipeController : MonoBehaviour
 [CreateAssetMenu(menuName = "HyperCasual/Level Config")]
 public sealed class LevelConfig : ScriptableObject
 {
-    [SerializeField] private int m_LevelNumber;
-    [SerializeField] private float m_Speed = 5f;
-    [SerializeField] private float m_ObstacleFrequency = 0.5f;
-    [SerializeField] private Color m_ThemeColor = Color.white;
-    [SerializeField] private int m_TargetScore;
+    [SerializeField] private int _levelNumber;
+    [SerializeField] private float _speed = 5f;
+    [SerializeField] private float _obstacleFrequency = 0.5f;
+    [SerializeField] private Color _themeColor = Color.white;
+    [SerializeField] private int _targetScore;
 
-    public int LevelNumber => m_LevelNumber;
-    public float Speed => m_Speed;
-    public float ObstacleFrequency => m_ObstacleFrequency;
-    public Color ThemeColor => m_ThemeColor;
-    public int TargetScore => m_TargetScore;
+    public int LevelNumber => _levelNumber;
+    public float Speed => _speed;
+    public float ObstacleFrequency => _obstacleFrequency;
+    public Color ThemeColor => _themeColor;
+    public int TargetScore => _targetScore;
 }
 
 public sealed class LevelManager : MonoBehaviour
 {
-    [SerializeField] private LevelConfig[] m_Levels;
+    [SerializeField] private LevelConfig[] _levels;
 
-    private int m_CurrentLevelIndex;
-    private const string k_LevelKey = "CurrentLevel";
+    private int _currentLevelIndex;
+    private const string LEVEL_KEY = "CurrentLevel";
 
     private void Awake()
     {
-        m_CurrentLevelIndex = PlayerPrefs.GetInt(k_LevelKey, 0);
+        _currentLevelIndex = PlayerPrefs.GetInt(LEVEL_KEY, 0);
     }
 
     public LevelConfig GetCurrentLevel()
     {
-        int index = m_CurrentLevelIndex % m_Levels.Length;
-        return m_Levels[index];
+        int index = _currentLevelIndex % _levels.Length;
+        return _levels[index];
     }
 
     public void CompleteLevel()
     {
-        m_CurrentLevelIndex++;
-        PlayerPrefs.SetInt(k_LevelKey, m_CurrentLevelIndex);
+        _currentLevelIndex++;
+        PlayerPrefs.SetInt(LEVEL_KEY, _currentLevelIndex);
         PlayerPrefs.Save();
     }
 }

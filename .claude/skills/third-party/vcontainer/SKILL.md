@@ -45,7 +45,7 @@ using VContainer.Unity;
 
 public class RootLifetimeScope : LifetimeScope
 {
-    [SerializeField] private AudioSettings m_AudioSettings;
+    [SerializeField] private AudioSettings _audioSettings;
 
     protected override void Configure(IContainerBuilder builder)
     {
@@ -55,7 +55,7 @@ public class RootLifetimeScope : LifetimeScope
         builder.Register<AnalyticsService>(Lifetime.Singleton).As<IAnalyticsService>();
 
         // ScriptableObject instance
-        builder.RegisterInstance(m_AudioSettings);
+        builder.RegisterInstance(_audioSettings);
     }
 }
 ```
@@ -65,7 +65,7 @@ public class RootLifetimeScope : LifetimeScope
 ```csharp
 public class GameLifetimeScope : LifetimeScope
 {
-    [SerializeField] private LevelConfig m_LevelConfig;
+    [SerializeField] private LevelConfig _levelConfig;
 
     protected override void Configure(IContainerBuilder builder)
     {
@@ -81,7 +81,7 @@ public class GameLifetimeScope : LifetimeScope
         builder.RegisterComponentInHierarchy<HUDManager>();
 
         // Config data
-        builder.RegisterInstance(m_LevelConfig);
+        builder.RegisterInstance(_levelConfig);
     }
 }
 ```
@@ -94,13 +94,13 @@ Child scopes automatically resolve dependencies from their parent. A `GameLifeti
 // GameFlowController receives IAudioService from Root + ScoreSystem from Game scope
 public class GameFlowController : IStartable, ITickable, IDisposable
 {
-    private readonly IAudioService m_Audio;
-    private readonly ScoreSystem m_Score;
+    private readonly IAudioService _audio;
+    private readonly ScoreSystem _score;
 
     public GameFlowController(IAudioService audio, ScoreSystem score)
     {
-        m_Audio = audio;
-        m_Score = score;
+        _audio = audio;
+        _score = score;
     }
 }
 ```
@@ -116,20 +116,20 @@ builder.Register<ScoreSystem>(Lifetime.Singleton);
 // The class — dependencies are constructor parameters
 public class ScoreSystem
 {
-    private readonly IAudioService m_Audio;
-    private readonly ISaveSystem m_Save;
+    private readonly IAudioService _audio;
+    private readonly ISaveSystem _save;
 
     public ScoreSystem(IAudioService audio, ISaveSystem save)
     {
-        m_Audio = audio;
-        m_Save = save;
+        _audio = audio;
+        _save = save;
     }
 
     public void AddScore(int points)
     {
         // Use injected services
-        m_Audio.PlaySfx("score");
-        m_Save.SetInt("score", points);
+        _audio.PlaySfx("score");
+        _save.SetInt("score", points);
     }
 }
 ```
@@ -166,31 +166,31 @@ builder.RegisterComponentOnNewGameObject<HUDManager>(
 );
 
 // Register existing component reference from LifetimeScope's serialized fields
-[SerializeField] private PlayerController m_Player;
+[SerializeField] private PlayerController _player;
 // In Configure:
-builder.RegisterComponent(m_Player);
+builder.RegisterComponent(_player);
 ```
 
 ```csharp
 // MonoBehaviour with [Inject]
 public class PlayerController : MonoBehaviour
 {
-    private IAudioService m_Audio;
-    private IInputService m_Input;
+    private IAudioService _audio;
+    private IInputService _input;
 
     [Inject]
     public void Construct(IAudioService audio, IInputService input)
     {
-        m_Audio = audio;
-        m_Input = input;
+        _audio = audio;
+        _input = input;
     }
 
     private void Update()
     {
-        if (m_Input.JumpPressed)
+        if (_input.JumpPressed)
         {
             Jump();
-            m_Audio.PlaySfx("jump");
+            _audio.PlaySfx("jump");
         }
     }
 }
@@ -207,9 +207,9 @@ builder.RegisterEntryPoint<GameFlowController>();
 ```csharp
 public class GameFlowController : IStartable, ITickable, IFixedTickable, IDisposable
 {
-    private readonly ScoreSystem m_Score;
+    private readonly ScoreSystem _score;
 
-    public GameFlowController(ScoreSystem score) => m_Score = score;
+    public GameFlowController(ScoreSystem score) => _score = score;
 
     public void Start()
     {
@@ -254,20 +254,20 @@ builder.Register<EnemyFactory>(Lifetime.Scoped);
 // Factory class
 public class EnemyFactory
 {
-    private readonly IObjectResolver m_Container;
-    private readonly EnemySettings m_Settings;
+    private readonly IObjectResolver _container;
+    private readonly EnemySettings _settings;
 
     public EnemyFactory(IObjectResolver container, EnemySettings settings)
     {
-        m_Container = container;
-        m_Settings = settings;
+        _container = container;
+        _settings = settings;
     }
 
     public Enemy Create(EnemyType type)
     {
-        GameObject prefab = m_Settings.GetPrefab(type);
+        GameObject prefab = _settings.GetPrefab(type);
         GameObject instance = Object.Instantiate(prefab);
-        m_Container.InjectGameObject(instance); // Inject into all [Inject] methods
+        _container.InjectGameObject(instance); // Inject into all [Inject] methods
         return instance.GetComponent<Enemy>();
     }
 }
@@ -286,16 +286,16 @@ builder.RegisterFactory<Vector3, Bullet>(container =>
 // Inject the factory
 public class Weapon
 {
-    private readonly Func<Vector3, Bullet> m_CreateBullet;
+    private readonly Func<Vector3, Bullet> _createBullet;
 
     public Weapon(Func<Vector3, Bullet> createBullet)
     {
-        m_CreateBullet = createBullet;
+        _createBullet = createBullet;
     }
 
     public void Fire(Vector3 muzzlePos)
     {
-        Bullet b = m_CreateBullet(muzzlePos);
+        Bullet b = _createBullet(muzzlePos);
     }
 }
 ```
@@ -319,14 +319,14 @@ builder.Register<ScoreTracker>(Lifetime.Scoped);        // One per scene scope
 ```csharp
 public class GameLifetimeScope : LifetimeScope
 {
-    [SerializeField] private GameConfig m_GameConfig;
-    [SerializeField] private EnemyDatabase m_EnemyDatabase;
+    [SerializeField] private GameConfig _gameConfig;
+    [SerializeField] private EnemyDatabase _enemyDatabase;
 
     protected override void Configure(IContainerBuilder builder)
     {
         // Register as instances (not created by container)
-        builder.RegisterInstance(m_GameConfig);
-        builder.RegisterInstance(m_EnemyDatabase).As<IEnemyDatabase>();
+        builder.RegisterInstance(_gameConfig);
+        builder.RegisterInstance(_enemyDatabase).As<IEnemyDatabase>();
     }
 }
 ```
@@ -336,13 +336,13 @@ public class GameLifetimeScope : LifetimeScope
 ```csharp
 public class RoomManager
 {
-    private readonly LifetimeScope m_ParentScope;
+    private readonly LifetimeScope _parentScope;
 
-    public RoomManager(LifetimeScope parentScope) => m_ParentScope = parentScope;
+    public RoomManager(LifetimeScope parentScope) => _parentScope = parentScope;
 
     public LifetimeScope CreateRoomScope(RoomConfig config)
     {
-        return m_ParentScope.CreateChild(builder =>
+        return _parentScope.CreateChild(builder =>
         {
             builder.RegisterInstance(config);
             builder.Register<RoomController>(Lifetime.Scoped);
@@ -393,16 +393,16 @@ builder.RegisterComponentInHierarchy<Player>();
 // BAD — field injection hides dependencies, untestable
 public class BadComponent : MonoBehaviour
 {
-    [Inject] private IAudioService m_Audio;
+    [Inject] private IAudioService _audio;
 }
 
 // GOOD — method injection is explicit
 public class GoodComponent : MonoBehaviour
 {
-    private IAudioService m_Audio;
+    private IAudioService _audio;
 
     [Inject]
-    public void Construct(IAudioService audio) => m_Audio = audio;
+    public void Construct(IAudioService audio) => _audio = audio;
 }
 ```
 

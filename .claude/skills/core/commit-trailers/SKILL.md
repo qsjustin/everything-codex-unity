@@ -77,7 +77,7 @@ Not-tested: score persistence across scene transitions
 
 ### Serialization change
 ```
-Rename m_Speed to m_MoveSpeed on PlayerView
+Rename _speed to _moveSpeed on PlayerView
 
 Added FormerlySerializedAs to preserve prefab overrides.
 All 3 prefab variants verified in inspector.

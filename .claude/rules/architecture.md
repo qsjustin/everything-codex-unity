@@ -22,22 +22,22 @@ public sealed class PlayerModel
 // --- System (plain C#, injected via VContainer, owns the Model) ---
 public sealed class PlayerSystem : IDisposable
 {
-    private readonly PlayerModel m_Model;
-    private readonly IPublisher<PlayerDiedMessage> m_DiedPublisher;
+    private readonly PlayerModel _model;
+    private readonly IPublisher<PlayerDiedMessage> _diedPublisher;
 
     [Inject]
     public PlayerSystem(PlayerModel model, IPublisher<PlayerDiedMessage> diedPublisher)
     {
-        m_Model = model;
-        m_DiedPublisher = diedPublisher;
+        _model = model;
+        _diedPublisher = diedPublisher;
     }
 
     public void TakeDamage(int amount)
     {
-        m_Model.Health.Value = Mathf.Max(0, m_Model.Health.Value - amount);
-        if (m_Model.IsDead)
+        _model.Health.Value = Mathf.Max(0, _model.Health.Value - amount);
+        if (_model.IsDead)
         {
-            m_DiedPublisher.Publish(new PlayerDiedMessage());
+            _diedPublisher.Publish(new PlayerDiedMessage());
         }
     }
 
@@ -47,25 +47,25 @@ public sealed class PlayerSystem : IDisposable
 // --- View (MonoBehaviour, observes Model, no logic) ---
 public sealed class PlayerView : MonoBehaviour
 {
-    [SerializeField] private Slider m_HealthBar;
+    [SerializeField] private Slider _healthBar;
 
-    private PlayerModel m_Model;
-    private readonly CompositeDisposable m_Disposables = new();
+    private PlayerModel _model;
+    private readonly CompositeDisposable _disposables = new();
 
     [Inject]
     public void Construct(PlayerModel model)
     {
-        m_Model = model;
+        _model = model;
     }
 
     private void Start()
     {
-        m_Model.Health
-            .Subscribe(hp => m_HealthBar.value = hp / 100f)
-            .AddTo(m_Disposables);
+        _model.Health
+            .Subscribe(hp => _healthBar.value = hp / 100f)
+            .AddTo(_disposables);
     }
 
-    private void OnDestroy() => m_Disposables.Dispose();
+    private void OnDestroy() => _disposables.Dispose();
 }
 ```
 
@@ -146,17 +146,17 @@ public readonly struct DamageDealtMessage
 // --- Publishing (System → System or System → View) ---
 public sealed class CombatSystem : IDisposable
 {
-    private readonly IPublisher<DamageDealtMessage> m_DamagePublisher;
+    private readonly IPublisher<DamageDealtMessage> _damagePublisher;
 
     [Inject]
     public CombatSystem(IPublisher<DamageDealtMessage> damagePublisher)
     {
-        m_DamagePublisher = damagePublisher;
+        _damagePublisher = damagePublisher;
     }
 
     public void DealDamage(int amount, Vector3 position)
     {
-        m_DamagePublisher.Publish(new DamageDealtMessage(amount, position));
+        _damagePublisher.Publish(new DamageDealtMessage(amount, position));
     }
 
     public void Dispose() { }
@@ -165,12 +165,12 @@ public sealed class CombatSystem : IDisposable
 // --- Subscribing (in System or View) ---
 public sealed class DamagePopupSystem : IDisposable
 {
-    private readonly IDisposable m_Subscription;
+    private readonly IDisposable _subscription;
 
     [Inject]
     public DamagePopupSystem(ISubscriber<DamageDealtMessage> damageSubscriber)
     {
-        m_Subscription = damageSubscriber.Subscribe(OnDamageDealt);
+        _subscription = damageSubscriber.Subscribe(OnDamageDealt);
     }
 
     private void OnDamageDealt(DamageDealtMessage message)
@@ -178,7 +178,7 @@ public sealed class DamagePopupSystem : IDisposable
         // spawn popup at message.Position showing message.Amount
     }
 
-    public void Dispose() => m_Subscription.Dispose();
+    public void Dispose() => _subscription.Dispose();
 }
 ```
 
@@ -196,14 +196,14 @@ UniTask replaces coroutines entirely. No `StartCoroutine`, no `IEnumerator`, no 
 ```csharp
 public sealed class WaveSpawnerSystem : IDisposable
 {
-    private readonly CancellationTokenSource m_Cts = new();
+    private readonly CancellationTokenSource _cts = new();
 
     public async UniTaskVoid StartSpawning()
     {
         for (int waveIndex = 0; waveIndex < 10; waveIndex++)
         {
-            await SpawnWave(waveIndex, m_Cts.Token);
-            await UniTask.Delay(TimeSpan.FromSeconds(5), cancellationToken: m_Cts.Token);
+            await SpawnWave(waveIndex, _cts.Token);
+            await UniTask.Delay(TimeSpan.FromSeconds(5), cancellationToken: _cts.Token);
         }
     }
 
@@ -217,7 +217,7 @@ public sealed class WaveSpawnerSystem : IDisposable
         }
     }
 
-    public void Dispose() => m_Cts.Cancel();
+    public void Dispose() => _cts.Cancel();
 }
 ```
 
@@ -245,10 +245,10 @@ Items, abilities, enemy configs, level data — all should be ScriptableObjects:
 [CreateAssetMenu(menuName = "Game/Weapon Definition")]
 public sealed class WeaponDefinition : ScriptableObject
 {
-    [SerializeField] private string m_DisplayName;
-    [SerializeField] private float m_Damage;
-    [SerializeField] private float m_FireRate;
-    [SerializeField] private GameObject m_Prefab;
+    [SerializeField] private string _displayName;
+    [SerializeField] private float _damage;
+    [SerializeField] private float _fireRate;
+    [SerializeField] private GameObject _prefab;
 }
 ```
 

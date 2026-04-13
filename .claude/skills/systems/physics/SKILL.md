@@ -11,16 +11,16 @@ globs: ["**/*Physics*.cs", "**/*Collider*.cs", "**/*Rigidbody*.cs", "**/*Trigger
 All physics code goes in `FixedUpdate`. All input reading goes in `Update`.
 
 ```csharp
-private Vector2 m_MoveInput;
+private Vector2 _moveInput;
 
 private void Update()
 {
-    m_MoveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+    _moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 }
 
 private void FixedUpdate()
 {
-    m_Rigidbody.AddForce(m_MoveInput * m_Force);
+    _rigidbody.AddForce(_moveInput * _force);
 }
 ```
 
@@ -28,22 +28,22 @@ private void FixedUpdate()
 
 ```csharp
 // Pre-allocate buffers
-private static readonly RaycastHit[] s_HitBuffer = new RaycastHit[16];
-private static readonly Collider[] s_OverlapBuffer = new Collider[32];
+private static readonly RaycastHit[] _hitBuffer = new RaycastHit[16];
+private static readonly Collider[] _overlapBuffer = new Collider[32];
 
 // Raycast
-int hitCount = Physics.RaycastNonAlloc(origin, direction, s_HitBuffer, maxDistance, layerMask);
+int hitCount = Physics.RaycastNonAlloc(origin, direction, _hitBuffer, maxDistance, layerMask);
 for (int i = 0; i < hitCount; i++)
 {
-    RaycastHit hit = s_HitBuffer[i];
+    RaycastHit hit = _hitBuffer[i];
     // Process hit
 }
 
 // Overlap sphere (area detection)
-int overlapCount = Physics.OverlapSphereNonAlloc(center, radius, s_OverlapBuffer, layerMask);
+int overlapCount = Physics.OverlapSphereNonAlloc(center, radius, _overlapBuffer, layerMask);
 
 // Sphere cast (fat raycast)
-int castCount = Physics.SphereCastNonAlloc(origin, radius, direction, s_HitBuffer, maxDistance, layerMask);
+int castCount = Physics.SphereCastNonAlloc(origin, radius, direction, _hitBuffer, maxDistance, layerMask);
 ```
 
 ## Layer Collision Matrix

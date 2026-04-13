@@ -71,11 +71,11 @@ State-Driven Camera:
 
 ```csharp
 // Source: generates impulse
-[SerializeField] private CinemachineImpulseSource m_ImpulseSource;
+[SerializeField] private CinemachineImpulseSource _impulseSource;
 
 public void OnExplosion()
 {
-    m_ImpulseSource.GenerateImpulse();
+    _impulseSource.GenerateImpulse();
 }
 ```
 
@@ -91,12 +91,12 @@ Add `CinemachineBasicMultiChannelPerlin` to virtual camera:
 
 ```csharp
 // Switch cameras by priority
-m_CombatCamera.Priority = 20; // Higher = active
-m_ExploreCamera.Priority = 10;
+_combatCamera.Priority = 20; // Higher = active
+_exploreCamera.Priority = 10;
 
 // Change follow target
-m_VirtualCamera.Follow = newTarget;
-m_VirtualCamera.LookAt = newTarget;
+_virtualCamera.Follow = newTarget;
+_virtualCamera.LookAt = newTarget;
 ```
 
 ## Confiner

@@ -31,20 +31,20 @@ You build UI screens — writing the code AND setting up the visual hierarchy vi
 ```csharp
 public sealed class MainMenuScreen : MonoBehaviour
 {
-    [SerializeField] private Button m_PlayButton;
-    [SerializeField] private Button m_SettingsButton;
-    [SerializeField] private TextMeshProUGUI m_TitleText;
+    [SerializeField] private Button _playButton;
+    [SerializeField] private Button _settingsButton;
+    [SerializeField] private TextMeshProUGUI _titleText;
 
     private void Awake()
     {
-        m_PlayButton.onClick.AddListener(OnPlayClicked);
-        m_SettingsButton.onClick.AddListener(OnSettingsClicked);
+        _playButton.onClick.AddListener(OnPlayClicked);
+        _settingsButton.onClick.AddListener(OnSettingsClicked);
     }
 
     private void OnDestroy()
     {
-        m_PlayButton.onClick.RemoveListener(OnPlayClicked);
-        m_SettingsButton.onClick.RemoveListener(OnSettingsClicked);
+        _playButton.onClick.RemoveListener(OnPlayClicked);
+        _settingsButton.onClick.RemoveListener(OnSettingsClicked);
     }
 
     private void OnPlayClicked() { /* ... */ }
@@ -109,11 +109,11 @@ batch_execute:
 ```csharp
 public sealed class MainMenuController : MonoBehaviour
 {
-    [SerializeField] private UIDocument m_Document;
+    [SerializeField] private UIDocument _document;
 
     private void OnEnable()
     {
-        VisualElement root = m_Document.rootVisualElement;
+        VisualElement root = _document.rootVisualElement;
         root.Q<Button>("play-button").clicked += OnPlayClicked;
         root.Q<Button>("settings-button").clicked += OnSettingsClicked;
     }

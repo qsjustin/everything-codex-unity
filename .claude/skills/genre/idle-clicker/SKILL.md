@@ -13,43 +13,43 @@ Standard float/double loses precision at large values. Use a custom big number o
 ```csharp
 public readonly struct BigNumber
 {
-    private readonly double m_Value;
-    private readonly int m_Exponent;
+    private readonly double _value;
+    private readonly int _exponent;
 
     public BigNumber(double value, int exponent = 0)
     {
-        m_Value = value;
-        m_Exponent = exponent;
+        _value = value;
+        _exponent = exponent;
         // Normalize would be called here
     }
 
     public static BigNumber operator +(BigNumber a, BigNumber b)
     {
-        if (a.m_Exponent == b.m_Exponent)
+        if (a._exponent == b._exponent)
         {
-            return new BigNumber(a.m_Value + b.m_Value, a.m_Exponent);
+            return new BigNumber(a._value + b._value, a._exponent);
         }
-        int diff = a.m_Exponent - b.m_Exponent;
+        int diff = a._exponent - b._exponent;
         if (diff > 15) return a; // b is negligible
         if (diff < -15) return b;
         if (diff > 0)
         {
-            return new BigNumber(a.m_Value + b.m_Value / System.Math.Pow(10, diff), a.m_Exponent);
+            return new BigNumber(a._value + b._value / System.Math.Pow(10, diff), a._exponent);
         }
-        return new BigNumber(b.m_Value + a.m_Value / System.Math.Pow(10, -diff), b.m_Exponent);
+        return new BigNumber(b._value + a._value / System.Math.Pow(10, -diff), b._exponent);
     }
 
     public string ToFormattedString()
     {
         // 1.23K, 4.56M, 7.89B, 1.23T, etc.
         string[] suffixes = { "", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc" };
-        int tier = m_Exponent / 3;
+        int tier = _exponent / 3;
         if (tier < suffixes.Length)
         {
-            double displayValue = m_Value * System.Math.Pow(10, m_Exponent % 3);
+            double displayValue = _value * System.Math.Pow(10, _exponent % 3);
             return $"{displayValue:F2}{suffixes[tier]}";
         }
-        return $"{m_Value:F2}e{m_Exponent}";
+        return $"{_value:F2}e{_exponent}";
     }
 }
 ```
@@ -60,24 +60,24 @@ public readonly struct BigNumber
 [CreateAssetMenu(menuName = "Idle/Currency Definition")]
 public sealed class CurrencyDefinition : ScriptableObject
 {
-    [SerializeField] private string m_CurrencyId;
-    [SerializeField] private string m_DisplayName;
-    [SerializeField] private Sprite m_Icon;
+    [SerializeField] private string _currencyId;
+    [SerializeField] private string _displayName;
+    [SerializeField] private Sprite _icon;
 
-    public string CurrencyId => m_CurrencyId;
-    public string DisplayName => m_DisplayName;
-    public Sprite Icon => m_Icon;
+    public string CurrencyId => _currencyId;
+    public string DisplayName => _displayName;
+    public Sprite Icon => _icon;
 }
 
 public sealed class CurrencyManager : MonoBehaviour
 {
-    private readonly Dictionary<string, double> m_Currencies = new();
+    private readonly Dictionary<string, double> _currencies = new();
 
     public event System.Action<string, double> OnCurrencyChanged;
 
     public double GetAmount(string currencyId)
     {
-        m_Currencies.TryGetValue(currencyId, out double amount);
+        _currencies.TryGetValue(currencyId, out double amount);
         return amount;
     }
 
@@ -88,19 +88,19 @@ public sealed class CurrencyManager : MonoBehaviour
 
     public void Add(string currencyId, double amount)
     {
-        if (!m_Currencies.ContainsKey(currencyId))
+        if (!_currencies.ContainsKey(currencyId))
         {
-            m_Currencies[currencyId] = 0;
+            _currencies[currencyId] = 0;
         }
-        m_Currencies[currencyId] += amount;
-        OnCurrencyChanged?.Invoke(currencyId, m_Currencies[currencyId]);
+        _currencies[currencyId] += amount;
+        OnCurrencyChanged?.Invoke(currencyId, _currencies[currencyId]);
     }
 
     public bool Spend(string currencyId, double cost)
     {
         if (!CanAfford(currencyId, cost)) return false;
-        m_Currencies[currencyId] -= cost;
-        OnCurrencyChanged?.Invoke(currencyId, m_Currencies[currencyId]);
+        _currencies[currencyId] -= cost;
+        OnCurrencyChanged?.Invoke(currencyId, _currencies[currencyId]);
         return true;
     }
 }
@@ -112,31 +112,31 @@ public sealed class CurrencyManager : MonoBehaviour
 [CreateAssetMenu(menuName = "Idle/Upgrade Definition")]
 public sealed class UpgradeDefinition : ScriptableObject
 {
-    [SerializeField] private string m_UpgradeId;
-    [SerializeField] private string m_DisplayName;
-    [SerializeField] private string m_CurrencyId;
-    [SerializeField] private double m_BaseCost = 10;
-    [SerializeField] private float m_CostMultiplier = 1.15f;
-    [SerializeField] private int m_MaxLevel = -1; // -1 = unlimited
-    [SerializeField] private double m_BaseEffect = 1;
-    [SerializeField] private float m_EffectMultiplier = 1.0f;
+    [SerializeField] private string _upgradeId;
+    [SerializeField] private string _displayName;
+    [SerializeField] private string _currencyId;
+    [SerializeField] private double _baseCost = 10;
+    [SerializeField] private float _costMultiplier = 1.15f;
+    [SerializeField] private int _maxLevel = -1; // -1 = unlimited
+    [SerializeField] private double _baseEffect = 1;
+    [SerializeField] private float _effectMultiplier = 1.0f;
 
-    public string UpgradeId => m_UpgradeId;
-    public string DisplayName => m_DisplayName;
+    public string UpgradeId => _upgradeId;
+    public string DisplayName => _displayName;
 
     public double GetCost(int currentLevel)
     {
-        return m_BaseCost * System.Math.Pow(m_CostMultiplier, currentLevel);
+        return _baseCost * System.Math.Pow(_costMultiplier, currentLevel);
     }
 
     public double GetEffect(int currentLevel)
     {
-        return m_BaseEffect + (m_EffectMultiplier * currentLevel);
+        return _baseEffect + (_effectMultiplier * currentLevel);
     }
 
     public bool IsMaxed(int currentLevel)
     {
-        return m_MaxLevel >= 0 && currentLevel >= m_MaxLevel;
+        return _maxLevel >= 0 && currentLevel >= _maxLevel;
     }
 }
 ```
@@ -146,27 +146,27 @@ public sealed class UpgradeDefinition : ScriptableObject
 ```csharp
 public sealed class OfflineProgressCalculator : MonoBehaviour
 {
-    [SerializeField] private float m_OfflineEfficiency = 0.5f; // 50% of online rate
-    [SerializeField] private float m_MaxOfflineHours = 8f;
+    [SerializeField] private float _offlineEfficiency = 0.5f; // 50% of online rate
+    [SerializeField] private float _maxOfflineHours = 8f;
 
-    private const string k_LastPlayedKey = "LastPlayedTime";
+    private const string LAST_PLAYED_KEY = "LastPlayedTime";
 
     public double CalculateOfflineEarnings(double perSecondRate)
     {
-        string lastPlayed = PlayerPrefs.GetString(k_LastPlayedKey, "");
+        string lastPlayed = PlayerPrefs.GetString(LAST_PLAYED_KEY, "");
         if (string.IsNullOrEmpty(lastPlayed)) return 0;
 
         long binary = long.Parse(lastPlayed);
         System.DateTime lastTime = System.DateTime.FromBinary(binary);
         System.TimeSpan elapsed = System.DateTime.UtcNow - lastTime;
 
-        double seconds = System.Math.Min(elapsed.TotalSeconds, m_MaxOfflineHours * 3600);
-        return perSecondRate * seconds * m_OfflineEfficiency;
+        double seconds = System.Math.Min(elapsed.TotalSeconds, _maxOfflineHours * 3600);
+        return perSecondRate * seconds * _offlineEfficiency;
     }
 
     public void SaveExitTime()
     {
-        PlayerPrefs.SetString(k_LastPlayedKey, System.DateTime.UtcNow.ToBinary().ToString());
+        PlayerPrefs.SetString(LAST_PLAYED_KEY, System.DateTime.UtcNow.ToBinary().ToString());
         PlayerPrefs.Save();
     }
 
@@ -187,19 +187,19 @@ public sealed class OfflineProgressCalculator : MonoBehaviour
 ```csharp
 public sealed class PrestigeSystem : MonoBehaviour
 {
-    [SerializeField] private double m_PrestigeThreshold = 1000000;
-    [SerializeField] private string m_PrimaryCurrencyId = "gold";
-    [SerializeField] private string m_PrestigeCurrencyId = "gems";
+    [SerializeField] private double _prestigeThreshold = 1000000;
+    [SerializeField] private string _primaryCurrencyId = "gold";
+    [SerializeField] private string _prestigeCurrencyId = "gems";
 
-    [SerializeField] private CurrencyManager m_CurrencyManager;
+    [SerializeField] private CurrencyManager _currencyManager;
 
     public int PrestigeCount { get; private set; }
 
     public double CalculatePrestigeReward()
     {
-        double total = m_CurrencyManager.GetAmount(m_PrimaryCurrencyId);
-        if (total < m_PrestigeThreshold) return 0;
-        return System.Math.Floor(System.Math.Sqrt(total / m_PrestigeThreshold));
+        double total = _currencyManager.GetAmount(_primaryCurrencyId);
+        if (total < _prestigeThreshold) return 0;
+        return System.Math.Floor(System.Math.Sqrt(total / _prestigeThreshold));
     }
 
     public bool CanPrestige()
@@ -213,7 +213,7 @@ public sealed class PrestigeSystem : MonoBehaviour
         if (reward <= 0) return;
 
         // Award prestige currency
-        m_CurrencyManager.Add(m_PrestigeCurrencyId, reward);
+        _currencyManager.Add(_prestigeCurrencyId, reward);
         PrestigeCount++;
 
         // Reset primary progress

@@ -27,10 +27,10 @@ Ask which framework the project uses, or detect from packages:
 ```csharp
 public sealed class PlayerNetworkController : NetworkBehaviour
 {
-    [SerializeField] private float m_MoveSpeed = 5f;
+    [SerializeField] private float _moveSpeed = 5f;
 
     // Synced variable — server authoritative
-    private NetworkVariable<Vector3> m_NetworkPosition = new(
+    private NetworkVariable<Vector3> _networkPosition = new(
         writePerm: NetworkVariableWritePermission.Server);
 
     public override void OnNetworkSpawn()
@@ -54,8 +54,8 @@ public sealed class PlayerNetworkController : NetworkBehaviour
     private void MoveServerRpc(Vector3 input)
     {
         // Server validates and applies movement
-        transform.position += input * m_MoveSpeed * Time.deltaTime;
-        m_NetworkPosition.Value = transform.position;
+        transform.position += input * _moveSpeed * Time.deltaTime;
+        _networkPosition.Value = transform.position;
     }
 }
 ```

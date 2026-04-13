@@ -17,13 +17,13 @@ private void Update()
 }
 
 // GOOD — cache in Awake
-private Camera m_MainCamera;
-private Rigidbody m_Rigidbody;
+private Camera _mainCamera;
+private Rigidbody _rigidbody;
 
 private void Awake()
 {
-    m_MainCamera = Camera.main;
-    m_Rigidbody = GetComponent<Rigidbody>();
+    _mainCamera = Camera.main;
+    _rigidbody = GetComponent<Rigidbody>();
 }
 ```
 
@@ -38,7 +38,7 @@ Cache these in Awake — NEVER call in Update:
 | Allocates | Use Instead |
 |-----------|------------|
 | `new List<T>()` in Update | Pre-allocate, reuse with `.Clear()` |
-| `new WaitForSeconds(n)` | Cache as field: `WaitForSeconds m_Wait = new(0.5f)` |
+| `new WaitForSeconds(n)` | Cache as field: `WaitForSeconds _wait = new(0.5f)` |
 | `string + string` | `StringBuilder` or `string.Format` |
 | `foreach` on non-List | `for` loop with index |
 | `LINQ` (`.Where`, `.Select`, `.Any`) | Manual loops |
@@ -50,7 +50,7 @@ Cache these in Awake — NEVER call in Update:
 ## Physics
 
 - Use non-allocating variants: `OverlapSphereNonAlloc`, `RaycastNonAlloc`, `SphereCastNonAlloc`
-- Pre-allocate result arrays: `private RaycastHit[] m_HitBuffer = new RaycastHit[16]`
+- Pre-allocate result arrays: `private RaycastHit[] _hitBuffer = new RaycastHit[16]`
 - Physics queries in `FixedUpdate`, not `Update`
 
 ## Object Lifecycle

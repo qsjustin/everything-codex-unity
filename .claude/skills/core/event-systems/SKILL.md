@@ -26,15 +26,15 @@ public sealed class HealthSystem : MonoBehaviour
     public event System.Action<float, float> OnHealthChanged; // current, max
     public event System.Action OnDied;
 
-    [SerializeField] private float m_MaxHealth = 100f;
-    private float m_CurrentHealth;
+    [SerializeField] private float _maxHealth = 100f;
+    private float _currentHealth;
 
     public void TakeDamage(float amount)
     {
-        m_CurrentHealth = Mathf.Max(0f, m_CurrentHealth - amount);
-        OnHealthChanged?.Invoke(m_CurrentHealth, m_MaxHealth);
+        _currentHealth = Mathf.Max(0f, _currentHealth - amount);
+        OnHealthChanged?.Invoke(_currentHealth, _maxHealth);
 
-        if (m_CurrentHealth <= 0f)
+        if (_currentHealth <= 0f)
         {
             OnDied?.Invoke();
         }
@@ -44,18 +44,18 @@ public sealed class HealthSystem : MonoBehaviour
 // Subscriber
 public sealed class HealthBar : MonoBehaviour
 {
-    [SerializeField] private HealthSystem m_Health;
+    [SerializeField] private HealthSystem _health;
 
     private void OnEnable()
     {
-        m_Health.OnHealthChanged += UpdateBar;
-        m_Health.OnDied += HandleDeath;
+        _health.OnHealthChanged += UpdateBar;
+        _health.OnDied += HandleDeath;
     }
 
     private void OnDisable()
     {
-        m_Health.OnHealthChanged -= UpdateBar;
-        m_Health.OnDied -= HandleDeath;
+        _health.OnHealthChanged -= UpdateBar;
+        _health.OnDied -= HandleDeath;
     }
 
     private void UpdateBar(float current, float max)
@@ -79,11 +79,11 @@ public sealed class HealthBar : MonoBehaviour
 
 ```csharp
 // GOOD — symmetric subscribe/unsubscribe
-private void OnEnable() => m_Source.OnEvent += HandleEvent;
-private void OnDisable() => m_Source.OnEvent -= HandleEvent;
+private void OnEnable() => _source.OnEvent += HandleEvent;
+private void OnDisable() => _source.OnEvent -= HandleEvent;
 
 // BAD — memory leak if object is destroyed or deactivated
-private void Start() => m_Source.OnEvent += HandleEvent;
+private void Start() => _source.OnEvent += HandleEvent;
 // No unsubscribe → delegate holds reference → object can't be GC'd
 ```
 
@@ -96,13 +96,13 @@ See the `scriptable-objects` skill for the full pattern. Quick reference:
 // Wire same asset to publisher AND subscriber via [SerializeField]
 
 // Publisher
-[SerializeField] private VoidEventChannel m_OnPlayerDied;
-m_OnPlayerDied.Raise();
+[SerializeField] private VoidEventChannel _onPlayerDied;
+_onPlayerDied.Raise();
 
 // Subscriber (completely decoupled — doesn't know about publisher)
-[SerializeField] private VoidEventChannel m_OnPlayerDied;
-private void OnEnable() => m_OnPlayerDied.Subscribe(HandlePlayerDied);
-private void OnDisable() => m_OnPlayerDied.Unsubscribe(HandlePlayerDied);
+[SerializeField] private VoidEventChannel _onPlayerDied;
+private void OnEnable() => _onPlayerDied.Subscribe(HandlePlayerDied);
+private void OnDisable() => _onPlayerDied.Unsubscribe(HandlePlayerDied);
 ```
 
 ## UnityEvent (Designer-Configurable)
@@ -110,11 +110,11 @@ private void OnDisable() => m_OnPlayerDied.Unsubscribe(HandlePlayerDied);
 ```csharp
 public sealed class InteractableObject : MonoBehaviour
 {
-    [SerializeField] private UnityEvent m_OnInteract;
+    [SerializeField] private UnityEvent _onInteract;
 
     public void Interact()
     {
-        m_OnInteract?.Invoke(); // Designers wire responses in Inspector
+        _onInteract?.Invoke(); // Designers wire responses in Inspector
     }
 }
 ```

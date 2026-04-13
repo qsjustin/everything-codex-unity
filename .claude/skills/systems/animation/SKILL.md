@@ -11,19 +11,19 @@ globs: ["**/*.controller", "**/*Anim*.cs", "**/*.anim"]
 ### Parameters
 ```csharp
 // Cache hash IDs — NEVER use string version in Update
-private static readonly int k_SpeedHash = Animator.StringToHash("Speed");
-private static readonly int k_JumpHash = Animator.StringToHash("Jump");
-private static readonly int k_IsGroundedHash = Animator.StringToHash("IsGrounded");
-private static readonly int k_AttackHash = Animator.StringToHash("Attack");
+private static readonly int SpeedHash = Animator.StringToHash("Speed");
+private static readonly int JumpHash = Animator.StringToHash("Jump");
+private static readonly int IsGroundedHash = Animator.StringToHash("IsGrounded");
+private static readonly int AttackHash = Animator.StringToHash("Attack");
 
 private void Update()
 {
-    m_Animator.SetFloat(k_SpeedHash, m_CurrentSpeed);
-    m_Animator.SetBool(k_IsGroundedHash, m_IsGrounded);
+    _animator.SetFloat(SpeedHash, _currentSpeed);
+    _animator.SetBool(IsGroundedHash, _isGrounded);
 }
 
 // Triggers: fire once, auto-reset
-public void Attack() => m_Animator.SetTrigger(k_AttackHash);
+public void Attack() => _animator.SetTrigger(AttackHash);
 ```
 
 ### Transition Settings
@@ -71,11 +71,11 @@ public sealed class AttackStateBehavior : StateMachineBehaviour
 private void OnAnimatorMove()
 {
     // Use animation's root motion for position
-    Vector3 deltaPosition = m_Animator.deltaPosition;
+    Vector3 deltaPosition = _animator.deltaPosition;
     transform.position += deltaPosition;
 
     // Use animation's rotation
-    transform.rotation *= m_Animator.deltaRotation;
+    transform.rotation *= _animator.deltaRotation;
 }
 ```
 
@@ -86,7 +86,7 @@ Call methods from specific frames in animation clips:
 // Called from animation event on frame 12
 public void OnFootstep()
 {
-    m_AudioSource.PlayOneShot(m_FootstepClip);
+    _audioSource.PlayOneShot(_footstepClip);
 }
 
 public void OnAttackHit()
@@ -100,15 +100,15 @@ public void OnAttackHit()
 ```csharp
 private void OnAnimatorIK(int layerIndex)
 {
-    if (m_LookTarget != null)
+    if (_lookTarget != null)
     {
-        m_Animator.SetLookAtWeight(1f, 0.3f, 0.6f, 1f);
-        m_Animator.SetLookAtPosition(m_LookTarget.position);
+        _animator.SetLookAtWeight(1f, 0.3f, 0.6f, 1f);
+        _animator.SetLookAtPosition(_lookTarget.position);
     }
 
     // Foot IK for uneven terrain
-    m_Animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 1f);
-    m_Animator.SetIKPosition(AvatarIKGoal.LeftFoot, m_LeftFootTarget);
+    _animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 1f);
+    _animator.SetIKPosition(AvatarIKGoal.LeftFoot, _leftFootTarget);
 }
 ```
 

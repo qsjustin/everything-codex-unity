@@ -87,7 +87,7 @@ Present a structured summary:
 
 ### Auto-Fixed (iteration 1)
 - `PlayerController.cs:45` — replaced `?.` with `== null` check
-- `EnemySpawner.cs:12` — added `[FormerlySerializedAs("m_SpawnRate")]`
+- `EnemySpawner.cs:12` — added `[FormerlySerializedAs("_spawnRate")]`
 
 ### Auto-Fixed (iteration 2)
 - `PlayerController.cs:67` — cached GetComponent<Rigidbody>() in Awake

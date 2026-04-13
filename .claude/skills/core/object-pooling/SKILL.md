@@ -15,32 +15,32 @@ using UnityEngine.Pool;
 
 public sealed class ProjectilePool : MonoBehaviour
 {
-    [SerializeField] private Projectile m_Prefab;
-    [SerializeField] private int m_DefaultCapacity = 20;
-    [SerializeField] private int m_MaxSize = 100;
+    [SerializeField] private Projectile _prefab;
+    [SerializeField] private int _defaultCapacity = 20;
+    [SerializeField] private int _maxSize = 100;
 
-    private ObjectPool<Projectile> m_Pool;
+    private ObjectPool<Projectile> _pool;
 
     private void Awake()
     {
-        m_Pool = new ObjectPool<Projectile>(
+        _pool = new ObjectPool<Projectile>(
             createFunc: CreateProjectile,
             actionOnGet: OnGetProjectile,
             actionOnRelease: OnReleaseProjectile,
             actionOnDestroy: OnDestroyProjectile,
             collectionCheck: false,
-            defaultCapacity: m_DefaultCapacity,
-            maxSize: m_MaxSize
+            defaultCapacity: _defaultCapacity,
+            maxSize: _maxSize
         );
     }
 
-    public Projectile Get() => m_Pool.Get();
+    public Projectile Get() => _pool.Get();
 
-    public void Release(Projectile projectile) => m_Pool.Release(projectile);
+    public void Release(Projectile projectile) => _pool.Release(projectile);
 
     private Projectile CreateProjectile()
     {
-        Projectile projectile = Instantiate(m_Prefab);
+        Projectile projectile = Instantiate(_prefab);
         projectile.SetPool(this);
         return projectile;
     }
@@ -64,13 +64,13 @@ public sealed class ProjectilePool : MonoBehaviour
 // Projectile returns itself to pool
 public sealed class Projectile : MonoBehaviour
 {
-    private ProjectilePool m_Pool;
+    private ProjectilePool _pool;
 
-    public void SetPool(ProjectilePool pool) => m_Pool = pool;
+    public void SetPool(ProjectilePool pool) => _pool = pool;
 
     public void ReturnToPool()
     {
-        m_Pool.Release(this);
+        _pool.Release(this);
     }
 }
 ```
@@ -84,13 +84,13 @@ private void Start()
 {
     // Pre-warm the pool
     List<Projectile> temp = new List<Projectile>();
-    for (int i = 0; i < m_DefaultCapacity; i++)
+    for (int i = 0; i < _defaultCapacity; i++)
     {
-        temp.Add(m_Pool.Get());
+        temp.Add(_pool.Get());
     }
     for (int i = 0; i < temp.Count; i++)
     {
-        m_Pool.Release(temp[i]);
+        _pool.Release(temp[i]);
     }
     temp.Clear();
 }
@@ -141,13 +141,13 @@ private void OnReleaseProjectile(Projectile projectile)
 ```csharp
 public sealed class PoolManager : MonoBehaviour
 {
-    private readonly Dictionary<GameObject, ObjectPool<GameObject>> m_Pools = new();
+    private readonly Dictionary<GameObject, ObjectPool<GameObject>> _pools = new();
 
     public GameObject Get(GameObject prefab, Vector3 position, Quaternion rotation)
     {
-        if (!m_Pools.ContainsKey(prefab))
+        if (!_pools.ContainsKey(prefab))
         {
-            m_Pools[prefab] = new ObjectPool<GameObject>(
+            _pools[prefab] = new ObjectPool<GameObject>(
                 () => Instantiate(prefab),
                 obj => obj.SetActive(true),
                 obj => obj.SetActive(false),
@@ -156,14 +156,14 @@ public sealed class PoolManager : MonoBehaviour
             );
         }
 
-        GameObject obj = m_Pools[prefab].Get();
+        GameObject obj = _pools[prefab].Get();
         obj.transform.SetPositionAndRotation(position, rotation);
         return obj;
     }
 
     public void Release(GameObject prefab, GameObject instance)
     {
-        m_Pools[prefab].Release(instance);
+        _pools[prefab].Release(instance);
     }
 }
 ```
@@ -177,6 +177,6 @@ Don't forget to pool `WaitForSeconds`:
 yield return new WaitForSeconds(0.5f);
 
 // GOOD — cache and reuse
-private readonly WaitForSeconds m_HalfSecond = new WaitForSeconds(0.5f);
-yield return m_HalfSecond;
+private readonly WaitForSeconds _halfSecond = new WaitForSeconds(0.5f);
+yield return _halfSecond;
 ```

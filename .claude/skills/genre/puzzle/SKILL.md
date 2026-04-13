@@ -17,21 +17,21 @@ public interface IGameCommand
 
 public sealed class UndoManager
 {
-    private readonly Stack<IGameCommand> m_UndoStack = new();
-    private readonly int m_MaxUndoSteps;
+    private readonly Stack<IGameCommand> _undoStack = new();
+    private readonly int _maxUndoSteps;
 
     public UndoManager(int maxSteps = 50)
     {
-        m_MaxUndoSteps = maxSteps;
+        _maxUndoSteps = maxSteps;
     }
 
-    public int UndoCount => m_UndoStack.Count;
+    public int UndoCount => _undoStack.Count;
 
     public void Execute(IGameCommand command)
     {
         command.Execute();
-        m_UndoStack.Push(command);
-        if (m_UndoStack.Count > m_MaxUndoSteps)
+        _undoStack.Push(command);
+        if (_undoStack.Count > _maxUndoSteps)
         {
             // Trim oldest — would need a different data structure for efficiency
         }
@@ -39,34 +39,34 @@ public sealed class UndoManager
 
     public bool Undo()
     {
-        if (m_UndoStack.Count == 0) return false;
-        IGameCommand command = m_UndoStack.Pop();
+        if (_undoStack.Count == 0) return false;
+        IGameCommand command = _undoStack.Pop();
         command.Undo();
         return true;
     }
 
     public void Clear()
     {
-        m_UndoStack.Clear();
+        _undoStack.Clear();
     }
 }
 
 // Example: move a piece
 public sealed class MovePieceCommand : IGameCommand
 {
-    private readonly Piece m_Piece;
-    private readonly Vector2Int m_FromPos;
-    private readonly Vector2Int m_ToPos;
+    private readonly Piece _piece;
+    private readonly Vector2Int _fromPos;
+    private readonly Vector2Int _toPos;
 
     public MovePieceCommand(Piece piece, Vector2Int from, Vector2Int to)
     {
-        m_Piece = piece;
-        m_FromPos = from;
-        m_ToPos = to;
+        _piece = piece;
+        _fromPos = from;
+        _toPos = to;
     }
 
-    public void Execute() { m_Piece.MoveTo(m_ToPos); }
-    public void Undo() { m_Piece.MoveTo(m_FromPos); }
+    public void Execute() { _piece.MoveTo(_toPos); }
+    public void Undo() { _piece.MoveTo(_fromPos); }
 }
 ```
 
@@ -76,32 +76,32 @@ public sealed class MovePieceCommand : IGameCommand
 [CreateAssetMenu(menuName = "Puzzle/Level Pack")]
 public sealed class LevelPack : ScriptableObject
 {
-    [SerializeField] private string m_PackId;
-    [SerializeField] private string m_DisplayName;
-    [SerializeField] private Sprite m_Icon;
-    [SerializeField] private PuzzleLevel[] m_Levels;
-    [SerializeField] private bool m_IsLocked;
-    [SerializeField] private int m_StarsToUnlock;
+    [SerializeField] private string _packId;
+    [SerializeField] private string _displayName;
+    [SerializeField] private Sprite _icon;
+    [SerializeField] private PuzzleLevel[] _levels;
+    [SerializeField] private bool _isLocked;
+    [SerializeField] private int _starsToUnlock;
 
-    public string PackId => m_PackId;
-    public string DisplayName => m_DisplayName;
-    public IReadOnlyList<PuzzleLevel> Levels => m_Levels;
-    public bool IsLocked => m_IsLocked;
-    public int StarsToUnlock => m_StarsToUnlock;
+    public string PackId => _packId;
+    public string DisplayName => _displayName;
+    public IReadOnlyList<PuzzleLevel> Levels => _levels;
+    public bool IsLocked => _isLocked;
+    public int StarsToUnlock => _starsToUnlock;
 }
 
 [CreateAssetMenu(menuName = "Puzzle/Level")]
 public sealed class PuzzleLevel : ScriptableObject
 {
-    [SerializeField] private string m_LevelId;
-    [SerializeField] private int m_ParMoves; // 3 stars if completed in this many moves
-    [SerializeField] private int m_MaxMoves; // fail if exceeded (0 = unlimited)
-    [SerializeField] private float m_ParTime; // 3 stars if completed in this time
-    [SerializeField] private TextAsset m_LevelData; // JSON or custom format
+    [SerializeField] private string _levelId;
+    [SerializeField] private int _parMoves; // 3 stars if completed in this many moves
+    [SerializeField] private int _maxMoves; // fail if exceeded (0 = unlimited)
+    [SerializeField] private float _parTime; // 3 stars if completed in this time
+    [SerializeField] private TextAsset _levelData; // JSON or custom format
 
-    public string LevelId => m_LevelId;
-    public int ParMoves => m_ParMoves;
-    public int MaxMoves => m_MaxMoves;
+    public string LevelId => _levelId;
+    public int ParMoves => _parMoves;
+    public int MaxMoves => _maxMoves;
 }
 ```
 
@@ -141,22 +141,22 @@ public sealed class StarCalculator
 ```csharp
 public sealed class HintSystem : MonoBehaviour
 {
-    [SerializeField] private float m_AutoHintDelay = 15f; // show hint after N seconds idle
-    [SerializeField] private int m_FreeHints = 3;
+    [SerializeField] private float _autoHintDelay = 15f; // show hint after N seconds idle
+    [SerializeField] private int _freeHints = 3;
 
-    private int m_HintsRemaining;
-    private float m_IdleTimer;
-    private bool m_HintShowing;
+    private int _hintsRemaining;
+    private float _idleTimer;
+    private bool _hintShowing;
 
     public event System.Action<HintData> OnShowHint;
     public event System.Action OnHideHint;
 
     private void Update()
     {
-        if (m_HintShowing) return;
+        if (_hintShowing) return;
 
-        m_IdleTimer += Time.deltaTime;
-        if (m_IdleTimer >= m_AutoHintDelay)
+        _idleTimer += Time.deltaTime;
+        if (_idleTimer >= _autoHintDelay)
         {
             ShowAutoHint();
         }
@@ -164,18 +164,18 @@ public sealed class HintSystem : MonoBehaviour
 
     public void OnPlayerAction()
     {
-        m_IdleTimer = 0f;
-        if (m_HintShowing)
+        _idleTimer = 0f;
+        if (_hintShowing)
         {
-            m_HintShowing = false;
+            _hintShowing = false;
             OnHideHint?.Invoke();
         }
     }
 
     public bool UseHint()
     {
-        if (m_HintsRemaining <= 0) return false;
-        m_HintsRemaining--;
+        if (_hintsRemaining <= 0) return false;
+        _hintsRemaining--;
         ShowExplicitHint();
         return true;
     }
@@ -183,13 +183,13 @@ public sealed class HintSystem : MonoBehaviour
     private void ShowAutoHint()
     {
         // Subtle hint — highlight possible move
-        m_HintShowing = true;
+        _hintShowing = true;
     }
 
     private void ShowExplicitHint()
     {
         // Obvious hint — animate the solution move
-        m_HintShowing = true;
+        _hintShowing = true;
     }
 }
 ```
@@ -199,13 +199,13 @@ public sealed class HintSystem : MonoBehaviour
 ```csharp
 public sealed class DragHandler : MonoBehaviour
 {
-    [SerializeField] private Camera m_Camera;
-    [SerializeField] private LayerMask m_DraggableLayer;
-    [SerializeField] private float m_DragOffset = 0.5f; // lift piece while dragging
+    [SerializeField] private Camera _camera;
+    [SerializeField] private LayerMask _draggableLayer;
+    [SerializeField] private float _dragOffset = 0.5f; // lift piece while dragging
 
-    private Piece m_DraggedPiece;
-    private Vector3 m_DragStartWorldPos;
-    private Vector2Int m_DragStartGridPos;
+    private Piece _draggedPiece;
+    private Vector3 _dragStartWorldPos;
+    private Vector2Int _dragStartGridPos;
 
     private void Update()
     {
@@ -218,11 +218,11 @@ public sealed class DragHandler : MonoBehaviour
         {
             TryStartDrag(touch.position.ReadValue());
         }
-        else if (touch.press.isPressed && m_DraggedPiece != null)
+        else if (touch.press.isPressed && _draggedPiece != null)
         {
             UpdateDrag(touch.position.ReadValue());
         }
-        else if (touch.press.wasReleasedThisFrame && m_DraggedPiece != null)
+        else if (touch.press.wasReleasedThisFrame && _draggedPiece != null)
         {
             EndDrag(touch.position.ReadValue());
         }
@@ -230,8 +230,8 @@ public sealed class DragHandler : MonoBehaviour
 
     private void TryStartDrag(Vector2 screenPos)
     {
-        Ray ray = m_Camera.ScreenPointToRay(screenPos);
-        if (Physics2D.Raycast(ray.origin, ray.direction, 100f, m_DraggableLayer))
+        Ray ray = _camera.ScreenPointToRay(screenPos);
+        if (Physics2D.Raycast(ray.origin, ray.direction, 100f, _draggableLayer))
         {
             // Start dragging the hit piece
         }
@@ -239,14 +239,14 @@ public sealed class DragHandler : MonoBehaviour
 
     private void UpdateDrag(Vector2 screenPos)
     {
-        Vector3 worldPos = m_Camera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 10f));
-        m_DraggedPiece.transform.position = new Vector3(worldPos.x, worldPos.y + m_DragOffset, 0f);
+        Vector3 worldPos = _camera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 10f));
+        _draggedPiece.transform.position = new Vector3(worldPos.x, worldPos.y + _dragOffset, 0f);
     }
 
     private void EndDrag(Vector2 screenPos)
     {
         // Snap to nearest valid grid position or return to start
-        m_DraggedPiece = null;
+        _draggedPiece = null;
     }
 }
 ```

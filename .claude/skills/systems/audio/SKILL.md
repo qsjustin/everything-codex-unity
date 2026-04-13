@@ -20,7 +20,7 @@ Master (exposed: "MasterVolume")
 
 ### Volume Control via Exposed Parameters
 ```csharp
-[SerializeField] private AudioMixer m_Mixer;
+[SerializeField] private AudioMixer _mixer;
 
 public void SetMasterVolume(float normalizedValue)
 {
@@ -28,26 +28,26 @@ public void SetMasterVolume(float normalizedValue)
     float dB = normalizedValue > 0.001f
         ? Mathf.Log10(normalizedValue) * 20f
         : -80f;
-    m_Mixer.SetFloat("MasterVolume", dB);
+    _mixer.SetFloat("MasterVolume", dB);
 }
 ```
 
 ### Snapshots
 ```csharp
 // Transition between snapshots for ambient changes
-m_UnderwaterSnapshot.TransitionTo(0.5f);  // Muffle audio underwater
-m_DefaultSnapshot.TransitionTo(1.0f);      // Return to normal
+_underwaterSnapshot.TransitionTo(0.5f);  // Muffle audio underwater
+_defaultSnapshot.TransitionTo(1.0f);      // Return to normal
 ```
 
 ## Playing Sounds
 
 ```csharp
 // One-shot SFX (fire and forget, doesn't interrupt)
-m_AudioSource.PlayOneShot(m_ExplosionClip, 0.8f);
+_audioSource.PlayOneShot(_explosionClip, 0.8f);
 
 // Music (interruptible, one at a time per source)
-m_MusicSource.clip = m_BattleMusic;
-m_MusicSource.Play();
+_musicSource.clip = _battleMusic;
+_musicSource.Play();
 ```
 
 ## Audio Source Pooling
@@ -55,30 +55,30 @@ m_MusicSource.Play();
 ```csharp
 public sealed class SFXPool : MonoBehaviour
 {
-    [SerializeField] private int m_PoolSize = 16;
-    [SerializeField] private AudioMixerGroup m_SFXGroup;
+    [SerializeField] private int _poolSize = 16;
+    [SerializeField] private AudioMixerGroup _sfxGroup;
 
-    private AudioSource[] m_Sources;
-    private int m_NextIndex;
+    private AudioSource[] _sources;
+    private int _nextIndex;
 
     private void Awake()
     {
-        m_Sources = new AudioSource[m_PoolSize];
-        for (int i = 0; i < m_PoolSize; i++)
+        _sources = new AudioSource[_poolSize];
+        for (int i = 0; i < _poolSize; i++)
         {
             GameObject obj = new GameObject($"SFX_{i}");
             obj.transform.SetParent(transform);
             AudioSource source = obj.AddComponent<AudioSource>();
-            source.outputAudioMixerGroup = m_SFXGroup;
+            source.outputAudioMixerGroup = _sfxGroup;
             source.playOnAwake = false;
-            m_Sources[i] = source;
+            _sources[i] = source;
         }
     }
 
     public void PlayAt(AudioClip clip, Vector3 position, float volume = 1f)
     {
-        AudioSource source = m_Sources[m_NextIndex];
-        m_NextIndex = (m_NextIndex + 1) % m_PoolSize;
+        AudioSource source = _sources[_nextIndex];
+        _nextIndex = (_nextIndex + 1) % _poolSize;
 
         source.transform.position = position;
         source.spatialBlend = 1f; // 3D
@@ -109,30 +109,30 @@ public sealed class SFXPool : MonoBehaviour
 ```csharp
 public sealed class MusicManager : MonoBehaviour
 {
-    [SerializeField] private AudioSource m_SourceA;
-    [SerializeField] private AudioSource m_SourceB;
-    [SerializeField] private float m_CrossfadeDuration = 2f;
+    [SerializeField] private AudioSource _sourceA;
+    [SerializeField] private AudioSource _sourceB;
+    [SerializeField] private float _crossfadeDuration = 2f;
 
-    private AudioSource m_ActiveSource;
+    private AudioSource _activeSource;
 
     public void CrossfadeTo(AudioClip newClip)
     {
-        AudioSource incoming = m_ActiveSource == m_SourceA ? m_SourceB : m_SourceA;
+        AudioSource incoming = _activeSource == _sourceA ? _sourceB : _sourceA;
         incoming.clip = newClip;
         incoming.volume = 0f;
         incoming.Play();
 
-        StartCoroutine(Crossfade(m_ActiveSource, incoming));
-        m_ActiveSource = incoming;
+        StartCoroutine(Crossfade(_activeSource, incoming));
+        _activeSource = incoming;
     }
 
     private IEnumerator Crossfade(AudioSource outgoing, AudioSource incoming)
     {
         float elapsed = 0f;
-        while (elapsed < m_CrossfadeDuration)
+        while (elapsed < _crossfadeDuration)
         {
             elapsed += Time.unscaledDeltaTime;
-            float t = elapsed / m_CrossfadeDuration;
+            float t = elapsed / _crossfadeDuration;
             outgoing.volume = 1f - t;
             incoming.volume = t;
             yield return null;
