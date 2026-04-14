@@ -2,6 +2,50 @@
 
 All notable changes to everything-claude-unity will be documented in this file.
 
+## [1.2.0] — 2026-04-14
+
+### Added
+
+**New Commands (4)**
+- `/unity-ralph` — relentless verify-fix loop that refuses to stop until verification passes (max iterations configurable, stall detection)
+- `/unity-team` — parallel agent orchestration with preset teams (build, feature, quality) or custom combinations
+- `/unity-interview` — comprehensive Socratic interview flow for thorough requirements gathering before large features
+- `/unity-learn` — review accumulated session learnings, extract patterns with confidence scoring, draft new skills
+
+**New Hooks (2)**
+- `notify.sh` — webhook notification on session end for Discord/Slack/generic webhooks (env: `UNITY_NOTIFY_WEBHOOK_URL`)
+- `guard-project-config.sh` — blocks modification of `.editorconfig`, analyzer settings, and code quality config files
+
+**New Skill (1)**
+- `hud-statusline` — guidance for Claude Code statusline integration showing workflow phase, active agent, and session metrics
+
+**Plugin Packaging**
+- `.claude-plugin/plugin.json` — machine-readable plugin manifest for Claude Code plugin system
+- `.claude-plugin/marketplace.json` — marketplace discovery metadata with highlights and keywords
+
+**CI/CD**
+- `.github/workflows/ci.yml` — shellcheck on all hooks, frontmatter validation for agents/commands/skills, JSON validation, test suite execution
+
+**Test Suite**
+- `tests/run-tests.sh` — plain bash test runner with assertion helpers (assert_eq, assert_exit_code, assert_contains)
+- `tests/test-lib.sh` — tests for `_lib.sh` utilities (profile gating, kill switches, block function modes)
+- `tests/test-hooks.sh` — tests for hook exit codes and behavior (15 hook tests)
+- `tests/test-install.sh` — tests for `install.sh` on mock Unity projects
+
+**Translations**
+- `docs/i18n/README.zh-CN.md` — Chinese (Simplified) README
+- `docs/i18n/README.ja.md` — Japanese README
+- `docs/i18n/README.ko.md` — Korean README
+
+### Changed
+- Enhanced `auto-learn.sh` — now categorizes sessions (bug-fix/performance/architecture/workflow/integration) and extracts file extension patterns
+- Enhanced `learner` skill — added "Pattern Categories" and "Confidence Scoring" sections, reference to `/unity-learn`
+- Updated `settings.json` — registered `notify.sh` (Stop) and `guard-project-config.sh` (PreToolUse) hooks
+- Updated `install.sh` — new component counts (22 hooks, 15 agents, 21 commands, 36 skills), test suite copy step
+- Updated `upgrade.sh` — added `tests/` directory copy section
+- Updated `README.md` — new component counts, language navigation links, new command/hook/skill sections
+- Version bump to 1.2.0
+
 ## [1.1.0] — 2026-04-06
 
 ### Added

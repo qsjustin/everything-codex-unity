@@ -59,27 +59,49 @@ if [ -f "${UNITY_HOOK_STATE_DIR}/session-start-time" ]; then
     DURATION_SECS=$(( $(date +%s) - START_TIME ))
 fi
 
+SHADER_COUNT_VAL=$(echo "$SHADER_FILES" | jq 'length')
+
+# Detect session category heuristically
+CATEGORY="workflow"
+RECENT_COMMITS=$(git log --oneline -5 --format="%s" 2>/dev/null || echo "")
+if echo "$RECENT_COMMITS" | grep -qiE '(fix|bug|patch|hotfix)'; then
+    CATEGORY="bug-fix"
+elif [ "$SHADER_COUNT_VAL" -gt 0 ] 2>/dev/null; then
+    CATEGORY="integration"
+elif echo "$EDITED_FILES" | jq -r '.[]' 2>/dev/null | grep -qiE '(performance|optim|pool|cache)'; then
+    CATEGORY="performance"
+elif [ "$MODEL_COUNT" -gt 0 ] && [ "$SYSTEM_COUNT" -gt 0 ]; then
+    CATEGORY="architecture"
+fi
+
+# Build patterns array from edited file extensions
+PATTERNS=$(echo "$EDITED_FILES" | jq '[.[] | split("/") | last | split(".") | last] | group_by(.) | map({ext: .[0], count: length}) | sort_by(-.count)')
+
 # Write learning entry
 jq -nc \
     --arg date "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
     --arg branch "$(git branch --show-current 2>/dev/null || echo 'unknown')" \
+    --arg category "$CATEGORY" \
     --argjson edit_count "$EDIT_COUNT" \
     --argjson mvs "{\"models\": $MODEL_COUNT, \"views\": $VIEW_COUNT, \"systems\": $SYSTEM_COUNT}" \
     --argjson test_count "$TEST_COUNT" \
     --argjson editor_count "$EDITOR_COUNT" \
-    --argjson shader_count "$(echo "$SHADER_FILES" | jq 'length')" \
+    --argjson shader_count "$SHADER_COUNT_VAL" \
     --argjson tools "$TOOL_BREAKDOWN" \
     --argjson duration "$DURATION_SECS" \
+    --argjson patterns "$PATTERNS" \
     '{
         date: $date,
         branch: $branch,
+        category: $category,
         files_edited: $edit_count,
         mvs_breakdown: $mvs,
         tests_written: $test_count,
         editor_scripts: $editor_count,
         shaders: $shader_count,
         tool_usage: $tools,
-        duration_seconds: $duration
+        duration_seconds: $duration,
+        patterns: $patterns
     }' >> "$PERSISTENT_LOG"
 
 echo "" >&2

@@ -197,6 +197,27 @@ if [ -d "$SCRIPT_DIR/scripts" ]; then
     done < <(find "$SCRIPT_DIR/scripts" -type f -print0 2>/dev/null || true)
 fi
 
+# Copy tests/
+if [ -d "$SCRIPT_DIR/tests" ]; then
+    while IFS= read -r -d '' SRC_FILE; do
+        REL_PATH="${SRC_FILE#$SCRIPT_DIR/}"
+        DEST_FILE="$PROJECT_DIR/.claude/$REL_PATH"
+        if [ ! -f "$DEST_FILE" ] || ! diff -q "$SRC_FILE" "$DEST_FILE" > /dev/null 2>&1; then
+            if ! $DRY_RUN; then
+                mkdir -p "$(dirname "$DEST_FILE")"
+                cp "$SRC_FILE" "$DEST_FILE"
+            fi
+            if [ ! -f "$DEST_FILE" ]; then
+                echo "  ${GREEN}+${RESET} $REL_PATH"
+                ADDED=$((ADDED + 1))
+            else
+                echo "  ${YELLOW}~${RESET} $REL_PATH"
+                MODIFIED=$((MODIFIED + 1))
+            fi
+        fi
+    done < <(find "$SCRIPT_DIR/tests" -type f -print0 2>/dev/null || true)
+fi
+
 # Copy templates/
 if [ -d "$SCRIPT_DIR/templates" ]; then
     while IFS= read -r -d '' SRC_FILE; do

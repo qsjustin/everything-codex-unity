@@ -70,6 +70,30 @@ Append the learning to the project's `CLAUDE.md` file under a `## Project Learni
 
 Each entry is appended chronologically. Never overwrite or edit previous entries — they form a timeline of discoveries.
 
+## Pattern Categories
+
+Each learning and session is assigned one of five categories. These categories are used by `/unity-learn extract` for pattern analysis.
+
+| Category | Description | Signals |
+|----------|-------------|---------|
+| **bug-fix** | Debugging session that resolved a defect | Recent commits contain "fix", "bug", "patch"; session focused on single files |
+| **performance** | Optimization work | Files named with "pool", "cache", "optim"; profiler skills loaded |
+| **architecture** | Structural changes to Models, Views, or Systems | Multiple MVS files edited; assembly definition changes |
+| **workflow** | General feature development (default) | Balanced mix of file types; no dominant pattern |
+| **integration** | Third-party or cross-system work | Shader files, package manifest edits, plugin code |
+
+## Confidence Scoring
+
+When reviewing accumulated learnings (via `/unity-learn extract`), patterns are scored by frequency:
+
+| Level | Threshold | Interpretation |
+|-------|-----------|----------------|
+| **High** | 3+ sessions | Well-established project pattern — safe to codify as a skill or rule |
+| **Medium** | 2 sessions | Emerging pattern — worth noting, may need one more data point |
+| **Low** | 1 session | Single observation — keep for context but don't act on yet |
+
+High-confidence patterns are candidates for `/unity-learn draft-skill` to generate new skills automatically.
+
 ## Anti-Patterns — Do NOT Save
 
 - Generic Unity best practices (already covered by `.claude/rules/`)

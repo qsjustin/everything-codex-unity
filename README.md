@@ -1,5 +1,7 @@
 # everything-claude-unity
 
+[English](README.md) | [中文](docs/i18n/README.zh-CN.md) | [日本語](docs/i18n/README.ja.md) | [한국어](docs/i18n/README.ko.md)
+
 **The ultimate Claude Code toolkit for Unity game development.**
 
 A production-ready, plug-and-play system that gives Claude Code deep Unity expertise — from writing performant C# to building scenes, profiling performance, and triggering iOS/Android builds — all through natural language.
@@ -13,12 +15,13 @@ Built for **solo indie mobile game developers**. Drop it into any Unity project 
 | Component | Count | Purpose |
 |-----------|-------|---------|
 | **Agents** | 15 | Specialized sub-agents for coding, verification, scene building, profiling, testing |
-| **Commands** | 17 | Slash commands like `/unity-workflow`, `/unity-prototype`, `/unity-doctor` |
-| **Skills** | 35 | Knowledge modules for Unity systems, gameplay patterns, and mobile genres |
-| **Hooks** | 20 | Safety net, quality gates, session persistence, cost tracking, auto-learning |
+| **Commands** | 21 | Slash commands like `/unity-workflow`, `/unity-ralph`, `/unity-team` |
+| **Skills** | 40 | Knowledge modules for Unity systems, gameplay patterns, and mobile genres |
+| **Hooks** | 22 | Safety net, quality gates, notifications, session persistence, auto-learning |
 | **Rules** | 5 | C# coding standards, performance rules, MVS architecture patterns |
 | **Scripts** | 8 | Validation tools for meta files, code quality, serialization, architecture |
 | **Templates** | 10 | C# templates for MVS pattern (Model, View, System, LifetimeScope, Message) |
+| **Tests** | 46 | Automated test suite for hooks, lib utilities, and installation |
 
 ---
 
@@ -38,6 +41,22 @@ Describe a mechanic, and Claude writes the C# scripts, builds the scene via MCP,
 
 ```
 /unity-prototype "2D platformer with wall jumping and dash"
+```
+
+### `/unity-ralph` — Relentless Verify-Fix Loop
+
+Runs the verify-fix loop persistently — refuses to stop until the project is clean or hits the safety limit. Up to 30 effective verification passes with stall detection.
+
+```
+/unity-ralph --max-iterations 10
+```
+
+### `/unity-team` — Parallel Agent Orchestration
+
+Spawn multiple agents simultaneously — coder + tester + reviewer working in parallel for faster development.
+
+```
+/unity-team --build "add health system with damage and healing"
 ```
 
 ### Verify-Fix Loop
@@ -190,6 +209,14 @@ Commands support `--quick` (routes to sonnet lite agent) and `--thorough` (route
 /unity-profile                  Deep profiling session
 ```
 
+### Orchestration
+```
+/unity-ralph [options]          Persistent verify-fix loop (refuses to stop until clean)
+/unity-team <--preset|--custom> Parallel agents (coder + tester + reviewer simultaneously)
+/unity-interview <topic>        Deep Socratic requirements interview before coding
+/unity-learn [subcommand]       Session analytics: review, extract patterns, draft skills
+```
+
 ### Project Lifecycle
 ```
 /unity-init                     Scan project + generate CLAUDE.md
@@ -202,7 +229,7 @@ Commands support `--quick` (routes to sonnet lite agent) and `--thorough` (route
 
 ## Hooks
 
-20 hooks across 5 lifecycle events, organized by profile level.
+22 hooks across 5 lifecycle events, organized by profile level.
 
 ### Blocking Hooks — PreToolUse (minimal profile)
 | Hook | What It Prevents |
@@ -211,6 +238,7 @@ Commands support `--quick` (routes to sonnet lite agent) and `--thorough` (route
 | `block-meta-edit` | Editing .meta files (breaks asset GUIDs) |
 | `block-projectsettings` | Staging ProjectSettings/ via git (use MCP instead) |
 | `guard-editor-runtime` | `UnityEditor` namespace in runtime code without `#if UNITY_EDITOR` |
+| `guard-project-config` | Weakening code quality rules (.editorconfig, analyzer settings, .csproj NoWarn) |
 
 ### GateGuard — PreToolUse (strict profile)
 | Hook | What It Does |
@@ -241,7 +269,8 @@ Commands support `--quick` (routes to sonnet lite agent) and `--thorough` (route
 | `session-restore` | SessionStart | Restores prior branch, workflow phase, modified files list |
 | `session-save` | Stop | Saves session state for next conversation (branch, edits, duration) |
 | `stop-validate` | Stop | Runs full-file validation on all C# files modified during session |
-| `auto-learn` | Stop | Captures session patterns (MVS breakdown, tool usage) to learnings log |
+| `auto-learn` | Stop | Captures session patterns (MVS breakdown, tool usage, category) to learnings log |
+| `notify` | Stop | Sends webhook notification (Discord/Slack) when session exceeds minimum duration |
 
 ### Advisory Hooks — PreCompact
 | Hook | What It Does |
@@ -270,13 +299,15 @@ Plus the original templates: `MonoBehaviour.cs`, `ScriptableObject.cs`, `EditMod
 
 ## Skills
 
-### Always-On Core (6)
+### Always-On Core (8)
 - **serialization-safety** — `[FormerlySerializedAs]`, `[SerializeField]`, Unity null checks
 - **scriptable-objects** — SO event channels, variable refs, runtime sets, factory pattern
 - **event-systems** — C# events, UnityEvent, SO channels, zero-alloc EventBus
 - **object-pooling** — `ObjectPool<T>`, warm-up, return-to-pool lifecycle
 - **assembly-definitions** — When to split, reference rules, Editor/Runtime separation
 - **unity-mcp-patterns** — How to use MCP tools effectively (`batch_execute`, `read_console`)
+- **learner** — Post-debugging knowledge extraction with quality gates and confidence scoring
+- **hud-statusline** — Claude Code statusline integration showing workflow phase and session metrics
 
 ### Unity Systems (10)
 URP pipeline, Input System, Addressables, Cinemachine, Animation, Audio, Physics, NavMesh, UI Toolkit, ShaderGraph

@@ -216,6 +216,14 @@ if [ -n "$SCRIPT_DIR" ] && [ -d "$SCRIPT_DIR/scripts" ]; then
     ok "Validation scripts installed"
 fi
 
+# ── Step 5b: Copy Test Suite ──────────────────────────────────────────────
+if [ -n "$SCRIPT_DIR" ] && [ -d "$SCRIPT_DIR/tests" ]; then
+    mkdir -p "$PROJECT_DIR/.claude/tests"
+    cp "$SCRIPT_DIR/tests/"*.sh "$PROJECT_DIR/.claude/tests/" 2>/dev/null || true
+    chmod +x "$PROJECT_DIR/.claude/tests/run-tests.sh" 2>/dev/null || true
+    ok "Test suite installed"
+fi
+
 # ── Step 6: Generate CLAUDE.md ──────────────────────────────────────────────
 info "Generating CLAUDE.md..."
 
@@ -298,11 +306,12 @@ echo "${BOLD}${GREEN}║         Installation Complete!                      ║
 echo "${BOLD}${GREEN}╚══════════════════════════════════════════════════════╝${RESET}"
 echo ""
 echo "  ${BOLD}Installed:${RESET}"
-echo "    ${CYAN}Hooks${RESET}     — 8 lifecycle hooks (4 blocking, 4 warning)"
+echo "    ${CYAN}Hooks${RESET}     — 22 lifecycle hooks (5 blocking, 17 advisory)"
 echo "    ${CYAN}Rules${RESET}     — 5 coding guideline files"
-echo "    ${CYAN}Agents${RESET}    — 12 specialized agents"
-echo "    ${CYAN}Commands${RESET}  — 15 slash commands"
-echo "    ${CYAN}Skills${RESET}    — 35 knowledge modules"
+echo "    ${CYAN}Agents${RESET}    — 15 specialized agents"
+echo "    ${CYAN}Commands${RESET}  — 21 slash commands"
+echo "    ${CYAN}Skills${RESET}    — 40 knowledge modules"
+echo "    ${CYAN}Tests${RESET}     — Test suite in tests/"
 echo "    ${CYAN}MCP${RESET}       — Unity MCP configured at localhost:8080"
 echo ""
 echo "  ${BOLD}Next steps:${RESET}"

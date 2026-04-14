@@ -1,0 +1,34 @@
+{
+  "name": "everything-claude-unity",
+  "version": "1.2.0",
+  "description": "The ultimate Claude Code toolkit for Unity game development — 15 agents, 21 commands, 40 skills, 22 hooks, and 10 C# templates for building mobile games.",
+  "author": "XeldarAlz",
+  "homepage": "https://github.com/XeldarAlz/everything-claude-unity",
+  "repository": "https://github.com/XeldarAlz/everything-claude-unity",
+  "license": "MIT",
+  "compatibility": {
+    "claudeCode": ">=1.0.0",
+    "unity": ">=2021.3"
+  },
+  "assets": {
+    "agents": ".claude/agents/",
+    "commands": ".claude/commands/",
+    "hooks": ".claude/hooks/",
+    "skills": ".claude/skills/",
+    "rules": ".claude/rules/",
+    "scripts": "scripts/",
+    "templates": "templates/"
+  },
+  "counts": {
+    "agents": 15,
+    "commands": 21,
+    "skills": 40,
+    "hooks": 22,
+    "rules": 5,
+    "scripts": 8,
+    "templates": 10
+  },
+  "install": "install.sh",
+  "upgrade": "upgrade.sh",
+  "uninstall": "uninstall.sh"
+}

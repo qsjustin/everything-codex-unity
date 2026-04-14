@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get install -y jq shellcheck
+
+      - name: Shellcheck hook scripts
+        run: shellcheck -x .claude/hooks/*.sh
+
+      - name: Validate settings.json
+        run: jq . .claude/settings.json > /dev/null
+
+      - name: Validate plugin manifests
+        run: |
+          jq . .claude-plugin/plugin.json > /dev/null
+          jq . .claude-plugin/marketplace.json > /dev/null
+
+      - name: Validate agent frontmatter
+        run: |
+          FAIL=0
+          for file in .claude/agents/*.md; do
+            # Extract YAML between first two --- delimiters
+            YAML=$(sed -n '/^---$/,/^---$/p' "$file" | head -n -1 | tail -n +2)
+            for field in "name:" "description:" "model:" "tools:"; do
+              if ! echo "$YAML" | grep -q "$field"; then
+                echo "FAIL: $file missing $field"
+                FAIL=1
+              fi
+            done
+          done
+          exit $FAIL
+
+      - name: Validate command frontmatter
+        run: |
+          FAIL=0
+          for file in .claude/commands/*.md; do
+            YAML=$(sed -n '/^---$/,/^---$/p' "$file" | head -n -1 | tail -n +2)
+            for field in "name:" "description:"; do
+              if ! echo "$YAML" | grep -q "$field"; then
+                echo "FAIL: $file missing $field"
+                FAIL=1
+              fi
+            done
+          done
+          exit $FAIL
+
+      - name: Validate skill frontmatter
+        run: |
+          FAIL=0
+          for file in $(find .claude/skills -name "SKILL.md"); do
+            YAML=$(sed -n '/^---$/,/^---$/p' "$file" | head -n -1 | tail -n +2)
+            for field in "name:" "description:"; do
+              if ! echo "$YAML" | grep -q "$field"; then
+                echo "FAIL: $file missing $field"
+                FAIL=1
+              fi
+            done
+          done
+          exit $FAIL
+
+      - name: Verify command files exist for README references
+        run: |
+          FAIL=0
+          # Extract command names from README command section
+          for cmd in $(grep -oP '/unity-\w+' README.md | sort -u); do
+            CMD_NAME="${cmd#/}"
+            if [ ! -f ".claude/commands/${CMD_NAME}.md" ]; then
+              echo "WARNING: README references $cmd but .claude/commands/${CMD_NAME}.md not found"
+            fi
+          done
+          # Warnings only — some references may be to skills, not commands
+
+      - name: Run test suite
+        run: bash tests/run-tests.sh
