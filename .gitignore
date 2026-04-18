@@ -1,0 +1,9 @@
+# macOS metadata
+.DS_Store
+
+# Claude Code local settings (per-developer overrides)
+.claude/settings.local.json
+
+# Claude Code session state (v1.3.0+) — runtime-only, regenerated per session
+.claude/state/*
+!.claude/state/.gitkeep
