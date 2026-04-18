@@ -27,7 +27,7 @@ fi
 
 # Detect workflow phase from pre-compact state if available
 WORKFLOW_PHASE=""
-PRECOMPACT="/tmp/unity-claude-precompact-state.md"
+PRECOMPACT="${UNITY_HOOK_STATE_DIR}/precompact-state.md"
 if [ -f "$PRECOMPACT" ]; then
     WORKFLOW_PHASE=$(grep -oE '(Clarify|Plan|Execute|Verify)' "$PRECOMPACT" 2>/dev/null | tail -1 || true)
 fi
@@ -49,23 +49,57 @@ if [ -f "$UNITY_COST_FILE" ]; then
     TOOL_CALLS=$(wc -l < "$UNITY_COST_FILE" | tr -d ' ')
 fi
 
-# Write session state
+# Gather verification state if available
+VERIFICATION="{}"
+if [ -f "${UNITY_HOOK_STATE_DIR}/verify-state.json" ]; then
+    VERIFICATION=$(cat "${UNITY_HOOK_STATE_DIR}/verify-state.json" 2>/dev/null || echo '{}')
+fi
+
+# Gather plan state if available
+PLAN="{}"
+if [ -f "${UNITY_HOOK_STATE_DIR}/plan-state.json" ]; then
+    PLAN=$(cat "${UNITY_HOOK_STATE_DIR}/plan-state.json" 2>/dev/null || echo '{}')
+fi
+
+# Gather agent context if available
+AGENT_CONTEXT="{}"
+if [ -f "${UNITY_HOOK_STATE_DIR}/agent-context.json" ]; then
+    AGENT_CONTEXT=$(cat "${UNITY_HOOK_STATE_DIR}/agent-context.json" 2>/dev/null || echo '{}')
+fi
+
+# Gather warnings summary
+WARNINGS_COUNT=0
+if [ -f "$UNITY_WARNINGS_FILE" ]; then
+    WARNINGS_COUNT=$(wc -l < "$UNITY_WARNINGS_FILE" | tr -d ' ')
+fi
+
+# Write session state with structured schema
 jq -n \
+    --argjson schema_version 1 \
     --arg branch "$CURRENT_BRANCH" \
     --arg phase "$WORKFLOW_PHASE" \
     --argjson modified "$MODIFIED_FILES" \
     --argjson commits "$RECENT_COMMITS" \
     --arg duration "$SESSION_DURATION" \
     --arg tool_calls "$TOOL_CALLS" \
+    --arg warnings "$WARNINGS_COUNT" \
     --arg saved_at "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
+    --argjson plan "$PLAN" \
+    --argjson verification "$VERIFICATION" \
+    --argjson agent_context "$AGENT_CONTEXT" \
     '{
+        schema_version: $schema_version,
         branch: $branch,
         workflow_phase: $phase,
         modified_files: $modified,
         recent_commits: $commits,
         session_duration: $duration,
         tool_calls: ($tool_calls | tonumber),
-        saved_at: $saved_at
+        warnings_count: ($warnings | tonumber),
+        saved_at: $saved_at,
+        plan: $plan,
+        verification: $verification,
+        agent_context: $agent_context
     }' > "$UNITY_SESSION_FILE"
 
 echo "" >&2

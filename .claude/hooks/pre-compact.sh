@@ -17,7 +17,7 @@ source "${SCRIPT_DIR}/_lib.sh"
 
 INPUT=$(cat)
 
-STATE_FILE="/tmp/unity-claude-precompact-state.md"
+STATE_FILE="${UNITY_HOOK_STATE_DIR}/precompact-state.md"
 
 # Gather git state
 MODIFIED_FILES=$(git diff --name-only HEAD 2>/dev/null || echo "(not a git repo)")
@@ -51,7 +51,7 @@ $RECENT_COMMITS
 EOF
 
 echo "" >&2
-echo "Session state saved to $STATE_FILE before context compaction." >&2
+echo "Session state saved before context compaction." >&2
 echo "  Branch: $CURRENT_BRANCH | Modified C# files: $CS_MODIFIED" >&2
 
 exit 0

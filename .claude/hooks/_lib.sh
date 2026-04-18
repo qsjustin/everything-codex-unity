@@ -55,14 +55,26 @@ if [ "${!_HOOK_ENV_NAME:-}" = "1" ]; then
 fi
 
 # --- Shared paths ---
-UNITY_HOOK_STATE_DIR="/tmp/unity-claude-hooks"
+# Resolve project-local state directory, falling back to /tmp
+_resolve_state_dir() {
+    local git_root
+    git_root="$(git rev-parse --show-toplevel 2>/dev/null)" || true
+    if [ -n "$git_root" ] && [ -d "$git_root/.claude/state" ]; then
+        echo "$git_root/.claude/state"
+    else
+        echo "/tmp/unity-claude-hooks"
+    fi
+}
+UNITY_HOOK_STATE_DIR="$(_resolve_state_dir)"
 mkdir -p "$UNITY_HOOK_STATE_DIR"
 
-UNITY_SESSION_FILE="${UNITY_HOOK_STATE_DIR}/session-state.json"
+UNITY_SESSION_FILE="${UNITY_HOOK_STATE_DIR}/session.json"
 UNITY_READS_FILE="${UNITY_HOOK_STATE_DIR}/gateguard-reads.txt"
 UNITY_EDITS_FILE="${UNITY_HOOK_STATE_DIR}/session-edits.txt"
 UNITY_COST_FILE="${UNITY_HOOK_STATE_DIR}/session-cost.jsonl"
-UNITY_LEARNING_FILE="${UNITY_HOOK_STATE_DIR}/session-learnings.jsonl"
+UNITY_LEARNING_FILE="${UNITY_HOOK_STATE_DIR}/learnings.jsonl"
+UNITY_WARNINGS_FILE="${UNITY_HOOK_STATE_DIR}/session-warnings.txt"
+UNITY_NOTIFY_EVENT_FILE="${UNITY_HOOK_STATE_DIR}/notify-event.json"
 
 # --- Shared utilities ---
 
@@ -100,4 +112,46 @@ unity_track_read() {
 unity_was_read() {
     local file_path="$1"
     [ -f "$UNITY_READS_FILE" ] && grep -qxF "$file_path" "$UNITY_READS_FILE" 2>/dev/null
+}
+
+# unity_state_read — read a top-level key from session.json
+# Usage: unity_state_read "branch" -> prints the value
+unity_state_read() {
+    local key="$1"
+    if [ -f "$UNITY_SESSION_FILE" ]; then
+        jq -r ".$key // empty" "$UNITY_SESSION_FILE" 2>/dev/null
+    fi
+}
+
+# unity_state_write — write a top-level key to session.json
+# Usage: unity_state_write "workflow_phase" '"Execute"'
+unity_state_write() {
+    local key="$1"
+    local value="$2"
+    if [ -f "$UNITY_SESSION_FILE" ]; then
+        local tmp="${UNITY_SESSION_FILE}.tmp"
+        jq --argjson val "$value" ".$key = \$val" "$UNITY_SESSION_FILE" > "$tmp" 2>/dev/null && mv "$tmp" "$UNITY_SESSION_FILE"
+    fi
+}
+
+# unity_state_plan_update — update a plan step status in session.json
+# Usage: unity_state_plan_update "Write DamageSystem" "done"
+unity_state_plan_update() {
+    local step_name="$1"
+    local new_status="$2"
+    if [ -f "$UNITY_SESSION_FILE" ]; then
+        local tmp="${UNITY_SESSION_FILE}.tmp"
+        jq --arg name "$step_name" --arg status "$new_status" \
+            '(.plan.steps // [])[] | select(.name == $name) |= (.status = $status)' \
+            "$UNITY_SESSION_FILE" > "$tmp" 2>/dev/null && mv "$tmp" "$UNITY_SESSION_FILE"
+    fi
+}
+
+# unity_track_warning — record a hook warning for session analytics
+unity_track_warning() {
+    local hook_name="$1"
+    local message="$2"
+    if [ -n "$hook_name" ]; then
+        echo "${hook_name}: ${message}" >> "$UNITY_WARNINGS_FILE"
+    fi
 }

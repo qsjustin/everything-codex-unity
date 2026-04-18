@@ -27,11 +27,20 @@ if [ ! -f "$UNITY_SESSION_FILE" ]; then
     exit 0
 fi
 
-# Check if the session file is stale (older than 4 hours)
-FILE_AGE=$(( $(date +%s) - $(stat -f %m "$UNITY_SESSION_FILE" 2>/dev/null || stat -c %Y "$UNITY_SESSION_FILE" 2>/dev/null || echo 0) ))
-if [ "$FILE_AGE" -gt 14400 ]; then
-    rm -f "$UNITY_SESSION_FILE"
-    exit 0
+# Check if the session file is stale using saved_at timestamp (portable, no stat)
+TTL_HOURS="${UNITY_SESSION_TTL_HOURS:-4}"
+TTL_SECONDS=$((TTL_HOURS * 3600))
+SAVED_AT=$(jq -r '.saved_at // empty' "$UNITY_SESSION_FILE" 2>/dev/null)
+
+if [ -n "$SAVED_AT" ]; then
+    # Parse ISO8601 date to epoch seconds
+    SAVED_EPOCH=$(date -j -f '%Y-%m-%dT%H:%M:%SZ' "$SAVED_AT" +%s 2>/dev/null || date -d "$SAVED_AT" +%s 2>/dev/null || echo 0)
+    NOW_EPOCH=$(date +%s)
+    FILE_AGE=$((NOW_EPOCH - SAVED_EPOCH))
+    if [ "$FILE_AGE" -gt "$TTL_SECONDS" ]; then
+        rm -f "$UNITY_SESSION_FILE"
+        exit 0
+    fi
 fi
 
 # Restore session context
@@ -39,6 +48,10 @@ BRANCH=$(jq -r '.branch // empty' "$UNITY_SESSION_FILE" 2>/dev/null)
 WORKFLOW_PHASE=$(jq -r '.workflow_phase // empty' "$UNITY_SESSION_FILE" 2>/dev/null)
 MODIFIED_FILES=$(jq -r '.modified_files // [] | join(", ")' "$UNITY_SESSION_FILE" 2>/dev/null)
 LAST_COMMAND=$(jq -r '.last_command // empty' "$UNITY_SESSION_FILE" 2>/dev/null)
+PLAN_DESC=$(jq -r '.plan.description // empty' "$UNITY_SESSION_FILE" 2>/dev/null)
+PLAN_STEPS=$(jq -r '(.plan.steps // []) | map("\(.status): \(.name)") | join(", ")' "$UNITY_SESSION_FILE" 2>/dev/null)
+VERIFY_ITER=$(jq -r '.verification.last_iteration // empty' "$UNITY_SESSION_FILE" 2>/dev/null)
+LAST_AGENT=$(jq -r '.agent_context.last_agent // empty' "$UNITY_SESSION_FILE" 2>/dev/null)
 
 CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
 
@@ -53,6 +66,22 @@ fi
 
 if [ -n "$WORKFLOW_PHASE" ]; then
     echo "  Workflow phase: $WORKFLOW_PHASE" >&2
+fi
+
+if [ -n "$PLAN_DESC" ]; then
+    echo "  Plan: $PLAN_DESC" >&2
+fi
+
+if [ -n "$PLAN_STEPS" ]; then
+    echo "  Steps: $PLAN_STEPS" >&2
+fi
+
+if [ -n "$VERIFY_ITER" ]; then
+    echo "  Verification iteration: $VERIFY_ITER" >&2
+fi
+
+if [ -n "$LAST_AGENT" ]; then
+    echo "  Last agent: $LAST_AGENT" >&2
 fi
 
 if [ -n "$MODIFIED_FILES" ]; then

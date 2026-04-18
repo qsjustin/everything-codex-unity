@@ -149,6 +149,52 @@ if [ ${#CUSTOM_FILES[@]} -gt 0 ]; then
     done
 fi
 
+# ── Migrate State Directory (v1.2.0 → v1.3.0) ────────────────────────────
+if ! $DRY_RUN; then
+    # Create .claude/state/ if missing
+    mkdir -p "$PROJECT_DIR/.claude/state"
+
+    # Migrate session state from /tmp to .claude/state/
+    OLD_SESSION="/tmp/unity-claude-hooks/session-state.json"
+    NEW_SESSION="$PROJECT_DIR/.claude/state/session.json"
+    if [ -f "$OLD_SESSION" ] && [ ! -f "$NEW_SESSION" ]; then
+        cp "$OLD_SESSION" "$NEW_SESSION"
+        info "Migrated session state from /tmp to .claude/state/"
+    fi
+
+    # Migrate learnings from .claude/learnings.jsonl to .claude/state/learnings.jsonl
+    OLD_LEARNINGS="$PROJECT_DIR/.claude/learnings.jsonl"
+    NEW_LEARNINGS="$PROJECT_DIR/.claude/state/learnings.jsonl"
+    if [ -f "$OLD_LEARNINGS" ] && [ ! -f "$NEW_LEARNINGS" ]; then
+        mv "$OLD_LEARNINGS" "$NEW_LEARNINGS"
+        info "Migrated learnings.jsonl to .claude/state/"
+    elif [ -f "$OLD_LEARNINGS" ] && [ -f "$NEW_LEARNINGS" ]; then
+        # Append old entries to new file, then remove old
+        cat "$OLD_LEARNINGS" >> "$NEW_LEARNINGS"
+        rm -f "$OLD_LEARNINGS"
+        info "Merged learnings.jsonl into .claude/state/"
+    fi
+
+    # Add state dir to .gitignore if not already there
+    GITIGNORE="$PROJECT_DIR/.gitignore"
+    if [ -f "$GITIGNORE" ] && ! grep -qF '.claude/state/' "$GITIGNORE" 2>/dev/null; then
+        echo "" >> "$GITIGNORE"
+        echo "# Claude Code session state (v1.3.0+)" >> "$GITIGNORE"
+        echo ".claude/state/*.json" >> "$GITIGNORE"
+        echo ".claude/state/*.jsonl" >> "$GITIGNORE"
+        echo ".claude/state/*.txt" >> "$GITIGNORE"
+        echo ".claude/state/*.md" >> "$GITIGNORE"
+        ok "Added .claude/state/ entries to .gitignore"
+    fi
+else
+    if [ -f "/tmp/unity-claude-hooks/session-state.json" ]; then
+        info "Would migrate session state from /tmp to .claude/state/"
+    fi
+    if [ -f "$PROJECT_DIR/.claude/learnings.jsonl" ]; then
+        info "Would migrate learnings.jsonl to .claude/state/"
+    fi
+fi
+
 # ── Copy New Files ─────────────────────────────────────────────────────────
 ADDED=0
 MODIFIED=0

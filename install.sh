@@ -204,6 +204,10 @@ else
     fi
 fi
 
+# ── Step 3b: Create State Directory ────────────────────────────────────────
+mkdir -p "$PROJECT_DIR/.claude/state"
+ok "State directory created (.claude/state/)"
+
 # ── Step 4: Make Scripts Executable ─────────────────────────────────────────
 chmod +x "$PROJECT_DIR/.claude/hooks/"*.sh 2>/dev/null || true
 ok "Hook scripts made executable"
@@ -288,10 +292,16 @@ if [ -f "$GITIGNORE" ]; then
     if ! grep -qF '.claude/settings.local.json' "$GITIGNORE" 2>/dev/null; then
         ENTRIES_TO_ADD+=('.claude/settings.local.json')
     fi
+    if ! grep -qF '.claude/state/' "$GITIGNORE" 2>/dev/null; then
+        ENTRIES_TO_ADD+=('.claude/state/*.json')
+        ENTRIES_TO_ADD+=('.claude/state/*.jsonl')
+        ENTRIES_TO_ADD+=('.claude/state/*.txt')
+        ENTRIES_TO_ADD+=('.claude/state/*.md')
+    fi
 
     if [ ${#ENTRIES_TO_ADD[@]} -gt 0 ]; then
         echo "" >> "$GITIGNORE"
-        echo "# Claude Code local settings" >> "$GITIGNORE"
+        echo "# Claude Code local settings and session state" >> "$GITIGNORE"
         for ENTRY in "${ENTRIES_TO_ADD[@]}"; do
             echo "$ENTRY" >> "$GITIGNORE"
         done
