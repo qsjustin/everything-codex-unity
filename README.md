@@ -1,6 +1,6 @@
 # everything-claude-unity
 
-[English](README.md) | [中文](docs/i18n/README.zh-CN.md) | [日本語](docs/i18n/README.ja.md) | [한국어](docs/i18n/README.ko.md)
+[English](README.md) | [中文](docs/i18n/README.zh-CN.md) | [日本語](docs/i18n/README.ja.md) | [한국어](docs/i18n/README.ko.md) | [Español](docs/i18n/README.es.md) | [Português](docs/i18n/README.pt-BR.md) | [Deutsch](docs/i18n/README.de.md) | [Français](docs/i18n/README.fr.md) | [Türkçe](docs/i18n/README.tr.md)
 
 **The ultimate Claude Code toolkit for Unity game development.**
 
@@ -14,14 +14,15 @@ Built for **solo indie mobile game developers**. Drop it into any Unity project 
 
 | Component | Count | Purpose |
 |-----------|-------|---------|
-| **Agents** | 15 | Specialized sub-agents for coding, verification, scene building, profiling, testing |
-| **Commands** | 21 | Slash commands like `/unity-workflow`, `/unity-ralph`, `/unity-team` |
-| **Skills** | 40 | Knowledge modules for Unity systems, gameplay patterns, and mobile genres |
+| **Agents** | 20 | Specialized sub-agents across 3 model tiers (haiku/sonnet/opus) |
+| **Commands** | 22 | Slash commands like `/unity-workflow`, `/unity-ralph`, `/unity-team`, `/unity-skillify` |
+| **Skills** | 41 | Knowledge modules for Unity systems, gameplay patterns, and mobile genres |
 | **Hooks** | 22 | Safety net, quality gates, notifications, session persistence, auto-learning |
 | **Rules** | 5 | C# coding standards, performance rules, MVS architecture patterns |
 | **Scripts** | 8 | Validation tools for meta files, code quality, serialization, architecture |
 | **Templates** | 10 | C# templates for MVS pattern (Model, View, System, LifetimeScope, Message) |
-| **Tests** | 46 | Automated test suite for hooks, lib utilities, and installation |
+| **Tests** | 60+ | Automated test suite for hooks, state, cross-validation, templates, skills |
+| **Benchmarks** | 4 | Quality evaluation scenarios with structural comparison |
 
 ---
 
@@ -57,7 +58,20 @@ Spawn multiple agents simultaneously — coder + tester + reviewer working in pa
 
 ```
 /unity-team --build "add health system with damage and healing"
+/unity-team --security "audit the save system"
+/unity-team --build --quick "add a basic score counter"
 ```
+
+### What's New in v1.3.0
+
+- **Smart Model Routing** — complexity heuristics auto-select haiku/sonnet/opus agents based on task signals
+- **Persistent State** — session data survives reboots in `.claude/state/` with structured schema
+- **Plan Critic** — `unity-critic` agent challenges your plans before execution (built into `/unity-workflow`)
+- **Security Auditing** — `unity-security-reviewer` catches PlayerPrefs secrets, hardcoded keys, insecure saves
+- **Benchmarking** — measure agent quality with reproducible evaluation scenarios
+- **Skillify** — `/unity-skillify` auto-generates skills from your accumulated session learnings
+- **Multi-channel Notifications** — Discord, Slack, OS-native with event filtering and rate limiting
+- **Hardened CI** — cross-validation, tool restriction checks, template and skill quality gates
 
 ### Verify-Fix Loop
 

@@ -2,6 +2,94 @@
 
 All notable changes to everything-claude-unity will be documented in this file.
 
+## [1.3.0] — 2026-04-18
+
+### Added
+
+**Structured State Management**
+- Session state now persists in `.claude/state/` (project-local, git-ignored) instead of `/tmp/`
+- Structured `session.json` schema with `schema_version`, `plan`, `verification`, and `agent_context` fields
+- Configurable session TTL via `UNITY_SESSION_TTL_HOURS` environment variable (default: 4)
+- New `_lib.sh` helpers: `unity_state_read()`, `unity_state_write()`, `unity_state_plan_update()`, `unity_track_warning()`
+- State survives system reboots — no more lost session data
+
+**Smart Model Routing**
+- New always-loaded `model-routing` skill with complexity heuristics for automatic agent tier selection
+- Complexity signals: file count, keywords, scope indicators, risk factors
+- `/unity-workflow` Plan phase now evaluates complexity to choose agent tier automatically
+- `/unity-team --quick` flag swaps opus agents for sonnet/haiku equivalents
+- `/unity-team --security` preset (unity-security-reviewer + unity-reviewer + unity-linter)
+
+**New Agents (5)**
+- `unity-scout` (haiku) — fast read-only codebase exploration for scanning before delegation
+- `unity-linter` (haiku) — quick validation pass against Unity rules without deep reasoning
+- `unity-security-reviewer` (sonnet) — Unity-specific security audit (PlayerPrefs secrets, unencrypted saves, hardcoded keys, insecure network calls)
+- `unity-git-master` (sonnet) — Unity-aware git operations (LFS, .meta hygiene, merge strategies, .gitattributes)
+- `unity-critic` (opus) — challenges implementation plans before execution (integrated into /unity-workflow)
+
+**New Commands (1)**
+- `/unity-skillify` — generates new skills from accumulated session learnings with `--install` flag for auto-placement
+
+**Benchmarking Infrastructure**
+- `benchmarks/` directory with runner, evaluator, and scenario framework
+- 4 benchmark scenarios: simple-component, serialization-rename, performance-review, multi-system-feature
+- `run-benchmarks.sh` with `--compare` flag for version-to-version quality comparison
+- Fixture C# files for reproducible evaluation
+
+**Enhanced Learning Pipeline**
+- `/unity-learn analytics` subcommand with session time analysis, agent usage, warning hotspots, file hotspots, trends
+- `auto-learn.sh` now captures `warnings_fired` from quality-gate and other hooks
+- `quality-gate.sh` tracks warnings via `unity_track_warning()` for session analytics
+- `/unity-skillify` cross-references existing skills to avoid duplicates
+
+**Notification System Upgrade**
+- Multi-channel support via `UNITY_NOTIFY_CHANNELS` JSON env var
+- Event types: `session_end`, `build_complete`, `verify_fail`, `cost_threshold`
+- OS-native notifications (macOS osascript, Linux notify-send) via `UNITY_NOTIFY_NATIVE=1`
+- Rate limiting per channel with configurable interval
+- `stop-validate.sh` and `build-analyze.sh` emit notification events
+- Backward compatible with existing `UNITY_NOTIFY_WEBHOOK_URL` config
+
+**CI Pipeline Hardening**
+- Settings-to-hooks cross-validation (every hook reference verified)
+- Agent tool restriction validation (haiku/reviewer agents must be read-only)
+- C# template syntax validation (balanced braces)
+- Skill quality checks (examples, anti-pattern guidance)
+- Benchmark scenario JSON validation
+- 4 new test files: test-state, test-cross-validation, test-templates, test-skills
+
+**Documentation**
+- `docs/HOOK-REFERENCE.md` — comprehensive hook catalog with profiles, kill switches, env vars
+- `docs/SKILL-CATALOG.md` — one-page overview of all 41 skills by category
+- `docs/BENCHMARK-GUIDE.md` — how to run and create benchmarks
+- 5 new README translations: Spanish, Portuguese (BR), German, French, Turkish
+- Updated AGENT-GUIDE, ARCHITECTURE, MODEL-ROUTING docs for new agents and features
+
+### Changed
+
+- Session state moved from `/tmp/unity-claude-hooks/` to `.claude/state/` (project-local)
+- Session file renamed from `session-state.json` to `session.json` with schema versioning
+- Learnings file moved from `.claude/learnings.jsonl` to `.claude/state/learnings.jsonl`
+- Pre-compact state moved from `/tmp/` to `.claude/state/`
+- `session-restore.sh` uses JSON `saved_at` field instead of `stat` for portable TTL checks
+- `install.sh` creates `.claude/state/` directory and adds it to `.gitignore`
+- `upgrade.sh` migrates state from old `/tmp/` and `.claude/learnings.jsonl` locations
+
+### Component Counts
+
+| Component | v1.2.0 | v1.3.0 |
+|-----------|--------|--------|
+| Agents | 15 | 20 |
+| Commands | 21 | 22 |
+| Skills | 40 | 41 |
+| Hooks | 22 | 22 |
+| Rules | 5 | 5 |
+| Scripts | 8 | 8 |
+| Templates | 10 | 10 |
+| Tests | 46 | 60+ |
+
+---
+
 ## [1.2.0] — 2026-04-14
 
 ### Added

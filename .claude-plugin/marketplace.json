@@ -1,7 +1,7 @@
 {
   "name": "everything-claude-unity",
   "displayName": "Everything Claude Unity",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "The ultimate Claude Code toolkit for Unity game development. Production-ready agents, commands, skills, and safety hooks for building mobile games with natural language.",
   "author": {
     "name": "XeldarAlz",
@@ -27,13 +27,14 @@
     "Unity"
   ],
   "highlights": [
-    "15 specialized agents — coder, verifier, prototyper, optimizer, shader-dev, scene-builder, and more",
-    "Full workflow pipeline: clarify → plan → execute → verify with automated fix loops",
+    "20 specialized agents across 3 model tiers (haiku/sonnet/opus) with smart routing",
+    "Full workflow pipeline: clarify → plan → critic → execute → verify with automated fix loops",
     "Unity MCP integration for scene building, profiling, testing, and builds",
     "22 safety hooks with profile-gated activation (minimal / standard / strict)",
-    "40 knowledge skills covering Unity systems, gameplay patterns, genres, and third-party packages",
-    "10 C# templates for MVS architecture (Model, View, System, LifetimeScope, Message)",
-    "8 validation scripts for meta integrity, code quality, serialization, and architecture"
+    "41 knowledge skills covering Unity systems, gameplay patterns, genres, and third-party packages",
+    "Persistent structured state management with plan tracking and verification evidence",
+    "Benchmarking infrastructure for measuring and comparing agent quality",
+    "Security auditing, git hygiene, and multi-channel notifications"
   ],
   "compatibility": {
     "claudeCode": ">=1.0.0",
