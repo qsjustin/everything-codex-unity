@@ -1,5 +1,13 @@
 # everything-claude-unity
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/XeldarAlz/everything-claude-unity?style=social)](https://github.com/XeldarAlz/everything-claude-unity/stargazers)
+[![GitHub release](https://img.shields.io/github/v/release/XeldarAlz/everything-claude-unity?include_prereleases)](https://github.com/XeldarAlz/everything-claude-unity/releases)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-8A2BE2)](https://claude.ai/claude-code)
+[![Unity](https://img.shields.io/badge/Unity-2021.3%20LTS%2B-000000?logo=unity)](https://unity.com/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Discussions](https://img.shields.io/github/discussions/XeldarAlz/everything-claude-unity)](https://github.com/XeldarAlz/everything-claude-unity/discussions)
+
 [English](README.md) | [中文](docs/i18n/README.zh-CN.md) | [日本語](docs/i18n/README.ja.md) | [한국어](docs/i18n/README.ko.md) | [Español](docs/i18n/README.es.md) | [Português](docs/i18n/README.pt-BR.md) | [Deutsch](docs/i18n/README.de.md) | [Français](docs/i18n/README.fr.md) | [Türkçe](docs/i18n/README.tr.md)
 
 **The ultimate Claude Code toolkit for Unity game development.**
@@ -7,6 +15,15 @@
 A production-ready, plug-and-play system that gives Claude Code deep Unity expertise — from writing performant C# to building scenes, profiling performance, and triggering iOS/Android builds — all through natural language.
 
 Built for **solo indie mobile game developers**. Drop it into any Unity project and it works.
+
+### Why star this?
+
+- **Drop-in, zero-config** — one `install.sh` and Claude Code knows Unity inside out
+- **20 specialized agents** across haiku/sonnet/opus tiers with automatic complexity routing
+- **22 safety hooks** that prevent scene/meta corruption, silent data loss, and GC spikes before they happen
+- **MVS architecture built-in** — VContainer + MessagePipe + UniTask patterns enforced by rules and templates
+- **MCP-native** — scene building, profiling, and iOS/Android builds triggered from chat
+- **60+ automated tests** and reproducible benchmarks so the toolkit itself stays honest
 
 ---
 
