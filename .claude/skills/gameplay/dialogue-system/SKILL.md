@@ -640,13 +640,12 @@ public class NPCDialogueTrigger : MonoBehaviour
         return dialogue;
     }
 
-    private void Update()
+    // Called by InputView when the Interact action fires (see architecture rules — no Input.* here).
+    public void OnInteractPressed()
     {
-        if (_playerInRange && Input.GetKeyDown(KeyCode.E) && !DialogueRunner.Instance.IsRunning)
-        {
-            interactPrompt.SetActive(false);
-            DialogueRunner.Instance.StartDialogue(GetCurrentDialogue());
-        }
+        if (!_playerInRange || DialogueRunner.Instance.IsRunning) return;
+        interactPrompt.SetActive(false);
+        DialogueRunner.Instance.StartDialogue(GetCurrentDialogue());
     }
 
     private void OnTriggerEnter2D(Collider2D other)

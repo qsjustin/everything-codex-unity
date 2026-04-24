@@ -384,14 +384,10 @@ public class PauseState : IState
         // Hide pause menu UI
     }
 
-    public void Update()
-    {
-        // Listen for unpause input
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            _sm.RevertToPreviousState();
-        }
-    }
+    public void Update() { }
+
+    // Called by InputView when the Pause action fires (UI action map while paused).
+    public void OnPausePressed() => _sm.RevertToPreviousState();
 
     public void FixedUpdate() { }
 }

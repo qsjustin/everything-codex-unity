@@ -41,13 +41,17 @@ public sealed class PlayerNetworkController : NetworkBehaviour
         }
     }
 
+    // Input is supplied by InputView (see architecture rules) — never read Input.* here.
+    // InputView calls SetMoveInput on the locally owned NetworkBehaviour each frame.
+    private Vector2 _moveInput;
+    public void SetMoveInput(Vector2 input) => _moveInput = input;
+
     private void Update()
     {
         if (!IsOwner) return;
 
-        // Collect input and send to server
-        Vector3 input = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
-        MoveServerRpc(input);
+        // Forward the cached input to the server
+        MoveServerRpc(new Vector3(_moveInput.x, 0, _moveInput.y));
     }
 
     [ServerRpc]

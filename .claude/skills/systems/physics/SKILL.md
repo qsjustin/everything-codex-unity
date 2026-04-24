@@ -8,15 +8,20 @@ globs: ["**/*Physics*.cs", "**/*Collider*.cs", "**/*Rigidbody*.cs", "**/*Trigger
 
 ## FixedUpdate Discipline
 
-All physics code goes in `FixedUpdate`. All input reading goes in `Update`.
+All physics code goes in `FixedUpdate`. Input reading happens in `InputView.Update` (see architecture rules) and is forwarded to the System, which applies forces in `FixedUpdate` from the cached value.
 
 ```csharp
-private Vector2 _moveInput;
-
+// InputView.cs — reads input in Update, forwards to System
 private void Update()
 {
-    _moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+    Vector2 moveInput = _controls.Player.Move.ReadValue<Vector2>();
+    _playerSystem.SetMoveInput(moveInput);
 }
+
+// PlayerView.cs — applies physics in FixedUpdate from System-owned cached input
+private Vector2 _moveInput;
+
+public void SetMoveInput(Vector2 input) => _moveInput = input;
 
 private void FixedUpdate()
 {

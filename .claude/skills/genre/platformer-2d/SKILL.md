@@ -42,6 +42,17 @@ public sealed class PlatformerController : MonoBehaviour
         _rb = GetComponent<Rigidbody2D>();
     }
 
+    // Input is forwarded from InputView via these methods — never read Input.* here.
+    public void SetMoveInput(float horizontal) => _horizontalInput = horizontal;
+    public void OnJumpPressed()
+    {
+        _jumpBufferTimer = _jumpBufferTime;
+        _jumpHeld = true;
+    }
+    public void OnJumpReleased() => _jumpHeld = false;
+
+    private float _horizontalInput;
+
     private void Update()
     {
         // Ground check
@@ -51,13 +62,6 @@ public sealed class PlatformerController : MonoBehaviour
         if (_isGrounded) _coyoteTimer = _coyoteTime;
         else _coyoteTimer -= Time.deltaTime;
 
-        // Jump buffer
-        if (Input.GetButtonDown("Jump"))
-        {
-            _jumpBufferTimer = _jumpBufferTime;
-            _jumpHeld = true;
-        }
-        if (Input.GetButtonUp("Jump")) _jumpHeld = false;
         _jumpBufferTimer -= Time.deltaTime;
 
         // Trigger jump
@@ -72,7 +76,7 @@ public sealed class PlatformerController : MonoBehaviour
     private void FixedUpdate()
     {
         // Horizontal movement with acceleration
-        float targetSpeed = Input.GetAxisRaw("Horizontal") * _moveSpeed;
+        float targetSpeed = _horizontalInput * _moveSpeed;
         float accel = _isGrounded ? _acceleration : _acceleration * _airControlMultiplier;
         float decel = _isGrounded ? _deceleration : _deceleration * _airControlMultiplier;
         float rate = Mathf.Abs(targetSpeed) > 0.01f ? accel : decel;
