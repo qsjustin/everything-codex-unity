@@ -26,9 +26,18 @@ image.DOColor(Color.red, 0.2f);                       // Color change
 image.DOFillAmount(1f, 1f);                            // Fill bar
 rectTransform.DOAnchorPos(Vector2.zero, 0.3f);        // UI position
 
-// Material tweens
-renderer.material.DOColor(Color.white, 0.1f);
-renderer.material.DOFloat(1f, "_Dissolve", 1f);
+// Material tweens — NEVER use renderer.material (clones material, breaks batching).
+// Use MaterialPropertyBlock for per-instance changes, or tween a shared material if all instances share the tween.
+private static readonly int ColorId = Shader.PropertyToID("_Color");
+private MaterialPropertyBlock _propBlock;
+
+Color from = Color.black;
+DOTween.To(() => from, c =>
+{
+    from = c;
+    _propBlock.SetColor(ColorId, c);
+    renderer.SetPropertyBlock(_propBlock);
+}, Color.white, 0.1f);
 
 // Arbitrary value tween
 float value = 0f;
