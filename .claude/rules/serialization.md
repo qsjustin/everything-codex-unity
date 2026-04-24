@@ -36,7 +36,7 @@ The `[FormerlySerializedAs]` attribute stays forever. Never remove it.
 [SerializeField] private float _health = 100f;
 
 // BAD — public exposes to inspector AND code
-public float health = 100f;
+public float health = 100f;  // (note: if public is needed, use lowerCamelCase)
 
 // For auto-properties (C# 7.3+):
 [field: SerializeField] public float Health { get; private set; }

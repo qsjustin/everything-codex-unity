@@ -80,6 +80,67 @@ public sealed class PlayerView : MonoBehaviour
 
 VContainer is the **only** way to wire dependencies. No singletons, no static access, no `FindObjectOfType`.
 
+### NO GameContext / Service Locator (NON-NEGOTIABLE)
+
+Do NOT create a `GameContext`, `ServiceLocator`, `Dependencies`, or any "god container" class that bundles multiple dependencies into a single injectable object. This is a **Service Locator anti-pattern** that defeats the purpose of DI.
+
+```csharp
+// BAD — GameContext exposes everything to everyone
+public class GameContext
+{
+    public PlayerModel Player { get; }
+    public ScoreSystem Score { get; }      // Why should SpawnView see this?
+    public SpawnSystem Spawner { get; }    // Why should ScoreView see this?
+    public IAudioService Audio { get; }
+}
+
+// Every consumer gets access to ALL dependencies
+public sealed class ScoreView : MonoBehaviour
+{
+    [Inject]
+    public void Construct(GameContext ctx)  // Real dependencies are hidden
+    {
+        _score = ctx.Score;  // Could also access ctx.Spawner — no access control
+    }
+}
+```
+
+**Why this is wrong:**
+- **Violates least-privilege**: every consumer can access every dependency
+- **Hides real dependencies**: the constructor/Construct signature says "I need GameContext" instead of "I need ScoreModel"
+- **Untestable**: testing one class requires constructing the entire GameContext with all its dependencies
+- **Binding ≠ injection**: GameContext construction becomes a second wiring step outside the LifetimeScope, duplicating responsibility
+- **Properties that should be private are exposed**: GameContext forces public access on dependencies that only specific consumers need
+
+```csharp
+// GOOD — each class declares exactly what it needs
+public sealed class ScoreView : MonoBehaviour
+{
+    private ScoreModel _model;
+
+    [Inject]
+    public void Construct(ScoreModel model)  // Only what it needs — nothing else visible
+    {
+        _model = model;
+    }
+}
+
+public sealed class CombatSystem : IDisposable
+{
+    private readonly PlayerModel _player;
+    private readonly IPublisher<DamageDealtMessage> _pub;
+
+    // Constructor declares exact dependencies — self-documenting, testable
+    public CombatSystem(PlayerModel player, IPublisher<DamageDealtMessage> pub)
+    {
+        _player = player;
+        _pub = pub;
+    }
+}
+```
+
+**The rule:** Every class requests only its own dependencies via constructor (Systems) or `[Inject] Construct` (Views). The LifetimeScope is the single place where binding and resolution happens. No intermediary container objects.
+
 ```csharp
 public sealed class GameLifetimeScope : LifetimeScope
 {
@@ -253,6 +314,99 @@ public sealed class WeaponDefinition : ScriptableObject
 ```
 
 ScriptableObjects hold **static/config data**. Runtime mutable state goes in Models.
+
+## Input System Architecture (NON-NEGOTIABLE)
+
+Input is a **View-layer concern**. It follows the same MVS pattern: InputView reads raw input and forwards it to Systems. Systems never touch Unity Input directly.
+
+### InputView Pattern
+
+```csharp
+// InputView — thin adapter between New Input System and game Systems
+public sealed class InputView : MonoBehaviour
+{
+    private PlayerControls _controls;
+    private PlayerSystem _playerSystem;
+    private UISystem _uiSystem;
+
+    private void Awake()
+    {
+        _controls = new PlayerControls();
+    }
+
+    [Inject]
+    public void Construct(PlayerSystem playerSystem, UISystem uiSystem)
+    {
+        _playerSystem = playerSystem;
+        _uiSystem = uiSystem;
+    }
+
+    private void OnEnable()
+    {
+        _controls.Player.Enable();
+        _controls.Player.Jump.performed += OnJump;
+        _controls.Player.Attack.performed += OnAttack;
+        _controls.Player.Pause.performed += OnPause;
+    }
+
+    private void OnDisable()
+    {
+        _controls.Player.Jump.performed -= OnJump;
+        _controls.Player.Attack.performed -= OnAttack;
+        _controls.Player.Pause.performed -= OnPause;
+        _controls.Player.Disable();
+    }
+
+    private void Update()
+    {
+        Vector2 move = _controls.Player.Move.ReadValue<Vector2>();
+        _playerSystem.SetMoveInput(move);
+    }
+
+    private void OnJump(InputAction.CallbackContext ctx) => _playerSystem.Jump();
+    private void OnAttack(InputAction.CallbackContext ctx) => _playerSystem.Attack();
+    private void OnPause(InputAction.CallbackContext ctx) => _uiSystem.TogglePause();
+}
+```
+
+### VContainer Registration
+
+```csharp
+protected override void Configure(IContainerBuilder builder)
+{
+    // InputView is a MonoBehaviour — find in scene
+    builder.RegisterComponentInHierarchy<InputView>();
+}
+```
+
+### Rules
+- **InputView owns PlayerControls** — no other class creates or holds a `PlayerControls` instance
+- **InputView is a View** — it reads input and calls Systems. Zero game logic
+- **Systems are input-agnostic** — they expose methods like `SetMoveInput(Vector2)`, `Jump()`, `Attack()`. They never know where input comes from (keyboard, gamepad, AI, network replay)
+- **One InputView per scene** — prevents duplicate action subscriptions
+- **Enable/Disable is mandatory** — `OnEnable` enables action maps, `OnDisable` disables them and unsubscribes callbacks
+- **Continuous input in Update** — read `ReadValue<Vector2>()` in Update, cache it. Apply physics in FixedUpdate using cached values
+- **Discrete input via callbacks** — button presses use `performed` callbacks, not polling
+- **Action map switching lives in InputView** — controlled by Systems via method calls (e.g., `SwitchToUI()`, `SwitchToGameplay()`)
+
+### Testing Input-Driven Systems
+
+Because Systems are input-agnostic, they are trivially testable:
+```csharp
+[Test]
+public void SetMoveInput_WithRightVector_UpdatesModelPosition()
+{
+    var model = new PlayerModel();
+    var sut = new PlayerSystem(model);
+
+    sut.SetMoveInput(Vector2.right);
+    sut.Tick(1f);
+
+    Assert.That(model.Position.Value.x, Is.GreaterThan(0));
+}
+```
+
+No input mocking needed — the System never sees InputAction, PlayerControls, or any Unity Input type.
 
 ## Dependency Direction
 
