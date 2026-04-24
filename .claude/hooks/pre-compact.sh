@@ -26,7 +26,7 @@ RECENT_COMMITS=$(git log --oneline -5 2>/dev/null || echo "(no commits)")
 CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "(unknown)")
 
 # Count modified C# files specifically
-CS_MODIFIED=$(echo "$MODIFIED_FILES" | grep '\.cs$' | wc -l | tr -d ' ')
+CS_MODIFIED=$(echo "$MODIFIED_FILES" | grep -c '\.cs$' | tr -d ' ')
 
 # Write state file
 cat > "$STATE_FILE" <<EOF

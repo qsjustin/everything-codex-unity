@@ -17,7 +17,7 @@ HOOK_PROFILE_LEVEL="standard"
 source "${SCRIPT_DIR}/_lib.sh"
 
 # Initialize session start time
-echo "$(date +%s)" > "${UNITY_HOOK_STATE_DIR}/session-start-time"
+date +%s > "${UNITY_HOOK_STATE_DIR}/session-start-time"
 
 # Clear stale gateguard state from previous sessions
 rm -f "$UNITY_READS_FILE" "$UNITY_EDITS_FILE" "$UNITY_COST_FILE" "$UNITY_LEARNING_FILE"

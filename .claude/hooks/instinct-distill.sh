@@ -110,8 +110,6 @@ TAG_STATS=$(echo "$PROJ_OBS" | jq -s '
 
 echo "$TAG_STATS" | jq -c '.[]' 2>/dev/null | while read -r row; do
     TAG=$(echo "$row" | jq -r '.tag')
-    TOTAL=$(echo "$row" | jq -r '.total')
-    DELTA=$(echo "$row" | jq -r '.warn_delta')
 
     case "$TAG" in
         view)    TRIG="before editing *View.cs" ; ACTION="expect quality-gate warnings; confirm the Model is read first and no Update-loop allocations are introduced" ; DOMAIN="mvs" ;;

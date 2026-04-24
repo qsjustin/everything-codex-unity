@@ -43,7 +43,8 @@ SUFFIX=""
 PATH_TAG="other"
 if [ -n "$FILE" ]; then
     SUFFIX=".${FILE##*.}"
-    case "$SUFFIX" in .$FILE) SUFFIX="" ;; esac
+    # If no extension present, ${FILE##*.} equals $FILE; clear SUFFIX then.
+    if [ "$SUFFIX" = ".$FILE" ]; then SUFFIX=""; fi
 
     # Classify Unity path role
     case "$FILE" in
