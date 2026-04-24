@@ -2,6 +2,21 @@
 
 All notable changes to everything-claude-unity will be documented in this file.
 
+## [1.4.1] — 2026-04-24
+
+### Fixed
+
+**CI (shellcheck) — first green build since v1.2.x**
+- New `.shellcheckrc` teaches shellcheck how to resolve the `${SCRIPT_DIR}/_lib.sh`
+  source pattern (`external-sources=true`, `source-path=SCRIPTDIR`) and disables
+  SC2034 globally because `HOOK_PROFILE_LEVEL` and the `UNITY_*` path variables
+  are used via deliberate cross-file indirection shellcheck cannot see.
+- `instinct-capture.sh` — replaced SC2254-flagged case pattern `.$FILE` with an
+  explicit `if` check for the no-extension case.
+- `instinct-distill.sh` — removed unused `DELTA` and `TOTAL` locals.
+- `pre-compact.sh` — `grep ... | wc -l` → `grep -c ...`.
+- `session-restore.sh` — `echo "$(date +%s)"` → `date +%s`.
+
 ## [1.4.0] — 2026-04-24
 
 ### Added
