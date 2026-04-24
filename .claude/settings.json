@@ -123,6 +123,11 @@
             "type": "command",
             "command": ".claude/hooks/cost-tracker.sh",
             "timeout": 2000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/instinct-capture.sh",
+            "timeout": 2000
           }
         ]
       }
@@ -168,6 +173,11 @@
           {
             "type": "command",
             "command": ".claude/hooks/auto-learn.sh",
+            "timeout": 10000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/instinct-distill.sh",
             "timeout": 10000
           },
           {
