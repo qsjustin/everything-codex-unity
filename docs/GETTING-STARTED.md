@@ -176,14 +176,15 @@ Run `/unity-doctor` as a first troubleshooting step. It checks MCP connectivity,
 - On macOS/Linux, hooks need execute permission: `chmod +x .codex-legacy/hooks/*.sh`
 - The `install.sh` script handles this automatically
 
-### Commands Not Showing Up
+### Workflow Skills Not Triggering
 
-- Commands must be in `.codex-legacy/commands/` with a `.md` extension
-- They need valid frontmatter with `name` and `user-invocable: true`
-- Restart Codex after adding new commands
+- Workflow skills must be under `skills/**/SKILL.md`.
+- They need valid Codex frontmatter with `name` and `description`.
+- The `description` should clearly say when Codex should use the workflow.
+- Restart Codex after adding or renaming skills.
 
 ### Codex Does Not Know About Unity
 
 - Run `/unity-init` to generate the project-specific AGENTS.md
-- Verify that `.codex-legacy/rules/` contains the rule files (these load automatically)
-- Skills are loaded by agents as needed; they do not need manual activation
+- Verify that `skills/unity-project-rules/SKILL.md` exists and references `.codex-legacy/rules/`.
+- Skills are loaded by Codex as needed; they do not need manual activation.

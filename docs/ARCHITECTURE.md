@@ -43,9 +43,9 @@ benchmarks/          Structural correctness benchmarks for agent output
 
 ---
 
-## How Agents Work
+## Legacy Role References
 
-Agents are Markdown files in `.codex-legacy/agents/` with YAML frontmatter that controls their behavior.
+Legacy role references are Markdown files in `.codex-legacy/agents/`. They are preserved from the original Claude-oriented toolkit as reference material for workflow skills. Codex does not auto-register these files as custom agents.
 
 ### Frontmatter Fields
 
@@ -76,9 +76,9 @@ Agents only have access to the tools listed in their frontmatter. This enforces 
 
 ---
 
-## How Commands Work
+## Workflow Skills
 
-Commands are Markdown files in `.codex-legacy/commands/` with `user-invocable: true` in frontmatter. Users invoke them with `/command-name` in Codex.
+Former slash commands are migrated to Codex workflow skills under `skills/workflows/**/SKILL.md`. Codex triggers them from each skill's `name` and `description`.
 
 Commands are orchestration entry points. They:
 
@@ -87,11 +87,11 @@ Commands are orchestration entry points. They:
 3. Delegate to one or more agents
 4. Coordinate the overall task
 
-Example flow for `/unity-prototype`:
+Example flow for `unity-prototype`:
 ```
-User: /unity-prototype "2D platformer with wall jumping"
-  -> Command: unity-prototype.md (decomposes the task)
-    -> Agent: unity-prototyper (writes scripts, builds scene via MCP)
+User: "Use unity-prototype to make a 2D platformer with wall jumping"
+  -> Skill: skills/workflows/unity-prototype/SKILL.md
+    -> Reference role guidance: .codex-legacy/agents/unity-prototyper.md
       -> Tools: Write (C# files), mcp__unityMCP__* (scene setup)
 ```
 
@@ -113,11 +113,7 @@ skills/
 
 ### Discovery
 
-Codex discovers skills via glob patterns. Agents reference skills by category path, and the system loads matching `.md` files.
-
-### Always-Apply Skills
-
-Skills with `alwaysApply: true` in frontmatter (like `unity-mcp-patterns`) are loaded for every agent that has MCP tool access. These contain critical patterns that should never be skipped.
+Codex discovers skills from `SKILL.md` frontmatter. The supported trigger metadata here is `name` and `description`; do not rely on Claude-only fields such as `alwaysApply` or `globs`.
 
 ---
 

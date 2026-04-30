@@ -38,8 +38,7 @@ Generate a complete SKILL.md with:
 ```yaml
 ---
 name: [topic-kebab-case]
-description: "[synthesized from learning patterns]"
-globs: ["[derived from file patterns in learnings]"]
+description: "[specific trigger description synthesized from learning patterns]"
 ---
 ```
 

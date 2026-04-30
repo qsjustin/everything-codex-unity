@@ -1,6 +1,6 @@
 ---
 name: unity-skill-stocktake
-description: "Audit all skills and agents in .codex-legacy/ for duplicates, stale references, never-loaded entries, broken globs, and frontmatter issues. Produces a cleanup report without modifying anything."
+description: "Audit Codex skills and legacy role references for duplicates, stale references, unsupported frontmatter, and hygiene issues. Produces a cleanup report without modifying anything."
 ---
 
 # /unity-skill-stocktake — Meta-Maintenance Audit
@@ -21,7 +21,7 @@ For each file, parse the YAML frontmatter via a line scan (everything between th
 
 Flag any skill/agent/command missing required fields:
 
-- Skill: `name`, `description`. `alwaysApply` and `globs` are optional but `globs` is recommended.
+- Skill: `name`, `description`. Flag unsupported Claude-only metadata such as `alwaysApply`, `globs`, `user-invocable`, `model`, or `tools` if it appears in Codex skill frontmatter.
 - Agent: `name`, `description`, `model`, `tools`. `color` optional.
 - Command: `name`, `description`.
 
@@ -37,16 +37,13 @@ Two-pass:
 Example to call out:
 > `skills/gameplay/object-pooling` and `skills/gameplay/pool-allocator` — descriptions share 14/18 tokens; consider merging.
 
-### 4. Glob reachability
+### 4. Trigger clarity
 
-For every `globs:` entry in every skill, check whether *any* matching file exists under the project root that is NOT inside `.codex-legacy/`.
-
-- Glob with zero matches → "stale glob" warning.
-- Glob that matches only `.codex-legacy/` itself → probably a meta-skill; not a warning, but note.
+For every skill, check whether the `description` clearly names when Codex should use it. Vague descriptions like "Unity helper" or "Useful patterns" should be reported.
 
 ### 5. Reference audit
 
-- For every skill, check whether its `name` is referenced by any agent (`skills:` field) or command (markdown body). A skill never referenced AND with no `globs:` that match real files is a candidate for removal.
+- For every skill, check whether its `name` is referenced by workflow docs, project docs, or legacy role references. A skill never referenced and with a vague description is a candidate for manual review.
 - For every agent, check whether it's referenced from any command. Orphaned agents are acceptable (users invoke directly) but worth listing.
 
 ### 6. Load-history audit (best effort)
@@ -77,8 +74,8 @@ Non-blocking; surface as "needs manual review".
 ## Duplicates / near-duplicates (<count>)
 - ...
 
-## Stale globs (<count>)
-- `skills/platform/mobile-input` — globs `["Assets/Input/**/*.cs"]` match 0 files
+## Weak trigger descriptions (<count>)
+- `skills/platform/mobile-input` — description does not say when Codex should use it
 
 ## Never-referenced skills (<count>)
 - `skills/<name>` — not referenced by any agent/command and globs match 0 files

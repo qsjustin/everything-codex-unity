@@ -100,8 +100,7 @@ Generate a draft SKILL.md from extracted patterns:
 ```yaml
 ---
 name: [derived-from-topic]
-description: "[synthesized description from patterns]"
-globs: ["[relevant file patterns]"]
+description: "[specific trigger description synthesized from patterns]"
 ---
 ```
 

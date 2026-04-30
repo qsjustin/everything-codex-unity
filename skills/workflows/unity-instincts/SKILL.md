@@ -72,9 +72,7 @@ Graduate high-confidence instincts into draft skill files.
 ```yaml
 ---
 name: learned-<domain>-patterns
-description: "Patterns auto-learned from Unity sessions in this project"
-alwaysApply: false
-globs: ["Assets/Scripts/**/*.cs"]
+description: "Use when working on <domain> patterns auto-learned from Unity sessions in this project."
 ---
 
 # Learned <Domain> Patterns
