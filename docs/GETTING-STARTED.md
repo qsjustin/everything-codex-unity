@@ -25,11 +25,20 @@ From your Unity project root:
 
 ```bash
 git clone https://github.com/<user>/everything-codex-unity.git /tmp/ecu
-/tmp/ecu/install.sh --project-dir .
+/tmp/ecu/install.sh --project-dir . --codex-marketplace
 rm -rf /tmp/ecu
 ```
 
-The installer copies the `.codex-legacy/` directory into your project and validates the structure.
+The installer copies project-level Codex files into your Unity project. The
+`--codex-marketplace` flag also registers this toolkit as a local Codex Desktop
+marketplace plugin so `$unity-*` skills can be discovered in new Codex sessions
+after restarting the app.
+
+To register only the Desktop plugin without touching a Unity project:
+
+```bash
+/tmp/ecu/install.sh --codex-marketplace-only
+```
 
 ### Option B: Manual Copy
 
@@ -50,10 +59,10 @@ chmod +x your-unity-project/.codex-legacy/hooks/*.sh
 
 1. Open a terminal in your Unity project root (the folder containing `Assets/`).
 2. Run `codex` to start Codex.
-3. Try your first command:
+3. Try your first workflow skill:
 
 ```
-/unity-audit
+$unity-audit
 ```
 
 This runs a full project health check: meta file integrity, missing references, assembly definition graph, and code quality scan. It is a safe, read-only operation and a good way to verify everything is working.
@@ -84,7 +93,7 @@ skills/             Codex-discoverable skills and workflows
 
 ## Configuring AGENTS.md for Your Project
 
-Run `/unity-init` to auto-generate a `AGENTS.md` tailored to your project. It scans:
+Run `$unity-init` to auto-generate a `AGENTS.md` tailored to your project. It scans:
 
 - Unity version and active platform
 - Installed packages (render pipeline, Input System, Addressables, etc.)
@@ -129,22 +138,22 @@ See [MCP-SETUP.md](MCP-SETUP.md) for detailed setup and troubleshooting.
 
 ---
 
-## Common First Commands
+## Common First Workflow Skills
 
-| Command | What It Does |
+| Skill invocation | What It Does |
 |---------|-------------|
-| `/unity-doctor` | Diagnostic health check — verify MCP, hooks, project structure are all working |
-| `/unity-init` | Scans your project and generates a tailored AGENTS.md |
-| `/unity-audit` | Full project health check (meta files, missing refs, code quality) |
-| `/unity-review` | Reviews your C# code for Unity-specific issues |
-| `/unity-prototype "description"` | Creates a playable prototype from a text description |
-| `/unity-workflow "description"` | Full pipeline: clarify requirements → plan → execute → verify |
-| `/unity-fix` | Diagnoses and fixes bugs using console errors |
-| `/unity-scene "description"` | Builds a scene from a natural language description |
-| `/unity-build` | Configures and triggers a build |
-| `/unity-test` | Writes and runs EditMode/PlayMode tests |
+| `$unity-doctor` | Diagnostic health check — verify MCP, hooks, project structure are all working |
+| `$unity-init` | Scans your project and generates a tailored AGENTS.md |
+| `$unity-audit` | Full project health check (meta files, missing refs, code quality) |
+| `$unity-review` | Reviews your C# code for Unity-specific issues |
+| `$unity-prototype "description"` | Creates a playable prototype from a text description |
+| `$unity-workflow "description"` | Full pipeline: clarify requirements → plan → execute → verify |
+| `$unity-fix` | Diagnoses and fixes bugs using console errors |
+| `$unity-scene "description"` | Builds a scene from a natural language description |
+| `$unity-build` | Configures and triggers a build |
+| `$unity-test` | Writes and runs EditMode/PlayMode tests |
 
-Start with `/unity-init`, then `/unity-audit` to get a baseline. From there, try `/unity-review` on existing code or `/unity-prototype` to see the full pipeline in action.
+Start with `$unity-init`, then `$unity-audit` to get a baseline. From there, try `$unity-review` on existing code or `$unity-prototype` to see the full pipeline in action.
 
 ---
 
@@ -152,7 +161,7 @@ Start with `/unity-init`, then `/unity-audit` to get a baseline. From there, try
 
 ### Quick Diagnostic
 
-Run `/unity-doctor` as a first troubleshooting step. It checks MCP connectivity, Codex plugin integrity, legacy reference files, project structure, and skill/package alignment — and provides actionable fixes for any issues found.
+Run `$unity-doctor` as a first troubleshooting step. It checks MCP connectivity, Codex plugin integrity, legacy reference files, project structure, and skill/package alignment — and provides actionable fixes for any issues found.
 
 ### Legacy Hook Scripts
 
@@ -185,6 +194,6 @@ Run `/unity-doctor` as a first troubleshooting step. It checks MCP connectivity,
 
 ### Codex Does Not Know About Unity
 
-- Run `/unity-init` to generate the project-specific AGENTS.md
+- Run `$unity-init` to generate the project-specific AGENTS.md
 - Verify that `skills/unity-project-rules/SKILL.md` exists and references `.codex-legacy/rules/`.
 - Skills are loaded by Codex as needed; they do not need manual activation.

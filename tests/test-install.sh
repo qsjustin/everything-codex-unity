@@ -6,6 +6,7 @@
 
 MOCK_DIR="/tmp/unity-test-mock-$$"
 INSTALL_SCRIPT="${REPO_DIR}/install.sh"
+UNINSTALL_SCRIPT="${REPO_DIR}/uninstall.sh"
 
 # --- Setup: create mock Unity project ---
 mkdir -p "${MOCK_DIR}/Assets/Scripts"
@@ -27,6 +28,8 @@ MANIFEST
 # --- Test: install.sh exists and is executable ---
 assert_file_exists "$INSTALL_SCRIPT" "install.sh exists"
 assert_file_executable "$INSTALL_SCRIPT" "install.sh is executable"
+assert_file_exists "$UNINSTALL_SCRIPT" "uninstall.sh exists"
+assert_file_executable "$UNINSTALL_SCRIPT" "uninstall.sh is executable"
 
 # --- Test: install into mock project ---
 INSTALL_OUTPUT=$(bash "$INSTALL_SCRIPT" --project-dir "$MOCK_DIR" 2>&1) || true
@@ -102,6 +105,44 @@ fi
 
 # Verify AGENTS.md was generated
 assert_file_exists "${MOCK_DIR}/AGENTS.md" "install generates AGENTS.md"
+
+# --- Test: Codex Desktop marketplace install ---
+CODEX_HOME_MOCK="${MOCK_DIR}/codex-home"
+MARKETPLACE_OUTPUT=$(CODEX_HOME="$CODEX_HOME_MOCK" bash "$INSTALL_SCRIPT" --codex-marketplace-only 2>&1) || true
+assert_file_exists "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity/.agents/plugins/marketplace.json" "marketplace install writes marketplace.json"
+assert_file_exists "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity/plugins/everything-codex-unity/.codex-plugin/plugin.json" "marketplace install writes plugin manifest"
+assert_file_exists "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity/plugins/everything-codex-unity/skills/workflows/unity-workflow/SKILL.md" "marketplace install copies workflow skills"
+assert_file_exists "${CODEX_HOME_MOCK}/config.toml" "marketplace install updates Codex config"
+
+if [ -f "${CODEX_HOME_MOCK}/config.toml" ]; then
+    CONFIG_TEXT=$(cat "${CODEX_HOME_MOCK}/config.toml")
+    assert_contains "$CONFIG_TEXT" "[marketplaces.everything-codex-unity]" "Codex config contains marketplace section"
+    assert_contains "$CONFIG_TEXT" "[plugins.\"everything-codex-unity@everything-codex-unity\"]" "Codex config enables plugin"
+fi
+
+if [ -f "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity/.agents/plugins/marketplace.json" ]; then
+    JQ_EXIT=0
+    jq . "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity/.agents/plugins/marketplace.json" > /dev/null 2>&1 || JQ_EXIT=$?
+    assert_eq "0" "$JQ_EXIT" "marketplace.json is valid JSON"
+fi
+
+# --- Test: Codex Desktop marketplace uninstall ---
+UNINSTALL_OUTPUT=$(CODEX_HOME="$CODEX_HOME_MOCK" bash "$UNINSTALL_SCRIPT" --codex-marketplace-only --no-backup 2>&1) || true
+if [ ! -d "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity" ]; then
+    PASS=$((PASS + 1))
+    if [ "$VERBOSE" = "--verbose" ]; then
+        echo -e "  ${GREEN}PASS${NC} marketplace uninstall removes plugin directory"
+    fi
+else
+    FAIL=$((FAIL + 1))
+    echo -e "  ${RED}FAIL${NC} marketplace uninstall removes plugin directory"
+fi
+
+if [ -f "${CODEX_HOME_MOCK}/config.toml" ]; then
+    CONFIG_TEXT=$(cat "${CODEX_HOME_MOCK}/config.toml")
+    assert_not_contains "$CONFIG_TEXT" "[marketplaces.everything-codex-unity]" "marketplace uninstall removes marketplace config"
+    assert_not_contains "$CONFIG_TEXT" "[plugins.\"everything-codex-unity@everything-codex-unity\"]" "marketplace uninstall removes plugin config"
+fi
 
 # --- Cleanup ---
 rm -rf "$MOCK_DIR"

@@ -11,15 +11,23 @@
 > - Original Claude agents, commands, hooks, and rules are preserved as reference material under `.codex-legacy/`
 > - Project instructions now use `AGENTS.md`; `CLAUDE.md` is no longer the active entry point in this fork
 >
-> **Install for Codex from a Unity project root:**
+> **Install for Codex Desktop from a Unity project root:**
 >
 > ```bash
 > git clone https://github.com/qsjustin/everything-codex-unity.git /tmp/ecu
-> /tmp/ecu/install.sh --project-dir .
+> /tmp/ecu/install.sh --project-dir . --codex-marketplace
 > rm -rf /tmp/ecu
 > ```
 >
-> **Use with Codex:** open the Unity project in Codex, ensure Unity MCP is running at `http://localhost:8080/mcp` if editor automation is needed, then ask for workflows by name, for example `unity-doctor`, `unity-audit`, `unity-workflow`, `unity-prototype`, `unity-test`, or `unity-build`. Codex discovers these through `skills/workflows/**/SKILL.md`; the original slash-command syntax documented below belongs to the upstream Claude version.
+> `--project-dir` installs project guidance, MCP config, templates, and legacy references into the Unity project. `--codex-marketplace` also registers the toolkit as a local Codex Desktop marketplace plugin so `$unity-*` skills can appear in new Codex sessions after restarting Codex Desktop.
+>
+> To register only the Desktop plugin without copying files into a Unity project, run:
+>
+> ```bash
+> /tmp/ecu/install.sh --codex-marketplace-only
+> ```
+>
+> **Use with Codex:** open the Unity project in Codex, ensure Unity MCP is running at `http://localhost:8080/mcp` if editor automation is needed, then invoke workflows with `$unity-doctor`, `$unity-audit`, `$unity-workflow`, `$unity-prototype`, `$unity-test`, or `$unity-build`. The original slash-command syntax documented below belongs to the upstream Claude version.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/XeldarAlz/everything-claude-unity?style=social)](https://github.com/XeldarAlz/everything-claude-unity/stargazers)
