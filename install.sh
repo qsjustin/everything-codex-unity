@@ -33,10 +33,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         --codex-marketplace)
             INSTALL_MARKETPLACE=1
-            shift
-            ;;
-        --codex-marketplace-only)
-            INSTALL_MARKETPLACE=1
             INSTALL_PROJECT=0
             shift
             ;;
@@ -45,15 +41,16 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         --help|-h)
-            echo "Usage: install.sh [--project-dir <path>] [--codex-marketplace] [--codex-marketplace-only] [--codex-home <path>]"
+            echo "Usage: install.sh [--project-dir <path> | --codex-marketplace] [--codex-home <path>]"
             echo ""
-            echo "Installs everything-codex-unity into a Unity project."
+            echo "Installs everything-codex-unity into a Unity project or Codex Desktop."
             echo ""
             echo "Options:"
             echo "  --project-dir <path>       Unity project directory containing Assets/ and ProjectSettings/."
-            echo "  --codex-marketplace        Also register this toolkit as a Codex Desktop marketplace plugin."
-            echo "  --codex-marketplace-only   Register the Codex Desktop marketplace plugin without touching a Unity project."
+            echo "  --codex-marketplace        Register this toolkit as a Codex Desktop marketplace plugin."
             echo "  --codex-home <path>        Codex home directory for marketplace install (default: \$CODEX_HOME or ~/.codex)."
+            echo ""
+            echo "Note: --project-dir and --codex-marketplace are mutually exclusive."
             exit 0
             ;;
         *)
@@ -63,10 +60,17 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+if [ "$INSTALL_MARKETPLACE" -eq 1 ] && [ "$PROJECT_DIR_SET" -eq 1 ]; then
+    error "--project-dir and --codex-marketplace are mutually exclusive. Run project install and Desktop marketplace install separately."
+    exit 1
+fi
+
 if [ "$INSTALL_PROJECT" -eq 1 ]; then
     PROJECT_DIR=$(cd "$PROJECT_DIR" && pwd)
 fi
-CODEX_HOME=$(mkdir -p "$CODEX_HOME" && cd "$CODEX_HOME" && pwd)
+if [ "$INSTALL_MARKETPLACE" -eq 1 ]; then
+    CODEX_HOME=$(mkdir -p "$CODEX_HOME" && cd "$CODEX_HOME" && pwd)
+fi
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 echo ""
@@ -77,13 +81,8 @@ echo ""
 if [ "$INSTALL_PROJECT" -eq 1 ]; then
     info "Detecting Unity project in: $PROJECT_DIR"
     if [ ! -d "$PROJECT_DIR/Assets" ] || [ ! -d "$PROJECT_DIR/ProjectSettings" ]; then
-        if [ "$INSTALL_MARKETPLACE" -eq 1 ] && [ "$PROJECT_DIR_SET" -eq 0 ]; then
-            warn "Current directory is not a Unity project; installing Codex marketplace only."
-            INSTALL_PROJECT=0
-        else
-            error "This does not look like a Unity project. Expected Assets/ and ProjectSettings/."
-            exit 1
-        fi
+        error "This does not look like a Unity project. Expected Assets/ and ProjectSettings/."
+        exit 1
     else
         ok "Unity project detected"
 
@@ -299,12 +298,9 @@ echo "Next steps:"
 if [ "$INSTALL_PROJECT" -eq 1 ]; then
     echo "  1. Review ${CYAN}AGENTS.md${RESET}"
     echo "  2. Start Unity MCP at ${YELLOW}http://localhost:8080/mcp${RESET} if you want editor automation"
-    echo "  3. Open the project with Codex and ask for a Unity workflow, review, prototype, test, or build"
+    echo "  3. Run ${CYAN}install.sh --codex-marketplace${RESET} if you want Codex Desktop to discover \$unity-* skills"
 else
     echo "  1. Restart Codex Desktop so it reloads the marketplace plugin"
     echo "  2. Open a Unity project and invoke skills such as ${CYAN}\$unity-doctor${RESET} or ${CYAN}\$unity-workflow${RESET}"
-fi
-if [ "$INSTALL_MARKETPLACE" -eq 1 ] && [ "$INSTALL_PROJECT" -eq 1 ]; then
-    echo "  4. Restart Codex Desktop so it reloads the marketplace plugin"
 fi
 echo ""

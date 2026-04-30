@@ -4,6 +4,7 @@
 set -euo pipefail
 
 PROJECT_DIR="."
+PROJECT_DIR_SET=0
 INSTALL_PROJECT=1
 REMOVE_MARKETPLACE=0
 CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
@@ -12,17 +13,17 @@ KEEP_BACKUP=1
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --project-dir)
-            PROJECT_DIR="$2"; shift 2 ;;
+            PROJECT_DIR="$2"; PROJECT_DIR_SET=1; shift 2 ;;
         --codex-marketplace)
-            REMOVE_MARKETPLACE=1; shift ;;
-        --codex-marketplace-only)
             REMOVE_MARKETPLACE=1; INSTALL_PROJECT=0; shift ;;
         --codex-home)
             CODEX_HOME="$2"; shift 2 ;;
         --no-backup)
             KEEP_BACKUP=0; shift ;;
         --help|-h)
-            echo "Usage: uninstall.sh [--project-dir <path>] [--codex-marketplace] [--codex-marketplace-only] [--codex-home <path>] [--no-backup]"
+            echo "Usage: uninstall.sh [--project-dir <path> | --codex-marketplace] [--codex-home <path>] [--no-backup]"
+            echo ""
+            echo "Note: --project-dir and --codex-marketplace are mutually exclusive."
             exit 0 ;;
         *)
             echo "Unknown option: $1" >&2
@@ -30,10 +31,17 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+if [ "$REMOVE_MARKETPLACE" -eq 1 ] && [ "$PROJECT_DIR_SET" -eq 1 ]; then
+    echo "--project-dir and --codex-marketplace are mutually exclusive." >&2
+    exit 1
+fi
+
 if [ "$INSTALL_PROJECT" -eq 1 ]; then
     PROJECT_DIR=$(cd "$PROJECT_DIR" && pwd)
 fi
-CODEX_HOME=$(mkdir -p "$CODEX_HOME" && cd "$CODEX_HOME" && pwd)
+if [ "$REMOVE_MARKETPLACE" -eq 1 ]; then
+    CODEX_HOME=$(mkdir -p "$CODEX_HOME" && cd "$CODEX_HOME" && pwd)
+fi
 STAMP=$(date +%Y%m%d%H%M%S)
 BACKUP_DIR="$PROJECT_DIR/.codex-unity-uninstall-backup-$STAMP"
 

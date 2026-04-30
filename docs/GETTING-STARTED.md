@@ -25,20 +25,17 @@ From your Unity project root:
 
 ```bash
 git clone https://github.com/<user>/everything-codex-unity.git /tmp/ecu
-/tmp/ecu/install.sh --project-dir . --codex-marketplace
+/tmp/ecu/install.sh --project-dir .
+/tmp/ecu/install.sh --codex-marketplace
 rm -rf /tmp/ecu
 ```
 
 The installer copies project-level Codex files into your Unity project. The
-`--codex-marketplace` flag also registers this toolkit as a local Codex Desktop
-marketplace plugin so `$unity-*` skills can be discovered in new Codex sessions
-after restarting the app.
-
-To register only the Desktop plugin without touching a Unity project:
-
-```bash
-/tmp/ecu/install.sh --codex-marketplace-only
-```
+separate `--codex-marketplace` command registers this toolkit as a local Codex
+Desktop marketplace plugin so `$unity-*` skills can be discovered in new Codex
+sessions after restarting the app. `--project-dir` and `--codex-marketplace`
+are mutually exclusive; run both commands separately when you need both setup
+surfaces.
 
 ### Option B: Manual Copy
 

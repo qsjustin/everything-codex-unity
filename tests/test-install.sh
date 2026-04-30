@@ -108,7 +108,7 @@ assert_file_exists "${MOCK_DIR}/AGENTS.md" "install generates AGENTS.md"
 
 # --- Test: Codex Desktop marketplace install ---
 CODEX_HOME_MOCK="${MOCK_DIR}/codex-home"
-MARKETPLACE_OUTPUT=$(CODEX_HOME="$CODEX_HOME_MOCK" bash "$INSTALL_SCRIPT" --codex-marketplace-only 2>&1) || true
+MARKETPLACE_OUTPUT=$(CODEX_HOME="$CODEX_HOME_MOCK" bash "$INSTALL_SCRIPT" --codex-marketplace 2>&1) || true
 assert_file_exists "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity/.agents/plugins/marketplace.json" "marketplace install writes marketplace.json"
 assert_file_exists "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity/plugins/everything-codex-unity/.codex-plugin/plugin.json" "marketplace install writes plugin manifest"
 assert_file_exists "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity/plugins/everything-codex-unity/skills/workflows/unity-workflow/SKILL.md" "marketplace install copies workflow skills"
@@ -126,8 +126,13 @@ if [ -f "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity/.agents/plugins/
     assert_eq "0" "$JQ_EXIT" "marketplace.json is valid JSON"
 fi
 
+# --- Test: project and marketplace modes are mutually exclusive ---
+MUTEX_EXIT=0
+CODEX_HOME="$CODEX_HOME_MOCK" bash "$INSTALL_SCRIPT" --project-dir "$MOCK_DIR" --codex-marketplace > /dev/null 2>&1 || MUTEX_EXIT=$?
+assert_eq "1" "$MUTEX_EXIT" "install rejects --project-dir with --codex-marketplace"
+
 # --- Test: Codex Desktop marketplace uninstall ---
-UNINSTALL_OUTPUT=$(CODEX_HOME="$CODEX_HOME_MOCK" bash "$UNINSTALL_SCRIPT" --codex-marketplace-only --no-backup 2>&1) || true
+UNINSTALL_OUTPUT=$(CODEX_HOME="$CODEX_HOME_MOCK" bash "$UNINSTALL_SCRIPT" --codex-marketplace --no-backup 2>&1) || true
 if [ ! -d "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity" ]; then
     PASS=$((PASS + 1))
     if [ "$VERBOSE" = "--verbose" ]; then
@@ -143,6 +148,10 @@ if [ -f "${CODEX_HOME_MOCK}/config.toml" ]; then
     assert_not_contains "$CONFIG_TEXT" "[marketplaces.everything-codex-unity]" "marketplace uninstall removes marketplace config"
     assert_not_contains "$CONFIG_TEXT" "[plugins.\"everything-codex-unity@everything-codex-unity\"]" "marketplace uninstall removes plugin config"
 fi
+
+MUTEX_EXIT=0
+CODEX_HOME="$CODEX_HOME_MOCK" bash "$UNINSTALL_SCRIPT" --project-dir "$MOCK_DIR" --codex-marketplace > /dev/null 2>&1 || MUTEX_EXIT=$?
+assert_eq "1" "$MUTEX_EXIT" "uninstall rejects --project-dir with --codex-marketplace"
 
 # --- Cleanup ---
 rm -rf "$MOCK_DIR"

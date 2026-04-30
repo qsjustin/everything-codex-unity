@@ -11,23 +11,49 @@
 > - Original Claude agents, commands, hooks, and rules are preserved as reference material under `.codex-legacy/`
 > - Project instructions now use `AGENTS.md`; `CLAUDE.md` is no longer the active entry point in this fork
 >
-> **Install for Codex Desktop from a Unity project root:**
+> **When to use marketplace mode:** use `--codex-marketplace` when you want Codex Desktop to discover `$unity-*` workflow skills from the skill picker/new sessions. This installs the toolkit into the Codex Desktop environment, not into a Unity project. It is the recommended Desktop setup because project-local `skills/` files may not be indexed by Codex Desktop unless the toolkit is registered as a local marketplace plugin.
+>
+> **Install into a Unity project:**
 >
 > ```bash
 > git clone https://github.com/qsjustin/everything-codex-unity.git /tmp/ecu
-> /tmp/ecu/install.sh --project-dir . --codex-marketplace
+> /tmp/ecu/install.sh --project-dir .
+> ```
+>
+> `--project-dir` must point at the Unity project folder containing `Assets/` and `ProjectSettings/`. For repos shaped like `Repo/client/Assets`, run the installer with `--project-dir ./client`.
+>
+> This installs project guidance, MCP config, templates, and legacy references into the Unity project.
+>
+> **Register the Codex Desktop marketplace plugin:**
+>
+> ```bash
+> /tmp/ecu/install.sh --codex-marketplace
 > rm -rf /tmp/ecu
 > ```
 >
-> `--project-dir` installs project guidance, MCP config, templates, and legacy references into the Unity project. `--codex-marketplace` also registers the toolkit as a local Codex Desktop marketplace plugin so `$unity-*` skills can appear in new Codex sessions after restarting Codex Desktop.
+> `--project-dir` and `--codex-marketplace` are mutually exclusive. Run both commands separately if you need both Unity-project files and Codex Desktop `$unity-*` skill discovery.
 >
-> To register only the Desktop plugin without copying files into a Unity project, run:
+> Marketplace mode registers a local Codex Desktop marketplace at `~/.codex/marketplaces/everything-codex-unity/` and enables `everything-codex-unity@everything-codex-unity` in `~/.codex/config.toml`.
+>
+> To use a non-default Codex home during testing or custom installs, add `--codex-home <path>` or set `CODEX_HOME`.
+>
+> **Uninstall marketplace mode:**
 >
 > ```bash
-> /tmp/ecu/install.sh --codex-marketplace-only
+> /tmp/ecu/uninstall.sh --codex-marketplace
 > ```
 >
-> **Use with Codex:** open the Unity project in Codex, ensure Unity MCP is running at `http://localhost:8080/mcp` if editor automation is needed, then invoke workflows with `$unity-doctor`, `$unity-audit`, `$unity-workflow`, `$unity-prototype`, `$unity-test`, or `$unity-build`. The original slash-command syntax documented below belongs to the upstream Claude version.
+> To remove Unity-project files, run the project uninstall separately:
+>
+> ```bash
+> /tmp/ecu/uninstall.sh --project-dir .
+> ```
+>
+> Add `--no-backup` if you want removal instead of backup directories.
+>
+> **Use with Codex Desktop:** after installation, restart Codex Desktop so it reloads `~/.codex/config.toml` and the local marketplace. Open the Unity project in Codex, type `$` in the composer, and choose skills such as `$unity-doctor`, `$unity-audit`, `$unity-workflow`, `$unity-prototype`, `$unity-test`, or `$unity-build`. You can also invoke them in natural language, for example: “use `$unity-doctor` to check this project” or “use `$unity-workflow` to implement an inventory feature.”
+>
+> If editor automation is needed, ensure Unity MCP is running at `http://localhost:8080/mcp`. The original `/unity-*` slash-command syntax documented below belongs to the upstream Claude version; this Codex fork uses `$unity-*` skill invocation.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/XeldarAlz/everything-claude-unity?style=social)](https://github.com/XeldarAlz/everything-claude-unity/stargazers)
