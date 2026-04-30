@@ -59,6 +59,8 @@
 >
 > To use a non-default Codex home during testing or custom installs, add `--codex-home <path>` or set `CODEX_HOME`. Add `--no-backup` to uninstall commands if you want removal instead of backup directories.
 >
+> If `upgrade.sh` or `uninstall.sh` is run without a mode, it auto-detects a project install only when the current directory is a Unity project with everything-codex-unity markers; otherwise it falls back to an existing Codex Desktop marketplace install. If neither is detected, it asks you to pass `--project-dir` or `--codex-marketplace` explicitly.
+>
 > Marketplace install and uninstall update only the `everything-codex-unity` entry in `~/.agents/plugins/marketplace.json`; other plugin entries are preserved. The JSON may be normalized by the updater, but unrelated plugin data is not removed. If the marketplace JSON is malformed, the command fails before moving or deleting the existing plugin bundle.
 >
 > `upgrade.sh` and `uninstall.sh` expect an existing install. If the project files or Desktop marketplace plugin are not present yet, run the matching `install.sh` command first.
@@ -212,17 +214,11 @@ chmod +x your-unity-project/.claude/hooks/*.sh
 # Upgrade to latest (preserves your customizations, creates backup)
 ./upgrade.sh --project-dir .
 
-# Upgrade Codex Desktop marketplace plugin
-./upgrade.sh --codex-marketplace
-
 # Preview changes before upgrading
 ./upgrade.sh --project-dir . --dry-run
 
 # Clean removal (with backup)
 ./uninstall.sh --project-dir .
-
-# Remove Codex Desktop marketplace plugin
-./uninstall.sh --codex-marketplace
 ```
 
 ### Setup Unity MCP (Recommended)

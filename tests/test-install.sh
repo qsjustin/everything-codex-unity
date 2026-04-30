@@ -71,6 +71,15 @@ UNINSTALL_EXIT=0
 HOME="$FRESH_HOME" CODEX_HOME="$FRESH_CODEX_HOME" bash "$UNINSTALL_SCRIPT" --codex-marketplace > /dev/null 2>&1 || UNINSTALL_EXIT=$?
 assert_eq "1" "$UNINSTALL_EXIT" "marketplace uninstall rejects missing install"
 
+AUTO_REPO_HOME="${MOCK_DIR}/auto-repo-home"
+AUTO_REPO_CODEX_HOME="${MOCK_DIR}/auto-repo-codex-home"
+AUTO_REPO_EXIT=0
+HOME="$AUTO_REPO_HOME" CODEX_HOME="$AUTO_REPO_CODEX_HOME" bash "$UPGRADE_SCRIPT" > /dev/null 2>&1 || AUTO_REPO_EXIT=$?
+assert_eq "1" "$AUTO_REPO_EXIT" "upgrade auto-detect ignores repo-local source files outside Unity projects"
+AUTO_REPO_EXIT=0
+HOME="$AUTO_REPO_HOME" CODEX_HOME="$AUTO_REPO_CODEX_HOME" bash "$UNINSTALL_SCRIPT" > /dev/null 2>&1 || AUTO_REPO_EXIT=$?
+assert_eq "1" "$AUTO_REPO_EXIT" "uninstall auto-detect ignores repo-local source files outside Unity projects"
+
 # --- Test: install into mock project ---
 INSTALL_OUTPUT=$(bash "$INSTALL_SCRIPT" --project-dir "$MOCK_DIR" 2>&1) || true
 
@@ -146,6 +155,28 @@ fi
 # Verify AGENTS.md was generated
 assert_file_exists "${MOCK_DIR}/AGENTS.md" "install generates AGENTS.md"
 
+# --- Test: no-argument lifecycle commands auto-detect project installs ---
+AUTO_PROJECT="${MOCK_DIR}/auto-project"
+mkdir -p "${AUTO_PROJECT}/Assets" "${AUTO_PROJECT}/ProjectSettings" "${AUTO_PROJECT}/Packages"
+echo "m_EditorVersion: 2022.3.20f1" > "${AUTO_PROJECT}/ProjectSettings/ProjectVersion.txt"
+echo '{"dependencies":{}}' > "${AUTO_PROJECT}/Packages/manifest.json"
+bash "$INSTALL_SCRIPT" --project-dir "$AUTO_PROJECT" > /dev/null 2>&1
+AUTO_UPGRADE_EXIT=0
+(cd "$AUTO_PROJECT" && bash "$UPGRADE_SCRIPT" > /dev/null 2>&1) || AUTO_UPGRADE_EXIT=$?
+assert_eq "0" "$AUTO_UPGRADE_EXIT" "upgrade auto-detects project install"
+AUTO_UNINSTALL_EXIT=0
+(cd "$AUTO_PROJECT" && bash "$UNINSTALL_SCRIPT" --no-backup > /dev/null 2>&1) || AUTO_UNINSTALL_EXIT=$?
+assert_eq "0" "$AUTO_UNINSTALL_EXIT" "uninstall auto-detects project install"
+if [ ! -d "${AUTO_PROJECT}/.codex-plugin" ] && [ ! -d "${AUTO_PROJECT}/skills" ]; then
+    PASS=$((PASS + 1))
+    if [ "$VERBOSE" = "--verbose" ]; then
+        echo -e "  ${GREEN}PASS${NC} auto-detected project uninstall removes installed files"
+    fi
+else
+    FAIL=$((FAIL + 1))
+    echo -e "  ${RED}FAIL${NC} auto-detected project uninstall removes installed files"
+fi
+
 # --- Test: Codex Desktop marketplace install ---
 CODEX_HOME_MOCK="${MOCK_DIR}/codex-home"
 HOME_MOCK="${MOCK_DIR}/home"
@@ -212,6 +243,26 @@ if [ -d "${HOME_MOCK}/plugins" ]; then
         FAIL=$((FAIL + 1))
         echo -e "  ${RED}FAIL${NC} marketplace upgrade creates backup"
     fi
+fi
+
+# --- Test: no-argument lifecycle commands auto-detect marketplace installs ---
+AUTO_HOME="${MOCK_DIR}/auto-home"
+AUTO_CODEX_HOME="${MOCK_DIR}/auto-codex-home"
+HOME="$AUTO_HOME" CODEX_HOME="$AUTO_CODEX_HOME" bash "$INSTALL_SCRIPT" --codex-marketplace > /dev/null 2>&1
+AUTO_UPGRADE_EXIT=0
+HOME="$AUTO_HOME" CODEX_HOME="$AUTO_CODEX_HOME" bash "$UPGRADE_SCRIPT" > /dev/null 2>&1 || AUTO_UPGRADE_EXIT=$?
+assert_eq "0" "$AUTO_UPGRADE_EXIT" "upgrade auto-detects marketplace install"
+AUTO_UNINSTALL_EXIT=0
+HOME="$AUTO_HOME" CODEX_HOME="$AUTO_CODEX_HOME" bash "$UNINSTALL_SCRIPT" --no-backup > /dev/null 2>&1 || AUTO_UNINSTALL_EXIT=$?
+assert_eq "0" "$AUTO_UNINSTALL_EXIT" "uninstall auto-detects marketplace install"
+if [ ! -d "${AUTO_HOME}/plugins/everything-codex-unity" ]; then
+    PASS=$((PASS + 1))
+    if [ "$VERBOSE" = "--verbose" ]; then
+        echo -e "  ${GREEN}PASS${NC} auto-detected marketplace uninstall removes plugin directory"
+    fi
+else
+    FAIL=$((FAIL + 1))
+    echo -e "  ${RED}FAIL${NC} auto-detected marketplace uninstall removes plugin directory"
 fi
 
 # --- Test: project and marketplace modes are mutually exclusive ---

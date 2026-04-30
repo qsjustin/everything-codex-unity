@@ -5,7 +5,9 @@ set -euo pipefail
 
 PROJECT_DIR="."
 PROJECT_DIR_SET=0
-UPGRADE_PROJECT=1
+MARKETPLACE_SET=0
+MODE_SET=0
+UPGRADE_PROJECT=0
 UPGRADE_MARKETPLACE=0
 CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 DRY_RUN=0
@@ -13,15 +15,18 @@ DRY_RUN=0
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --project-dir)
-            PROJECT_DIR="$2"; PROJECT_DIR_SET=1; shift 2 ;;
+            PROJECT_DIR="$2"; PROJECT_DIR_SET=1; MODE_SET=1; UPGRADE_PROJECT=1; UPGRADE_MARKETPLACE=0; shift 2 ;;
         --codex-marketplace)
-            UPGRADE_MARKETPLACE=1; UPGRADE_PROJECT=0; shift ;;
+            MARKETPLACE_SET=1; MODE_SET=1; UPGRADE_MARKETPLACE=1; UPGRADE_PROJECT=0; shift ;;
         --codex-home)
             CODEX_HOME="$2"; shift 2 ;;
         --dry-run)
             DRY_RUN=1; shift ;;
         --help|-h)
             echo "Usage: upgrade.sh [--project-dir <path> | --codex-marketplace] [--codex-home <path>] [--dry-run]"
+            echo ""
+            echo "If no mode is provided, the script auto-detects a project install in the current Unity project,"
+            echo "then falls back to a Codex Desktop marketplace install."
             echo ""
             echo "Note: --project-dir and --codex-marketplace are mutually exclusive."
             exit 0 ;;
@@ -31,12 +36,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [ "$UPGRADE_MARKETPLACE" -eq 1 ] && [ "$PROJECT_DIR_SET" -eq 1 ]; then
+if [ "$MARKETPLACE_SET" -eq 1 ] && [ "$PROJECT_DIR_SET" -eq 1 ]; then
     echo "--project-dir and --codex-marketplace are mutually exclusive." >&2
     exit 1
 fi
 
-if [ "$UPGRADE_PROJECT" -eq 1 ]; then
+if [ "$UPGRADE_MARKETPLACE" -eq 0 ]; then
     PROJECT_DIR=$(cd "$PROJECT_DIR" && pwd)
 fi
 if [ "$UPGRADE_MARKETPLACE" -eq 1 ]; then
@@ -56,6 +61,51 @@ has_project_install() {
     [ -f "$PROJECT_DIR/AGENTS.md" ] && grep -q "everything-codex-unity" "$PROJECT_DIR/AGENTS.md" 2>/dev/null && return 0
     return 1
 }
+
+is_unity_project() {
+    [ -d "$PROJECT_DIR/Assets" ] && [ -d "$PROJECT_DIR/ProjectSettings" ]
+}
+
+has_marketplace_install() {
+    local marketplace_json="$HOME/.agents/plugins/marketplace.json"
+    local config_file="$CODEX_HOME/config.toml"
+
+    [ -d "$HOME/plugins/$ECU_PLUGIN_NAME" ] && return 0
+    [ -f "$config_file" ] && grep -q "everything-codex-unity@everything-codex-unity" "$config_file" 2>/dev/null && return 0
+    if [ -f "$marketplace_json" ] && command -v python3 >/dev/null 2>&1; then
+        python3 - "$marketplace_json" <<'PY' && return 0
+import json
+import sys
+from pathlib import Path
+
+try:
+    data = json.loads(Path(sys.argv[1]).read_text())
+except Exception:
+    sys.exit(1)
+for plugin in data.get("plugins", []):
+    if plugin.get("name") == "everything-codex-unity":
+        sys.exit(0)
+sys.exit(1)
+PY
+    fi
+    return 1
+}
+
+if [ "$MODE_SET" -eq 0 ]; then
+    if is_unity_project && has_project_install; then
+        UPGRADE_PROJECT=1
+        echo "Auto-detected project install in $PROJECT_DIR"
+    elif has_marketplace_install; then
+        UPGRADE_MARKETPLACE=1
+        UPGRADE_PROJECT=0
+        CODEX_HOME=$(mkdir -p "$CODEX_HOME" && cd "$CODEX_HOME" && pwd)
+        echo "Auto-detected Codex marketplace install"
+    else
+        echo "No everything-codex-unity install detected." >&2
+        echo "Run upgrade.sh --project-dir <UnityProject> or upgrade.sh --codex-marketplace." >&2
+        exit 1
+    fi
+fi
 
 if [ "$UPGRADE_MARKETPLACE" -eq 1 ]; then
     if [ ! -d "$HOME/plugins/$ECU_PLUGIN_NAME" ]; then

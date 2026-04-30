@@ -5,7 +5,9 @@ set -euo pipefail
 
 PROJECT_DIR="."
 PROJECT_DIR_SET=0
-INSTALL_PROJECT=1
+MARKETPLACE_SET=0
+MODE_SET=0
+INSTALL_PROJECT=0
 REMOVE_MARKETPLACE=0
 CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 KEEP_BACKUP=1
@@ -13,15 +15,18 @@ KEEP_BACKUP=1
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --project-dir)
-            PROJECT_DIR="$2"; PROJECT_DIR_SET=1; shift 2 ;;
+            PROJECT_DIR="$2"; PROJECT_DIR_SET=1; MODE_SET=1; INSTALL_PROJECT=1; REMOVE_MARKETPLACE=0; shift 2 ;;
         --codex-marketplace)
-            REMOVE_MARKETPLACE=1; INSTALL_PROJECT=0; shift ;;
+            MARKETPLACE_SET=1; MODE_SET=1; REMOVE_MARKETPLACE=1; INSTALL_PROJECT=0; shift ;;
         --codex-home)
             CODEX_HOME="$2"; shift 2 ;;
         --no-backup)
             KEEP_BACKUP=0; shift ;;
         --help|-h)
             echo "Usage: uninstall.sh [--project-dir <path> | --codex-marketplace] [--codex-home <path>] [--no-backup]"
+            echo ""
+            echo "If no mode is provided, the script auto-detects a project install in the current Unity project,"
+            echo "then falls back to a Codex Desktop marketplace install."
             echo ""
             echo "Note: --project-dir and --codex-marketplace are mutually exclusive."
             exit 0 ;;
@@ -31,12 +36,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [ "$REMOVE_MARKETPLACE" -eq 1 ] && [ "$PROJECT_DIR_SET" -eq 1 ]; then
+if [ "$MARKETPLACE_SET" -eq 1 ] && [ "$PROJECT_DIR_SET" -eq 1 ]; then
     echo "--project-dir and --codex-marketplace are mutually exclusive." >&2
     exit 1
 fi
 
-if [ "$INSTALL_PROJECT" -eq 1 ]; then
+if [ "$REMOVE_MARKETPLACE" -eq 0 ]; then
     PROJECT_DIR=$(cd "$PROJECT_DIR" && pwd)
 fi
 if [ "$REMOVE_MARKETPLACE" -eq 1 ]; then
@@ -100,6 +105,26 @@ PY
     fi
     return 1
 }
+
+is_unity_project() {
+    [ -d "$PROJECT_DIR/Assets" ] && [ -d "$PROJECT_DIR/ProjectSettings" ]
+}
+
+if [ "$MODE_SET" -eq 0 ]; then
+    if is_unity_project && has_project_install; then
+        INSTALL_PROJECT=1
+        echo "Auto-detected project install in $PROJECT_DIR"
+    elif has_marketplace_install; then
+        REMOVE_MARKETPLACE=1
+        INSTALL_PROJECT=0
+        CODEX_HOME=$(mkdir -p "$CODEX_HOME" && cd "$CODEX_HOME" && pwd)
+        echo "Auto-detected Codex marketplace install"
+    else
+        echo "No everything-codex-unity install detected." >&2
+        echo "Run uninstall.sh --project-dir <UnityProject> or uninstall.sh --codex-marketplace." >&2
+        exit 1
+    fi
+fi
 
 if [ "$INSTALL_PROJECT" -eq 1 ]; then
     if ! has_project_install; then
