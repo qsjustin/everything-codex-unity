@@ -5,7 +5,7 @@
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/run-tests.sh" --source-only 2>/dev/null || true
+REPO_DIR="${REPO_DIR:-$(cd "${SCRIPT_DIR}/.." && pwd)}"
 
 # Helpers from run-tests.sh should be available; if not, define minimal versions
 if ! type assert_eq &>/dev/null 2>&1; then
@@ -15,7 +15,7 @@ if ! type assert_eq &>/dev/null 2>&1; then
     assert_file_exists() { TESTS_RUN=$((TESTS_RUN+1)); if [ -f "$1" ]; then TESTS_PASSED=$((TESTS_PASSED+1)); echo "PASS: $2"; else TESTS_FAILED=$((TESTS_FAILED+1)); echo "FAIL: $2 (file not found: $1)"; fi; }
 fi
 
-LIB_PATH="${SCRIPT_DIR}/../.claude/hooks/_lib.sh"
+LIB_PATH="${SCRIPT_DIR}/../.codex-legacy/hooks/_lib.sh"
 
 echo ""
 echo "=== State Management Tests ==="
@@ -43,22 +43,22 @@ assert_contains "$OUTPUT" "WARNINGS=" "warnings file variable is defined"
 assert_contains "$OUTPUT" "NOTIFY=" "notify event file variable is defined"
 assert_contains "$OUTPUT" "learnings.jsonl" "learnings file in state dir"
 
-# ── Test 2: State dir resolves to .claude/state/ in git repo ─────────────
+# ── Test 2: State dir resolves to .codex-unity/state/ in git repo ─────────────
 echo ""
-echo "--- Test: state dir resolves to .claude/state/ ---"
+echo "--- Test: state dir resolves to .codex-unity/state/ ---"
 
 # Get the project root
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-if [ -d "$PROJECT_ROOT/.claude/state" ]; then
-    # When run from within the project, it should resolve to .claude/state/
+if [ -d "$PROJECT_ROOT/.codex-unity/state" ]; then
+    # When run from within the project, it should resolve to .codex-unity/state/
     RESOLVED_DIR=$(cd "$PROJECT_ROOT" && HOOK_PROFILE_LEVEL="minimal" BASH_SOURCE[1]="test-state.sh" bash -c '
-        source ".claude/hooks/_lib.sh" 2>/dev/null
+        source ".codex-legacy/hooks/_lib.sh" 2>/dev/null
         echo "$UNITY_HOOK_STATE_DIR"
     ' 2>/dev/null)
-    assert_contains "$RESOLVED_DIR" ".claude/state" "state dir resolves to .claude/state/ in project"
+    assert_contains "$RESOLVED_DIR" ".codex-unity/state" "state dir resolves to .codex-unity/state/ in project"
 else
-    echo "SKIP: .claude/state/ directory not found (not in project context)"
+    echo "SKIP: .codex-unity/state/ directory not found (not in project context)"
 fi
 
 # ── Test 3: State dir falls back to /tmp outside git repo ────────────────
@@ -76,7 +76,7 @@ assert_contains "$FALLBACK_DIR" "/tmp" "state dir falls back to /tmp outside git
 echo ""
 echo "--- Test: session-save produces valid schema ---"
 
-SAVE_HOOK="${SCRIPT_DIR}/../.claude/hooks/session-save.sh"
+SAVE_HOOK="${SCRIPT_DIR}/../.codex-legacy/hooks/session-save.sh"
 if [ -f "$SAVE_HOOK" ]; then
     # Create a temp state dir and run session-save
     TEST_STATE_DIR=$(mktemp -d)
@@ -138,7 +138,7 @@ fi
 echo ""
 echo "--- Test: session-restore handles missing file ---"
 
-RESTORE_HOOK="${SCRIPT_DIR}/../.claude/hooks/session-restore.sh"
+RESTORE_HOOK="${SCRIPT_DIR}/../.codex-legacy/hooks/session-restore.sh"
 if [ -f "$RESTORE_HOOK" ]; then
     TEST_STATE_DIR=$(mktemp -d)
     (

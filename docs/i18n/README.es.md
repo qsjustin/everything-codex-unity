@@ -2,11 +2,11 @@
 
 <!-- last-synced-version: 1.2.0 -->
 
-# everything-claude-unity
+# everything-codex-unity
 
-**El kit de herramientas definitivo de Claude Code para el desarrollo de juegos con Unity.**
+**El kit de herramientas definitivo de Codex para el desarrollo de juegos con Unity.**
 
-Un sistema listo para produccion, plug-and-play, que otorga a Claude Code un profundo conocimiento de Unity: desde escribir C# de alto rendimiento hasta construir escenas, analizar rendimiento y ejecutar builds para iOS/Android, todo mediante lenguaje natural.
+Un sistema listo para produccion, plug-and-play, que otorga a Codex un profundo conocimiento de Unity: desde escribir C# de alto rendimiento hasta construir escenas, analizar rendimiento y ejecutar builds para iOS/Android, todo mediante lenguaje natural.
 
 Creado para **desarrolladores indie de juegos moviles en solitario**. Colocalo en cualquier proyecto Unity y funciona.
 
@@ -39,7 +39,7 @@ Un pipeline estructurado de 4 fases para cualquier funcionalidad: **Clarificar**
 
 ### `/unity-prototype` — De un prompt a jugable
 
-Describe una mecanica y Claude escribe los scripts C#, construye la escena via MCP, configura las capas de fisica, ajusta la camara y verifica que compile.
+Describe una mecanica y Codex escribe los scripts C#, construye la escena via MCP, configura las capas de fisica, ajusta la camara y verifica que compile.
 
 ```
 /unity-prototype "2D platformer with wall jumping and dash"
@@ -88,7 +88,7 @@ DISABLE_HOOK_BLOCK_SCENE_EDIT=1    # Desactivar un hook especifico
 ## Inicio rapido
 
 ### Requisitos previos
-- [Claude Code](https://claude.ai/claude-code) instalado
+- [Codex](https://openai.com/codex) instalado
 - Unity 2021.3 LTS o posterior
 - [unity-mcp](https://github.com/CoplayDev/unity-mcp) (opcional pero recomendado para el pipeline completo)
 
@@ -96,16 +96,16 @@ DISABLE_HOOK_BLOCK_SCENE_EDIT=1    # Desactivar un hook especifico
 
 ```bash
 # Desde la raiz de tu proyecto Unity:
-git clone https://github.com/XeldarAlz/everything-claude-unity.git /tmp/ecu
+git clone https://github.com/qsjustin/everything-codex-unity.git /tmp/ecu
 /tmp/ecu/install.sh --project-dir .
 rm -rf /tmp/ecu
 ```
 
 O manualmente:
 ```bash
-git clone https://github.com/XeldarAlz/everything-claude-unity.git
-cp -r everything-claude-unity/.claude your-unity-project/.claude
-chmod +x your-unity-project/.claude/hooks/*.sh
+git clone https://github.com/qsjustin/everything-codex-unity.git
+cp -r everything-codex-unity/.codex-plugin everything-codex-unity/skills everything-codex-unity/.mcp.json everything-codex-unity/.codex-legacy your-unity-project/
+chmod +x your-unity-project/.codex-legacy/hooks/*.sh
 ```
 
 ### Actualizar / Desinstalar
@@ -123,18 +123,18 @@ chmod +x your-unity-project/.claude/hooks/*.sh
 
 ### Configurar Unity MCP (Recomendado)
 
-El puente MCP otorga a Claude control directo sobre el Editor de Unity: construccion de escenas, profiling, builds y mas.
+El puente MCP otorga a Codex control directo sobre el Editor de Unity: construccion de escenas, profiling, builds y mas.
 
 1. En Unity: `Window > Package Manager > + > Add package from git URL`
 2. Pegar: `https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main`
 3. Abrir `Window > MCP for Unity` y hacer clic en **Start Server**
-4. Claude Code se conecta automaticamente via `.claude/settings.json`
+4. Codex se conecta automaticamente via `.mcp.json`
 
 ### Primera ejecucion
 
 ```bash
 cd your-unity-project
-claude
+codex
 
 # Verificar la instalacion:
 /unity-doctor         # Comprobar MCP, hooks, estructura del proyecto
@@ -221,7 +221,7 @@ Los comandos soportan flags `--quick` (dirige al agente sonnet lite) y `--thorou
 
 ### Ciclo de vida del proyecto
 ```
-/unity-init                     Escanear proyecto + generar CLAUDE.md
+/unity-init                     Escanear proyecto + generar AGENTS.md
 /unity-build                    Configurar + ejecutar builds
 /unity-migrate                  Planificar migracion de version/pipeline
 /unity-doctor                   Revision de diagnostico (MCP, hooks, estructura del proyecto)
@@ -309,7 +309,7 @@ Ademas de las plantillas originales: `MonoBehaviour.cs`, `ScriptableObject.cs`, 
 - **assembly-definitions** — Cuando separar, reglas de referencia, separacion Editor/Runtime
 - **unity-mcp-patterns** — Como usar las herramientas MCP eficazmente (`batch_execute`, `read_console`)
 - **learner** — Extraccion de conocimiento post-depuracion con quality gates y puntuacion de confianza
-- **hud-statusline** — Integracion con la linea de estado de Claude Code mostrando fase de workflow y metricas de sesion
+- **hud-statusline** — Integracion con la linea de estado de Codex mostrando fase de workflow y metricas de sesion
 
 ### Sistemas de Unity (10)
 URP pipeline, Input System, Addressables, Cinemachine, Animation, Audio, Physics, NavMesh, UI Toolkit, ShaderGraph
@@ -352,21 +352,21 @@ Ejecuta estos para verificar la salud del proyecto:
 ./scripts/analyze-build-size.sh               # Analisis de tamano de build desde Editor.log
 ./scripts/validate-serialization.sh           # Campos renombrados sin FormerlySerializedAs
 ./scripts/validate-architecture.sh            # Verificaciones de cumplimiento del patron MVS
-./scripts/generate-claude-md.sh > CLAUDE.md   # Auto-generar CLAUDE.md del proyecto
+./scripts/generate-agents-md.sh > AGENTS.md   # Auto-generar AGENTS.md del proyecto
 ```
 
 ---
 
-## Archivos CLAUDE.md de ejemplo
+## Archivos AGENTS.md de ejemplo
 
 Configuraciones pre-construidas para tipos de juegos moviles:
 
-- `examples/CLAUDE.md.hyper-casual` — Controles de un toque, visuales minimos, monetizacion con anuncios
-- `examples/CLAUDE.md.match3` — Sistema de cuadricula, cascadas, tiles especiales, vidas/energia
-- `examples/CLAUDE.md.idle-clicker` — Numeros grandes, progreso offline, sistema de prestigio
-- `examples/CLAUDE.md.mobile-casual` — Entrada tactil, build pequeno, integracion de anuncios
-- `examples/CLAUDE.md.2d-platformer` — Tilemap, joystick virtual, optimizado para movil
-- `examples/CLAUDE.md.rpg` — Estadisticas, inventario, dialogos, controles tactiles
+- `examples/AGENTS.md.hyper-casual` — Controles de un toque, visuales minimos, monetizacion con anuncios
+- `examples/AGENTS.md.match3` — Sistema de cuadricula, cascadas, tiles especiales, vidas/energia
+- `examples/AGENTS.md.idle-clicker` — Numeros grandes, progreso offline, sistema de prestigio
+- `examples/AGENTS.md.mobile-casual` — Entrada tactil, build pequeno, integracion de anuncios
+- `examples/AGENTS.md.2d-platformer` — Tilemap, joystick virtual, optimizado para movil
+- `examples/AGENTS.md.rpg` — Estadisticas, inventario, dialogos, controles tactiles
 
 ---
 
@@ -405,7 +405,7 @@ Command (orquesta el workflow)
 ### Red de seguridad de hooks
 
 ```
-Claude intenta editar PlayerView.cs
+Codex intenta editar PlayerView.cs
     |
     +-->  _lib.sh: verificar nivel de perfil, interruptores de desactivacion
     +-->  PreToolUse: guard-editor-runtime.sh -- Guarda de UnityEditor
@@ -434,7 +434,7 @@ SessionStart
 
 Stop
     +-->  stop-validate.sh -- validacion por lotes de todos los archivos modificados
-    +-->  session-save.sh -- guardar estado en /tmp/unity-claude-hooks/
+    +-->  session-save.sh -- guardar estado en /tmp/unity-codex-hooks/
     +-->  auto-learn.sh -- agregar metricas de sesion a learnings.jsonl
 ```
 

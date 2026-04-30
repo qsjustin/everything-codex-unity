@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# test-cross-validation.sh — Cross-validates settings.json against hook files
+# test-cross-validation.sh — Cross-validates Codex plugin files.
 # ============================================================================
 
 set -euo pipefail
@@ -15,79 +15,51 @@ echo ""
 echo "=== Cross-Validation Tests ==="
 echo ""
 
-# ── Test 1: Every hook in settings.json exists on disk ────────────────────
-echo "--- Test: settings.json hook references exist ---"
+echo "--- Test: plugin manifest exists and is valid JSON ---"
+PLUGIN_JSON="$PROJECT_ROOT/.codex-plugin/plugin.json"
+assert_eq "$(test -f "$PLUGIN_JSON" && echo 1 || echo 0)" "1" "plugin.json exists"
+if [ -f "$PLUGIN_JSON" ]; then
+    jq . "$PLUGIN_JSON" >/dev/null 2>&1
+    assert_eq "$?" "0" "plugin.json is valid JSON"
+fi
+
+echo ""
+echo "--- Test: plugin manifest paths exist ---"
 MISSING=0
-for hook_path in $(jq -r '.. | .command? // empty' "$PROJECT_ROOT/.claude/settings.json" 2>/dev/null | sort -u); do
-    if [ ! -f "$PROJECT_ROOT/$hook_path" ]; then
-        echo "  MISSING: $hook_path"
+for path in $(jq -r '.skills?, .mcpServers? | select(. != null)' "$PLUGIN_JSON"); do
+    clean="${path#./}"
+    if [ ! -e "$PROJECT_ROOT/$clean" ]; then
+        echo "  MISSING: $path"
         MISSING=$((MISSING + 1))
     fi
 done
-assert_eq "$MISSING" "0" "all hook paths in settings.json exist on disk"
+assert_eq "$MISSING" "0" "plugin manifest paths exist"
 
-# ── Test 2: Every .sh in hooks/ (except _lib.sh) is in settings.json ─────
 echo ""
-echo "--- Test: hook files are referenced in settings.json ---"
-UNREFERENCED=0
-SETTINGS_CONTENT=$(cat "$PROJECT_ROOT/.claude/settings.json")
-for hook_file in "$PROJECT_ROOT/.claude/hooks/"*.sh; do
-    basename=$(basename "$hook_file")
-    if [ "$basename" = "_lib.sh" ]; then continue; fi
-    if ! echo "$SETTINGS_CONTENT" | grep -q "$basename"; then
-        echo "  UNREFERENCED: $basename"
-        UNREFERENCED=$((UNREFERENCED + 1))
-    fi
-done
-assert_eq "$UNREFERENCED" "0" "all hook scripts are referenced in settings.json"
+echo "--- Test: MCP config is valid JSON ---"
+jq . "$PROJECT_ROOT/.mcp.json" >/dev/null 2>&1
+assert_eq "$?" "0" ".mcp.json is valid JSON"
 
-# ── Test 3: All hook scripts are executable ───────────────────────────────
 echo ""
-echo "--- Test: hook scripts are executable ---"
+echo "--- Test: legacy hook scripts are executable ---"
 NON_EXEC=0
-for hook_file in "$PROJECT_ROOT/.claude/hooks/"*.sh; do
+for hook_file in "$PROJECT_ROOT/.codex-legacy/hooks/"*.sh; do
     if [ ! -x "$hook_file" ]; then
         echo "  NOT EXECUTABLE: $(basename "$hook_file")"
         NON_EXEC=$((NON_EXEC + 1))
     fi
 done
-assert_eq "$NON_EXEC" "0" "all hook scripts are executable"
+assert_eq "$NON_EXEC" "0" "all legacy hook scripts are executable"
 
-# ── Test 4: Agent frontmatter has required fields ─────────────────────────
 echo ""
-echo "--- Test: agent frontmatter completeness ---"
-AGENT_FAIL=0
-for file in "$PROJECT_ROOT/.claude/agents/"*.md; do
-    YAML=$(sed -n '2,/^---$/p' "$file" | sed '$d')
-    for field in "name:" "description:" "model:" "tools:"; do
-        if ! echo "$YAML" | grep -q "$field"; then
-            echo "  MISSING: $(basename "$file") lacks $field"
-            AGENT_FAIL=$((AGENT_FAIL + 1))
-        fi
-    done
-done
-assert_eq "$AGENT_FAIL" "0" "all agents have required frontmatter fields"
+echo "--- Test: workflow skills exist for migrated commands ---"
+WORKFLOW_COUNT=$(find "$PROJECT_ROOT/skills/workflows" -name SKILL.md -type f 2>/dev/null | wc -l | tr -d ' ')
+if [ "$WORKFLOW_COUNT" -gt 0 ]; then
+    assert_eq "1" "1" "workflow skills exist ($WORKFLOW_COUNT found)"
+else
+    assert_eq "0" "1" "workflow skills exist"
+fi
 
-# ── Test 5: Haiku agents are read-only ────────────────────────────────────
-echo ""
-echo "--- Test: haiku agents are read-only ---"
-HAIKU_FAIL=0
-for file in "$PROJECT_ROOT/.claude/agents/"*.md; do
-    YAML=$(sed -n '2,/^---$/p' "$file" | sed '$d')
-    MODEL=$(echo "$YAML" | grep "^model:" | awk '{print $2}')
-    if [ "$MODEL" = "haiku" ]; then
-        TOOLS=$(echo "$YAML" | grep "^tools:" | sed 's/^tools: *//')
-        for forbidden in "Write" "Edit" "Bash"; do
-            if echo "$TOOLS" | grep -qw "$forbidden"; then
-                echo "  VIOLATION: $(basename "$file") (haiku) has $forbidden tool"
-                HAIKU_FAIL=$((HAIKU_FAIL + 1))
-            fi
-        done
-    fi
-done
-assert_eq "$HAIKU_FAIL" "0" "haiku agents have no write/edit/bash tools"
-
-# ── Summary ──────────────────────────────────────────────────────────────
 echo ""
 echo "=== Cross-Validation: ${TESTS_PASSED} passed, ${TESTS_FAILED} failed ==="
 echo ""

@@ -2,11 +2,11 @@
 
 <!-- last-synced-version: 1.2.0 -->
 
-# everything-claude-unity
+# everything-codex-unity
 
-**Unity 게임 개발을 위한 최고의 Claude Code 툴킷.**
+**Unity 게임 개발을 위한 최고의 Codex 툴킷.**
 
-Claude Code에 Unity 전문 지식을 부여하는 프로덕션 수준의 플러그 앤 플레이 시스템입니다. 고성능 C# 작성부터 씬 구성, 성능 프로파일링, iOS/Android 빌드 실행까지 모두 자연어로 제어할 수 있습니다.
+Codex에 Unity 전문 지식을 부여하는 프로덕션 수준의 플러그 앤 플레이 시스템입니다. 고성능 C# 작성부터 씬 구성, 성능 프로파일링, iOS/Android 빌드 실행까지 모두 자연어로 제어할 수 있습니다.
 
 **1인 인디 모바일 게임 개발자**를 위해 설계되었습니다. 어떤 Unity 프로젝트에든 넣기만 하면 바로 동작합니다.
 
@@ -38,7 +38,7 @@ Claude Code에 Unity 전문 지식을 부여하는 프로덕션 수준의 플러
 
 ### `/unity-prototype` — 한 줄 프롬프트로 플레이 가능한 프로토타입 완성
 
-메카닉을 설명하면 Claude가 C# 스크립트를 작성하고, MCP를 통해 씬을 구성하고, 물리 레이어를 설정하고, 카메라를 조정하고, 컴파일 여부까지 확인합니다.
+메카닉을 설명하면 Codex가 C# 스크립트를 작성하고, MCP를 통해 씬을 구성하고, 물리 레이어를 설정하고, 카메라를 조정하고, 컴파일 여부까지 확인합니다.
 
 ```
 /unity-prototype "2D platformer with wall jumping and dash"
@@ -71,7 +71,7 @@ DISABLE_HOOK_BLOCK_SCENE_EDIT=1    # 특정 Hook 비활성화
 ## 빠른 시작
 
 ### 사전 요구 사항
-- [Claude Code](https://claude.ai/claude-code) 설치
+- [Codex](https://openai.com/codex) 설치
 - Unity 2021.3 LTS 이상
 - [unity-mcp](https://github.com/CoplayDev/unity-mcp) (선택 사항이지만 전체 파이프라인 활용 시 권장)
 
@@ -79,16 +79,16 @@ DISABLE_HOOK_BLOCK_SCENE_EDIT=1    # 특정 Hook 비활성화
 
 ```bash
 # Unity 프로젝트 루트에서 실행:
-git clone https://github.com/XeldarAlz/everything-claude-unity.git /tmp/ecu
+git clone https://github.com/qsjustin/everything-codex-unity.git /tmp/ecu
 /tmp/ecu/install.sh --project-dir .
 rm -rf /tmp/ecu
 ```
 
 수동 설치:
 ```bash
-git clone https://github.com/XeldarAlz/everything-claude-unity.git
-cp -r everything-claude-unity/.claude your-unity-project/.claude
-chmod +x your-unity-project/.claude/hooks/*.sh
+git clone https://github.com/qsjustin/everything-codex-unity.git
+cp -r everything-codex-unity/.codex-plugin everything-codex-unity/skills everything-codex-unity/.mcp.json everything-codex-unity/.codex-legacy your-unity-project/
+chmod +x your-unity-project/.codex-legacy/hooks/*.sh
 ```
 
 ### 업그레이드 / 제거
@@ -106,18 +106,18 @@ chmod +x your-unity-project/.claude/hooks/*.sh
 
 ### Unity MCP 설정 (권장)
 
-MCP 브릿지를 통해 Claude가 Unity 에디터를 직접 제어할 수 있습니다 -- 씬 구성, 프로파일링, 빌드 등.
+MCP 브릿지를 통해 Codex가 Unity 에디터를 직접 제어할 수 있습니다 -- 씬 구성, 프로파일링, 빌드 등.
 
 1. Unity에서: `Window > Package Manager > + > Add package from git URL`
 2. 다음 URL을 입력: `https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main`
 3. `Window > MCP for Unity`를 열고 **Start Server** 클릭
-4. Claude Code가 `.claude/settings.json`을 통해 자동 연결
+4. Codex가 `.mcp.json`을 통해 자동 연결
 
 ### 첫 실행
 
 ```bash
 cd your-unity-project
-claude
+codex
 
 # 설치 확인:
 /unity-doctor         # MCP, Hook, 프로젝트 구조 점검
@@ -196,7 +196,7 @@ claude
 
 ### 프로젝트 수명 주기
 ```
-/unity-init                        프로젝트 스캔 + CLAUDE.md 생성
+/unity-init                        프로젝트 스캔 + AGENTS.md 생성
 /unity-build                       빌드 설정 + 실행
 /unity-migrate                     버전/파이프라인 마이그레이션 계획
 /unity-doctor                      진단 점검 (MCP, Hook, 프로젝트 구조)
@@ -323,21 +323,21 @@ DOTween, UniTask, VContainer, TextMeshPro, Odin Inspector
 ./scripts/analyze-build-size.sh               # Editor.log 기반 빌드 크기 분석
 ./scripts/validate-serialization.sh           # FormerlySerializedAs 누락된 필드 이름 변경
 ./scripts/validate-architecture.sh            # MVS 패턴 준수 여부 점검
-./scripts/generate-claude-md.sh > CLAUDE.md   # 프로젝트 CLAUDE.md 자동 생성
+./scripts/generate-agents-md.sh > AGENTS.md   # 프로젝트 AGENTS.md 자동 생성
 ```
 
 ---
 
-## 예시 CLAUDE.md 파일
+## 예시 AGENTS.md 파일
 
 모바일 게임 유형별 사전 구성 파일:
 
-- `examples/CLAUDE.md.hyper-casual` -- 원탭 조작, 최소한의 비주얼, 광고 수익화
-- `examples/CLAUDE.md.match3` -- 그리드 시스템, 캐스케이드, 특수 타일, 라이프/에너지
-- `examples/CLAUDE.md.idle-clicker` -- 거대한 숫자, 오프라인 진행, 환생 시스템
-- `examples/CLAUDE.md.mobile-casual` -- 터치 입력, 작은 빌드 용량, 광고 연동
-- `examples/CLAUDE.md.2d-platformer` -- 타일맵, 가상 조이스틱, 모바일 최적화
-- `examples/CLAUDE.md.rpg` -- 스탯, 인벤토리, 대화, 터치 조작
+- `examples/AGENTS.md.hyper-casual` -- 원탭 조작, 최소한의 비주얼, 광고 수익화
+- `examples/AGENTS.md.match3` -- 그리드 시스템, 캐스케이드, 특수 타일, 라이프/에너지
+- `examples/AGENTS.md.idle-clicker` -- 거대한 숫자, 오프라인 진행, 환생 시스템
+- `examples/AGENTS.md.mobile-casual` -- 터치 입력, 작은 빌드 용량, 광고 연동
+- `examples/AGENTS.md.2d-platformer` -- 타일맵, 가상 조이스틱, 모바일 최적화
+- `examples/AGENTS.md.rpg` -- 스탯, 인벤토리, 대화, 터치 조작
 
 ---
 
@@ -376,7 +376,7 @@ Command (워크플로 오케스트레이션)
 ### Hook 안전 장치
 
 ```
-Claude가 PlayerView.cs 편집 시도
+Codex가 PlayerView.cs 편집 시도
     │
     ├──▶ _lib.sh: 프로파일 수준, 개별 비활성화 확인
     ├──▶ PreToolUse: guard-editor-runtime.sh — UnityEditor 가드
@@ -405,7 +405,7 @@ SessionStart
 
 Stop
     ├──▶ stop-validate.sh — 수정된 모든 파일에 대한 일괄 검증
-    ├──▶ session-save.sh — /tmp/unity-claude-hooks/에 상태 저장
+    ├──▶ session-save.sh — /tmp/unity-codex-hooks/에 상태 저장
     └──▶ auto-learn.sh — learnings.jsonl에 세션 메트릭 추가
 ```
 

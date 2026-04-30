@@ -31,21 +31,23 @@ assert_file_executable "$INSTALL_SCRIPT" "install.sh is executable"
 # --- Test: install into mock project ---
 INSTALL_OUTPUT=$(bash "$INSTALL_SCRIPT" --project-dir "$MOCK_DIR" 2>&1) || true
 
-# Verify .claude directory was created
-assert_file_exists "${MOCK_DIR}/.claude" "install creates .claude directory"
+# Verify Codex plugin directories were created
+assert_file_exists "${MOCK_DIR}/.codex-plugin" "install creates .codex-plugin directory"
+assert_file_exists "${MOCK_DIR}/skills" "install creates skills directory"
+assert_file_exists "${MOCK_DIR}/.codex-legacy" "install creates legacy reference directory"
+assert_file_exists "${MOCK_DIR}/.codex-unity" "install creates .codex-unity support directory"
 
 # Verify subdirectories
-assert_file_exists "${MOCK_DIR}/.claude/agents" "install creates agents directory"
-assert_file_exists "${MOCK_DIR}/.claude/commands" "install creates commands directory"
-assert_file_exists "${MOCK_DIR}/.claude/hooks" "install creates hooks directory"
-assert_file_exists "${MOCK_DIR}/.claude/skills" "install creates skills directory"
-assert_file_exists "${MOCK_DIR}/.claude/rules" "install creates rules directory"
+assert_file_exists "${MOCK_DIR}/.codex-legacy/agents" "install creates legacy agents directory"
+assert_file_exists "${MOCK_DIR}/.codex-legacy/commands" "install creates legacy commands directory"
+assert_file_exists "${MOCK_DIR}/.codex-legacy/hooks" "install creates legacy hooks directory"
+assert_file_exists "${MOCK_DIR}/.codex-legacy/rules" "install creates legacy rules directory"
 
 # Verify hooks are executable
-if [ -d "${MOCK_DIR}/.claude/hooks" ]; then
-    HOOK_COUNT=$(find "${MOCK_DIR}/.claude/hooks" -name "*.sh" -type f | wc -l | tr -d ' ')
+if [ -d "${MOCK_DIR}/.codex-legacy/hooks" ]; then
+    HOOK_COUNT=$(find "${MOCK_DIR}/.codex-legacy/hooks" -name "*.sh" -type f | wc -l | tr -d ' ')
     if [ "$HOOK_COUNT" -gt 0 ]; then
-        NON_EXEC=$(find "${MOCK_DIR}/.claude/hooks" -name "*.sh" -type f ! -perm -u+x | wc -l | tr -d ' ')
+        NON_EXEC=$(find "${MOCK_DIR}/.codex-legacy/hooks" -name "*.sh" -type f ! -perm -u+x | wc -l | tr -d ' ')
         assert_eq "0" "$NON_EXEC" "all hook scripts are executable"
     else
         skip_test "no hook scripts found to check permissions"
@@ -54,26 +56,24 @@ else
     skip_test "hooks directory not found"
 fi
 
-# Verify settings.json was copied
-assert_file_exists "${MOCK_DIR}/.claude/settings.json" "install copies settings.json"
+# Verify plugin and MCP config were copied
+assert_file_exists "${MOCK_DIR}/.codex-plugin/plugin.json" "install copies plugin.json"
+assert_file_exists "${MOCK_DIR}/.mcp.json" "install copies .mcp.json"
 
-# Verify settings.json is valid JSON
-if [ -f "${MOCK_DIR}/.claude/settings.json" ]; then
+# Verify plugin.json is valid JSON
+if [ -f "${MOCK_DIR}/.codex-plugin/plugin.json" ]; then
     JQ_EXIT=0
-    jq . "${MOCK_DIR}/.claude/settings.json" > /dev/null 2>&1 || JQ_EXIT=$?
-    assert_eq "0" "$JQ_EXIT" "installed settings.json is valid JSON"
+    jq . "${MOCK_DIR}/.codex-plugin/plugin.json" > /dev/null 2>&1 || JQ_EXIT=$?
+    assert_eq "0" "$JQ_EXIT" "installed plugin.json is valid JSON"
 fi
 
-# Verify VERSION file
-assert_file_exists "${MOCK_DIR}/.claude/VERSION" "install copies VERSION file"
-
 # Verify _lib.sh exists
-assert_file_exists "${MOCK_DIR}/.claude/hooks/_lib.sh" "install copies _lib.sh"
+assert_file_exists "${MOCK_DIR}/.codex-legacy/hooks/_lib.sh" "install copies _lib.sh"
 
 # Verify at least one agent exists
 AGENT_COUNT=0
-if [ -d "${MOCK_DIR}/.claude/agents" ]; then
-    AGENT_COUNT=$(find "${MOCK_DIR}/.claude/agents" -name "*.md" -type f | wc -l | tr -d ' ')
+if [ -d "${MOCK_DIR}/.codex-legacy/agents" ]; then
+    AGENT_COUNT=$(find "${MOCK_DIR}/.codex-legacy/agents" -name "*.md" -type f | wc -l | tr -d ' ')
 fi
 if [ "$AGENT_COUNT" -gt 0 ]; then
     PASS=$((PASS + 1))
@@ -87,8 +87,8 @@ fi
 
 # Verify at least one command exists
 CMD_COUNT=0
-if [ -d "${MOCK_DIR}/.claude/commands" ]; then
-    CMD_COUNT=$(find "${MOCK_DIR}/.claude/commands" -name "*.md" -type f | wc -l | tr -d ' ')
+if [ -d "${MOCK_DIR}/.codex-legacy/commands" ]; then
+    CMD_COUNT=$(find "${MOCK_DIR}/.codex-legacy/commands" -name "*.md" -type f | wc -l | tr -d ' ')
 fi
 if [ "$CMD_COUNT" -gt 0 ]; then
     PASS=$((PASS + 1))
@@ -100,8 +100,8 @@ else
     echo -e "  ${RED}FAIL${NC} no command files found after install"
 fi
 
-# Verify CLAUDE.md was generated
-assert_file_exists "${MOCK_DIR}/CLAUDE.md" "install generates CLAUDE.md"
+# Verify AGENTS.md was generated
+assert_file_exists "${MOCK_DIR}/AGENTS.md" "install generates AGENTS.md"
 
 # --- Cleanup ---
 rm -rf "$MOCK_DIR"

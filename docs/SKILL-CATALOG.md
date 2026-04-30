@@ -1,12 +1,12 @@
 # Skill Catalog
 
-One-page reference for all skills in everything-claude-unity.
+One-page reference for all skills in everything-codex-unity.
 
 ---
 
 ## Overview
 
-41 skills organized into 6 categories. Skills are loaded on-demand based on file glob patterns or loaded always if `alwaysApply: true`. Each skill is a Markdown file at `.claude/skills/<category>/<name>/SKILL.md` with YAML frontmatter.
+41 skills organized into 6 categories. Skills are loaded on-demand based on file glob patterns or loaded always if `alwaysApply: true`. Each skill is a Markdown file at `skills/<category>/<name>/SKILL.md` with YAML frontmatter.
 
 ---
 
@@ -39,7 +39,7 @@ Fundamentals loaded across many contexts.
 | `commit-trailers` | Structured commit trailers with architectural decision metadata | Always loaded |
 | `deep-interview` | Ambiguity gating and structured requirements gathering | Always loaded |
 | `event-systems` | Event system patterns -- C# events, UnityEvent, SO channels | Always loaded |
-| `hud-statusline` | Configures Claude Code's statusline to display Unity workflow state | On demand |
+| `hud-statusline` | Configures Codex's statusline to display Unity workflow state | On demand |
 | `learner` | Post-debugging knowledge extraction -- captures codebase-specific learnings | On demand |
 | `model-routing` | Heuristics for choosing haiku/sonnet/opus model tier | Always loaded |
 | `object-pooling` | Object pooling patterns -- Unity ObjectPool<T>, custom pools | Always loaded |
@@ -139,7 +139,7 @@ Skills are additive -- multiple skills can be loaded simultaneously. They do not
 Create a new directory and `SKILL.md` file:
 
 ```
-.claude/skills/<category>/<skill-name>/SKILL.md
+skills/<category>/<skill-name>/SKILL.md
 ```
 
 Frontmatter:

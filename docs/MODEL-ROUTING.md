@@ -2,7 +2,7 @@
 
 ## Overview
 
-Agents use different Claude models based on task complexity. **Opus** handles creative, multi-step reasoning. **Sonnet** handles structured analysis and simpler implementations. **Haiku** handles fast, read-only exploration and validation. This optimizes cost and latency without sacrificing quality where it matters.
+Agents use different Codex models based on task complexity. **Opus** handles creative, multi-step reasoning. **Sonnet** handles structured analysis and simpler implementations. **Haiku** handles fast, read-only exploration and validation. This optimizes cost and latency without sacrificing quality where it matters.
 
 The `model-routing` skill (always loaded) provides complexity heuristics that orchestrating commands use to select the right agent tier automatically.
 

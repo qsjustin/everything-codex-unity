@@ -1,12 +1,12 @@
 # Unity MCP Setup
 
-How to install, configure, and troubleshoot the unity-mcp bridge between Claude Code and the Unity Editor.
+How to install, configure, and troubleshoot the unity-mcp bridge between Codex and the Unity Editor.
 
 ---
 
 ## What Is unity-mcp?
 
-unity-mcp is a Model Context Protocol server that runs inside Unity and exposes Editor functionality as tools. It lets Claude Code:
+unity-mcp is a Model Context Protocol server that runs inside Unity and exposes Editor functionality as tools. It lets Codex:
 
 - Create and modify GameObjects, components, and prefabs
 - Build and organize scenes
@@ -16,7 +16,7 @@ unity-mcp is a Model Context Protocol server that runs inside Unity and exposes 
 - Trigger builds and switch platforms
 - Query project state (packages, assets, settings)
 
-Without unity-mcp, Claude Code can still write C# scripts, run hooks, apply rules, and use all code-focused agents. MCP adds direct Unity Editor control on top of that.
+Without unity-mcp, Codex can still write C# scripts, run hooks, apply rules, and use all code-focused agents. MCP adds direct Unity Editor control on top of that.
 
 ---
 
@@ -62,9 +62,9 @@ curl http://localhost:8080/mcp
 
 You should get a JSON response confirming the MCP endpoint is active.
 
-### Step 4: Confirm settings.json
+### Step 4: Confirm .mcp.json
 
-The `settings.json` in your `.claude/` directory is already configured:
+The `.mcp.json` file in your project root is already configured:
 
 ```json
 {
@@ -82,15 +82,15 @@ No changes needed unless you are using a custom port.
 
 ## Verifying the Connection
 
-Start Claude Code in your Unity project directory and try:
+Start Codex in your Unity project directory and try:
 
 ```
-Ask Claude: "What objects are in the current scene?"
+Ask Codex: "What objects are in the current scene?"
 ```
 
-If MCP is working, Claude will use `manage_scene` to query the active scene and list its contents. If MCP is not connected, Claude will tell you the tool is unavailable.
+If MCP is working, Codex will use `manage_scene` to query the active scene and list its contents. If MCP is not connected, Codex will tell you the tool is unavailable.
 
-You can also ask Claude to create a test object:
+You can also ask Codex to create a test object:
 
 ```
 "Create an empty GameObject called MCPTest in the scene, then delete it."
@@ -168,7 +168,7 @@ Creating a simple scene (10 GameObjects, 20 components) would require 30+ indivi
 }
 ```
 
-The `unity-mcp-patterns` skill (always loaded for MCP agents) teaches Claude to use `batch_execute` by default. You should not need to ask for it explicitly.
+The `unity-mcp-patterns` skill (always loaded for MCP agents) teaches Codex to use `batch_execute` by default. You should not need to ask for it explicitly.
 
 ---
 
@@ -187,16 +187,16 @@ uv --version        # Must be installed
 lsof -i :8080       # See what is using port 8080
 ```
 
-If port 8080 is taken, configure a different port in the MCP for Unity window and update `settings.json`:
+If port 8080 is taken, configure a different port in the MCP for Unity window and update `.mcp.json`:
 ```json
 "url": "http://localhost:YOUR_PORT/mcp"
 ```
 
 **Reinstall the package:** Remove the MCP for Unity package from Package Manager and re-add it.
 
-### Claude Cannot Connect
+### Codex Cannot Connect
 
-**Verify settings.json:**
+**Verify .mcp.json:**
 ```json
 "mcpServers": {
   "unityMCP": {
@@ -207,7 +207,7 @@ If port 8080 is taken, configure a different port in the MCP for Unity window an
 
 **Check firewall:** Ensure localhost connections are not blocked. The server only listens on the loopback interface.
 
-**Restart Claude Code:** After starting the MCP server, restart Claude Code so it picks up the connection.
+**Restart Codex:** After starting the MCP server, restart Codex so it picks up the connection.
 
 **Check server status:** The MCP for Unity window in Unity should show a green indicator. If red, click Start Server again.
 
@@ -217,7 +217,7 @@ If port 8080 is taken, configure a different port in the MCP for Unity window an
 
 **Play mode conflicts:** Some operations (scene manipulation, prefab editing) do not work while Play mode is active. Stop the game before running scene-building commands.
 
-**Missing references:** If an operation references a GameObject by name that does not exist, it will fail. Ask Claude to list scene objects first.
+**Missing references:** If an operation references a GameObject by name that does not exist, it will fail. Ask Codex to list scene objects first.
 
 ### Multiple Unity Instances
 
@@ -237,7 +237,7 @@ unity-mcp may include telemetry. Check the package documentation for opt-out opt
 
 ### What MCP Can Do
 
-MCP has full Editor access. It can create, modify, and delete any asset or GameObject in your project. The hooks in `.claude/hooks/` provide guardrails (blocking scene file edits, meta file corruption), but MCP operations bypass file-level hooks since they go through the Unity API, not the filesystem.
+MCP has full Editor access. It can create, modify, and delete any asset or GameObject in your project. The hooks in `.codex-legacy/hooks/` provide guardrails (blocking scene file edits, meta file corruption), but MCP operations bypass file-level hooks since they go through the Unity API, not the filesystem.
 
 ---
 

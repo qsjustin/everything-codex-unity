@@ -1,6 +1,6 @@
 # Getting Started
 
-A step-by-step guide to setting up everything-claude-unity in your Unity project.
+A step-by-step guide to setting up everything-codex-unity in your Unity project.
 
 ---
 
@@ -8,12 +8,12 @@ A step-by-step guide to setting up everything-claude-unity in your Unity project
 
 | Requirement | Version | Notes |
 |-------------|---------|-------|
-| **Claude Code** | Latest | [Install guide](https://claude.ai/claude-code) |
+| **Codex** | Latest | [Install guide](https://openai.com/codex) |
 | **Unity** | 2021.3 LTS+ | Any render pipeline (Built-in, URP, HDRP) |
 | **Python** | 3.10+ | Only needed for unity-mcp integration |
 | **uv** | Latest | Python package manager, only needed for unity-mcp |
 
-Claude Code is the only hard requirement. Python and uv are only needed if you want the MCP bridge for direct Unity Editor control.
+Codex is the only hard requirement. Python and uv are only needed if you want the MCP bridge for direct Unity Editor control.
 
 ---
 
@@ -24,24 +24,24 @@ Claude Code is the only hard requirement. Python and uv are only needed if you w
 From your Unity project root:
 
 ```bash
-git clone https://github.com/<user>/everything-claude-unity.git /tmp/ecu
+git clone https://github.com/<user>/everything-codex-unity.git /tmp/ecu
 /tmp/ecu/install.sh --project-dir .
 rm -rf /tmp/ecu
 ```
 
-The installer copies the `.claude/` directory into your project and validates the structure.
+The installer copies the `.codex-legacy/` directory into your project and validates the structure.
 
 ### Option B: Manual Copy
 
 ```bash
-git clone https://github.com/<user>/everything-claude-unity.git
-cp -r everything-claude-unity/.claude your-unity-project/.claude
+git clone https://github.com/<user>/everything-codex-unity.git
+cp -r everything-codex-unity/.codex-plugin everything-codex-unity/skills everything-codex-unity/.mcp.json everything-codex-unity/.codex-legacy your-unity-project/
 ```
 
 Make sure the hooks are executable:
 
 ```bash
-chmod +x your-unity-project/.claude/hooks/*.sh
+chmod +x your-unity-project/.codex-legacy/hooks/*.sh
 ```
 
 ---
@@ -49,7 +49,7 @@ chmod +x your-unity-project/.claude/hooks/*.sh
 ## First Run
 
 1. Open a terminal in your Unity project root (the folder containing `Assets/`).
-2. Run `claude` to start Claude Code.
+2. Run `codex` to start Codex.
 3. Try your first command:
 
 ```
@@ -60,31 +60,31 @@ This runs a full project health check: meta file integrity, missing references, 
 
 ---
 
-## Understanding the .claude/ Directory
+## Understanding the .codex-legacy/ Directory
 
 After installation, your project contains:
 
 ```
-.claude/
-  agents/          15 specialized sub-agents (coder, reviewer, verifier, scene-builder, etc.)
-  commands/        17 slash commands (/unity-workflow, /unity-prototype, /unity-doctor, etc.)
-  hooks/            9 safety hooks + _lib.sh (block scene edits, warn on serialization, suggest review)
-  rules/            5 always-loaded coding standards (C# style, performance, architecture)
-  skills/          35 knowledge modules organized by category
-    core/            Assembly definitions, event systems, object pooling, MCP patterns
-    gameplay/        Character controllers, inventory, dialogue, save systems
-    genre/           Genre-specific patterns (FPS, platformer, RPG, etc.)
-    platform/        Platform-specific knowledge (mobile, console, VR)
-    systems/         Unity subsystems (Input System, Addressables, Cinemachine, etc.)
-    third-party/     Third-party integrations (DOTween, UniTask, VContainer, etc.)
-  settings.json    Permissions, MCP server config, hook definitions
+.codex-plugin/
+  plugin.json       Codex plugin manifest
+skills/             Codex-discoverable skills and workflows
+.mcp.json           Unity MCP server configuration
+.codex-legacy/
+  agents/          Legacy role references
+  commands/        Legacy command references
+  hooks/           Reusable hook scripts + _lib.sh
+  rules/           Unity coding standards referenced by skills
+.codex-unity/
+  state/           Runtime session state
+  scripts/         Validation scripts
+  templates/       C# templates
 ```
 
 ---
 
-## Configuring CLAUDE.md for Your Project
+## Configuring AGENTS.md for Your Project
 
-Run `/unity-init` to auto-generate a `CLAUDE.md` tailored to your project. It scans:
+Run `/unity-init` to auto-generate a `AGENTS.md` tailored to your project. It scans:
 
 - Unity version and active platform
 - Installed packages (render pipeline, Input System, Addressables, etc.)
@@ -92,7 +92,7 @@ Run `/unity-init` to auto-generate a `CLAUDE.md` tailored to your project. It sc
 - Third-party packages (DOTween, UniTask, VContainer, Zenject, Odin)
 - Assembly definition structure
 
-You can then customize the generated `CLAUDE.md` to add:
+You can then customize the generated `AGENTS.md` to add:
 
 - Project-specific conventions (naming, folder structure)
 - Which skills to always load
@@ -103,7 +103,7 @@ You can then customize the generated `CLAUDE.md` to add:
 
 ## Setting Up unity-mcp (Optional but Recommended)
 
-The MCP bridge gives Claude direct control over the Unity Editor: creating GameObjects, building scenes, running tests, profiling performance.
+The MCP bridge gives Codex direct control over the Unity Editor: creating GameObjects, building scenes, running tests, profiling performance.
 
 1. In Unity: **Window > Package Manager > Add package from git URL**
    ```
@@ -114,7 +114,7 @@ The MCP bridge gives Claude direct control over the Unity Editor: creating GameO
 
 3. Verify the server is running on `localhost:8080`
 
-4. The `settings.json` is already configured to connect:
+4. The `.mcp.json` file is already configured to connect:
    ```json
    "mcpServers": {
      "unityMCP": {
@@ -123,7 +123,7 @@ The MCP bridge gives Claude direct control over the Unity Editor: creating GameO
    }
    ```
 
-5. Start Claude Code and test the connection by asking Claude to list objects in the scene.
+5. Start Codex and test the connection by asking Codex to list objects in the scene.
 
 See [MCP-SETUP.md](MCP-SETUP.md) for detailed setup and troubleshooting.
 
@@ -134,7 +134,7 @@ See [MCP-SETUP.md](MCP-SETUP.md) for detailed setup and troubleshooting.
 | Command | What It Does |
 |---------|-------------|
 | `/unity-doctor` | Diagnostic health check — verify MCP, hooks, project structure are all working |
-| `/unity-init` | Scans your project and generates a tailored CLAUDE.md |
+| `/unity-init` | Scans your project and generates a tailored AGENTS.md |
 | `/unity-audit` | Full project health check (meta files, missing refs, code quality) |
 | `/unity-review` | Reviews your C# code for Unity-specific issues |
 | `/unity-prototype "description"` | Creates a playable prototype from a text description |
@@ -152,13 +152,13 @@ Start with `/unity-init`, then `/unity-audit` to get a baseline. From there, try
 
 ### Quick Diagnostic
 
-Run `/unity-doctor` as a first troubleshooting step. It checks MCP connectivity, .claude/ integrity, hook registration, project structure, and skill/package alignment — and provides actionable fixes for any issues found.
+Run `/unity-doctor` as a first troubleshooting step. It checks MCP connectivity, Codex plugin integrity, legacy reference files, project structure, and skill/package alignment — and provides actionable fixes for any issues found.
 
-### Hooks Not Firing
+### Legacy Hook Scripts
 
-- Verify hooks are executable: `ls -la .claude/hooks/*.sh`
-- If not: `chmod +x .claude/hooks/*.sh`
-- Check that `settings.json` has the `hooks` block (compare with the template)
+- Verify hooks are executable: `ls -la .codex-legacy/hooks/*.sh`
+- If not: `chmod +x .codex-legacy/hooks/*.sh`
+- Codex does not auto-register the legacy Claude hook lifecycle; these scripts are preserved for manual validation, tests, or future hook integration.
 - Hooks require `jq` installed on your system for JSON parsing
 - To temporarily disable hooks: set `DISABLE_UNITY_HOOKS=1` in your environment
 - To downgrade blocking hooks to warnings: set `UNITY_HOOK_MODE=warn`
@@ -168,22 +168,22 @@ Run `/unity-doctor` as a first troubleshooting step. It checks MCP connectivity,
 - Confirm the server is running: check Unity's MCP for Unity window
 - Verify `localhost:8080` is reachable: `curl http://localhost:8080/mcp`
 - Check for port conflicts: another service on 8080
-- Ensure `settings.json` has the correct `mcpServers` block
+- Ensure `.mcp.json` has the correct `mcpServers` block
 - See [MCP-SETUP.md](MCP-SETUP.md) for detailed troubleshooting
 
 ### Permission Issues
 
-- On macOS/Linux, hooks need execute permission: `chmod +x .claude/hooks/*.sh`
+- On macOS/Linux, hooks need execute permission: `chmod +x .codex-legacy/hooks/*.sh`
 - The `install.sh` script handles this automatically
 
 ### Commands Not Showing Up
 
-- Commands must be in `.claude/commands/` with a `.md` extension
+- Commands must be in `.codex-legacy/commands/` with a `.md` extension
 - They need valid frontmatter with `name` and `user-invocable: true`
-- Restart Claude Code after adding new commands
+- Restart Codex after adding new commands
 
-### Claude Does Not Know About Unity
+### Codex Does Not Know About Unity
 
-- Run `/unity-init` to generate the project-specific CLAUDE.md
-- Verify that `.claude/rules/` contains the rule files (these load automatically)
+- Run `/unity-init` to generate the project-specific AGENTS.md
+- Verify that `.codex-legacy/rules/` contains the rule files (these load automatically)
 - Skills are loaded by agents as needed; they do not need manual activation

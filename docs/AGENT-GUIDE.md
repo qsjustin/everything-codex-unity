@@ -1,6 +1,6 @@
 # Agent Guide
 
-How to use, customize, and create agents for everything-claude-unity.
+How to use, customize, and create agents for everything-codex-unity.
 
 ---
 
@@ -163,7 +163,7 @@ Senior Unity architect that challenges implementation plans before execution. Id
 Agents are invoked in two ways:
 
 1. **By commands** -- when you run `/unity-prototype`, the command delegates to the `unity-prototyper` agent automatically.
-2. **Manually** -- you can ask Claude to use a specific agent: "Use the unity-reviewer agent to check this file."
+2. **Manually** -- you can ask Codex to use a specific agent: "Use the unity-reviewer agent to check this file."
 
 Most users interact through commands and never need to name agents directly. The command layer handles agent selection based on the task.
 
@@ -171,7 +171,7 @@ Most users interact through commands and never need to name agents directly. The
 
 ## Agent Frontmatter Reference
 
-Every agent is a Markdown file in `.claude/agents/` with YAML frontmatter:
+Every agent is a Markdown file in `.codex-legacy/agents/` with YAML frontmatter:
 
 ```yaml
 ---
@@ -189,7 +189,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash, mcp__unityMCP__*
 
 **description** -- Displayed when listing agents. Keep it under 120 characters.
 
-**model** -- Controls which Claude model runs the agent:
+**model** -- Controls which Codex model runs the agent:
 - `opus` -- best reasoning, creative implementation, complex debugging
 - `sonnet` -- fast and capable, good for review, analysis, and structured tasks
 - `haiku` -- fastest and cheapest, suitable for simple lookups and formatting
@@ -254,10 +254,10 @@ The Markdown body below the frontmatter contains the agent's instructions. You c
 
 ### Step 1: Create the File
 
-Create a new `.md` file in `.claude/agents/`:
+Create a new `.md` file in `.codex-legacy/agents/`:
 
 ```bash
-touch .claude/agents/unity-localization.md
+touch .codex-legacy/agents/unity-localization.md
 ```
 
 ### Step 2: Write the Frontmatter
@@ -304,7 +304,7 @@ You manage localization for Unity projects using the Unity Localization package.
 
 ### Step 4: Create a Command (Optional)
 
-To make your agent accessible via a slash command, create `.claude/commands/unity-localize.md`:
+To make your agent accessible via a slash command, create `.codex-legacy/commands/unity-localize.md`:
 
 ```yaml
 ---

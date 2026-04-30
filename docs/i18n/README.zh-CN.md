@@ -2,11 +2,11 @@
 
 <!-- last-synced-version: 1.2.0 -->
 
-# everything-claude-unity
+# everything-codex-unity
 
-**为 Unity 游戏开发打造的终极 Claude Code 工具集。**
+**为 Unity 游戏开发打造的终极 Codex 工具集。**
 
-一套生产级、即插即用的系统，为 Claude Code 注入深度 Unity 专业知识——从编写高性能 C# 代码到构建场景、性能分析、触发 iOS/Android 构建——全部通过自然语言完成。
+一套生产级、即插即用的系统，为 Codex 注入深度 Unity 专业知识——从编写高性能 C# 代码到构建场景、性能分析、触发 iOS/Android 构建——全部通过自然语言完成。
 
 专为**独立手游开发者**打造。放入任何 Unity 项目即可使用。
 
@@ -39,7 +39,7 @@
 
 ### `/unity-prototype` — 一句话到可玩原型
 
-描述一个游戏机制，Claude 会编写 C# 脚本、通过 MCP 构建场景、设置物理层、配置摄像机，并验证编译通过。
+描述一个游戏机制，Codex 会编写 C# 脚本、通过 MCP 构建场景、设置物理层、配置摄像机，并验证编译通过。
 
 ```
 /unity-prototype "2D platformer with wall jumping and dash"
@@ -88,7 +88,7 @@ DISABLE_HOOK_BLOCK_SCENE_EDIT=1    # 禁用特定 hook
 ## 快速开始
 
 ### 前置要求
-- 已安装 [Claude Code](https://claude.ai/claude-code)
+- 已安装 [Codex](https://openai.com/codex)
 - Unity 2021.3 LTS 或更高版本
 - [unity-mcp](https://github.com/CoplayDev/unity-mcp)（可选，但推荐安装以获得完整流水线功能）
 
@@ -96,16 +96,16 @@ DISABLE_HOOK_BLOCK_SCENE_EDIT=1    # 禁用特定 hook
 
 ```bash
 # 在你的 Unity 项目根目录下执行：
-git clone https://github.com/XeldarAlz/everything-claude-unity.git /tmp/ecu
+git clone https://github.com/qsjustin/everything-codex-unity.git /tmp/ecu
 /tmp/ecu/install.sh --project-dir .
 rm -rf /tmp/ecu
 ```
 
 或手动安装：
 ```bash
-git clone https://github.com/XeldarAlz/everything-claude-unity.git
-cp -r everything-claude-unity/.claude your-unity-project/.claude
-chmod +x your-unity-project/.claude/hooks/*.sh
+git clone https://github.com/qsjustin/everything-codex-unity.git
+cp -r everything-codex-unity/.codex-plugin everything-codex-unity/skills everything-codex-unity/.mcp.json everything-codex-unity/.codex-legacy your-unity-project/
+chmod +x your-unity-project/.codex-legacy/hooks/*.sh
 ```
 
 ### 升级 / 卸载
@@ -123,18 +123,18 @@ chmod +x your-unity-project/.claude/hooks/*.sh
 
 ### 配置 Unity MCP（推荐）
 
-MCP 桥接使 Claude 能直接控制 Unity 编辑器——场景构建、性能分析、构建触发等。
+MCP 桥接使 Codex 能直接控制 Unity 编辑器——场景构建、性能分析、构建触发等。
 
 1. 在 Unity 中：`Window > Package Manager > + > Add package from git URL`
 2. 粘贴：`https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main`
 3. 打开 `Window > MCP for Unity`，点击 **Start Server**
-4. Claude Code 通过 `.claude/settings.json` 自动连接
+4. Codex 通过 `.mcp.json` 自动连接
 
 ### 首次运行
 
 ```bash
 cd your-unity-project
-claude
+codex
 
 # 验证安装：
 /unity-doctor         # 检查 MCP、hooks、项目结构
@@ -221,7 +221,7 @@ claude
 
 ### 项目生命周期
 ```
-/unity-init                     扫描项目 + 生成 CLAUDE.md
+/unity-init                     扫描项目 + 生成 AGENTS.md
 /unity-build                    配置并触发构建
 /unity-migrate                  规划版本/管线迁移
 /unity-doctor                   诊断健康检查（MCP、hooks、项目结构）
@@ -309,7 +309,7 @@ claude
 - **assembly-definitions** — 何时拆分、引用规则、Editor/Runtime 分离
 - **unity-mcp-patterns** — 如何高效使用 MCP 工具（`batch_execute`、`read_console`）
 - **learner** — 调试后知识提取，含质量门禁和置信度评分
-- **hud-statusline** — Claude Code 状态栏集成，显示工作流阶段和会话指标
+- **hud-statusline** — Codex 状态栏集成，显示工作流阶段和会话指标
 
 ### Unity 系统（10）
 URP 管线、Input System、Addressables、Cinemachine、Animation、Audio、Physics、NavMesh、UI Toolkit、ShaderGraph
@@ -352,21 +352,21 @@ DOTween、UniTask、VContainer、TextMeshPro、Odin Inspector
 ./scripts/analyze-build-size.sh               # 从 Editor.log 分析构建包体大小
 ./scripts/validate-serialization.sh           # 字段重命名缺少 FormerlySerializedAs
 ./scripts/validate-architecture.sh            # MVS 模式合规性检查
-./scripts/generate-claude-md.sh > CLAUDE.md   # 自动生成项目 CLAUDE.md
+./scripts/generate-agents-md.sh > AGENTS.md   # 自动生成项目 AGENTS.md
 ```
 
 ---
 
-## CLAUDE.md 示例文件
+## AGENTS.md 示例文件
 
 为移动游戏类型预置的配置模板：
 
-- `examples/CLAUDE.md.hyper-casual` — 单击操作、极简视觉、广告变现
-- `examples/CLAUDE.md.match3` — 网格系统、连锁消除、特殊方块、体力/能量
-- `examples/CLAUDE.md.idle-clicker` — 大数值运算、离线收益、转生系统
-- `examples/CLAUDE.md.mobile-casual` — 触控输入、小包体、广告集成
-- `examples/CLAUDE.md.2d-platformer` — Tilemap、虚拟摇杆、移动端优化
-- `examples/CLAUDE.md.rpg` — 属性系统、背包、对话、触控操作
+- `examples/AGENTS.md.hyper-casual` — 单击操作、极简视觉、广告变现
+- `examples/AGENTS.md.match3` — 网格系统、连锁消除、特殊方块、体力/能量
+- `examples/AGENTS.md.idle-clicker` — 大数值运算、离线收益、转生系统
+- `examples/AGENTS.md.mobile-casual` — 触控输入、小包体、广告集成
+- `examples/AGENTS.md.2d-platformer` — Tilemap、虚拟摇杆、移动端优化
+- `examples/AGENTS.md.rpg` — 属性系统、背包、对话、触控操作
 
 ---
 
@@ -405,7 +405,7 @@ Command（编排工作流）
 ### Hook 安全网
 
 ```
-Claude 尝试编辑 PlayerView.cs
+Codex 尝试编辑 PlayerView.cs
     |
     +-->  _lib.sh: 检查配置档级别和禁用开关
     +-->  PreToolUse: guard-editor-runtime.sh -- UnityEditor 防护
@@ -434,7 +434,7 @@ SessionStart
 
 Stop
     +-->  stop-validate.sh -- 对所有已修改文件进行批量验证
-    +-->  session-save.sh -- 将状态保存到 /tmp/unity-claude-hooks/
+    +-->  session-save.sh -- 将状态保存到 /tmp/unity-codex-hooks/
     +-->  auto-learn.sh -- 将会话指标追加写入 learnings.jsonl
 ```
 

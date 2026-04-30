@@ -6,14 +6,14 @@ How to measure and compare structural correctness of agent output.
 
 ## What Benchmarks Measure
 
-Benchmarks verify that Claude Code agents produce structurally correct Unity code when given standardized prompts. Each scenario defines:
+Benchmarks verify that Codex agents produce structurally correct Unity code when given standardized prompts. Each scenario defines:
 
 - A **prompt** to give the agent
 - **Expected files** that must exist (glob patterns)
 - **Expected patterns** that must appear in specific files (regex)
 - **Forbidden patterns** that must NOT appear (anti-patterns like singletons, coroutines, LINQ in gameplay)
 
-The benchmarks do **not** invoke Claude Code. You run Claude Code manually with the scenario prompt, then point the evaluator at the output to score the result.
+The benchmarks do **not** invoke Codex. You run Codex manually with the scenario prompt, then point the evaluator at the output to score the result.
 
 ---
 
@@ -45,7 +45,7 @@ Create a JSON file in `benchmarks/scenarios/`:
 {
   "name": "scenario-id",
   "description": "Human-readable description of what this tests",
-  "prompt": "The prompt to give Claude Code",
+  "prompt": "The prompt to give Codex",
   "tags": ["architecture", "mvs"],
   "setup_files": {
     "relative/path.cs": "file contents pre-populated before eval"
@@ -88,6 +88,6 @@ This shows regressions (scenarios that previously passed but now fail) and impro
 ## Workflow
 
 1. Copy the `prompt` from a scenario JSON.
-2. Run Claude Code with that prompt in a scratch Unity project.
+2. Run Codex with that prompt in a scratch Unity project.
 3. Run `bash benchmarks/run-benchmarks.sh --workdir /path/to/scratch`.
 4. Review the pass/fail summary and the saved results JSON.

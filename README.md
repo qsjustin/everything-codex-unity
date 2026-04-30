@@ -1,26 +1,26 @@
-# everything-claude-unity
+# everything-codex-unity
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/XeldarAlz/everything-claude-unity?style=social)](https://github.com/XeldarAlz/everything-claude-unity/stargazers)
-[![GitHub release](https://img.shields.io/github/v/release/XeldarAlz/everything-claude-unity?include_prereleases)](https://github.com/XeldarAlz/everything-claude-unity/releases)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-8A2BE2)](https://claude.ai/claude-code)
+[![GitHub stars](https://img.shields.io/github/stars/everything-codex-unity?style=social)](https://github.com/qsjustin/everything-codex-unity/stargazers)
+[![GitHub release](https://img.shields.io/github/v/release/everything-codex-unity?include_prereleases)](https://github.com/qsjustin/everything-codex-unity/releases)
+[![Codex](https://img.shields.io/badge/Codex%20Code-compatible-8A2BE2)](https://openai.com/codex)
 [![Unity](https://img.shields.io/badge/Unity-2021.3%20LTS%2B-000000?logo=unity)](https://unity.com/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Discussions](https://img.shields.io/github/discussions/XeldarAlz/everything-claude-unity)](https://github.com/XeldarAlz/everything-claude-unity/discussions)
+[![Discussions](https://img.shields.io/github/discussions/everything-codex-unity)](https://github.com/qsjustin/everything-codex-unity/discussions)
 
 [English](README.md) | [中文](docs/i18n/README.zh-CN.md) | [日本語](docs/i18n/README.ja.md) | [한국어](docs/i18n/README.ko.md) | [Español](docs/i18n/README.es.md) | [Português](docs/i18n/README.pt-BR.md) | [Deutsch](docs/i18n/README.de.md) | [Français](docs/i18n/README.fr.md) | [Türkçe](docs/i18n/README.tr.md)
 
-**The ultimate Claude Code toolkit for Unity game development.**
+**The ultimate Codex toolkit for Unity game development.**
 
-A production-ready, plug-and-play system that gives Claude Code deep Unity expertise — from writing performant C# to building scenes, profiling performance, and triggering iOS/Android builds — all through natural language.
+A production-ready, plug-and-play system that gives Codex deep Unity expertise — from writing performant C# to building scenes, profiling performance, and triggering iOS/Android builds — all through natural language.
 
 Built for **solo indie mobile game developers**. Drop it into any Unity project and it works.
 
 ### Why this works?
 
-- **Drop-in, zero-config** — one `install.sh` and Claude Code knows Unity inside out
-- **20 specialized agents** across haiku/sonnet/opus tiers with automatic complexity routing
-- **22 safety hooks** that prevent scene/meta corruption, silent data loss, and GC spikes before they happen
+- **Drop-in, zero-config** — one `install.sh` and Codex knows Unity inside out
+- **20 legacy role references** across haiku/sonnet/opus tiers with automatic complexity routing
+- **22 reusable safety scripts** that prevent scene/meta corruption, silent data loss, and GC spikes before they happen
 - **MVS architecture built-in** — VContainer + MessagePipe + UniTask patterns enforced by rules and templates
 - **MCP-native** — scene building, profiling, and iOS/Android builds triggered from chat
 - **60+ automated tests** and reproducible benchmarks so the toolkit itself stays honest
@@ -31,9 +31,9 @@ Built for **solo indie mobile game developers**. Drop it into any Unity project 
 
 | Component | Count | Purpose |
 |-----------|-------|---------|
-| **Agents** | 20 | Specialized sub-agents across 3 model tiers (haiku/sonnet/opus) |
-| **Commands** | 22 | Slash commands like `/unity-workflow`, `/unity-ralph`, `/unity-team`, `/unity-skillify` |
-| **Skills** | 41 | Knowledge modules for Unity systems, gameplay patterns, and mobile genres |
+| **Legacy roles** | 20 | Reference role docs migrated from Claude agents |
+| **Workflow skills** | 27 | Codex skills migrated from Unity slash-command workflows |
+| **Domain skills** | 42 | Knowledge modules for Unity systems, gameplay patterns, and mobile genres |
 | **Hooks** | 22 | Safety net, quality gates, notifications, session persistence, auto-learning |
 | **Rules** | 5 | C# coding standards, performance rules, MVS architecture patterns |
 | **Scripts** | 8 | Validation tools for meta files, code quality, serialization, architecture |
@@ -45,54 +45,54 @@ Built for **solo indie mobile game developers**. Drop it into any Unity project 
 
 ## Highlights
 
-### `/unity-workflow` — Full Development Pipeline
+### `unity-workflow` — Full Development Pipeline
 
-A structured 4-phase pipeline for any feature: **Clarify** requirements, **Plan** the implementation, **Execute** with specialized agents, **Verify** with automated review + fix loop.
-
-```
-/unity-workflow "add a combo scoring system with multipliers and visual feedback"
-```
-
-### `/unity-prototype` — One Prompt to Playable
-
-Describe a mechanic, and Claude writes the C# scripts, builds the scene via MCP, sets up physics layers, configures the camera, and verifies it compiles.
+A structured 4-phase pipeline for any feature: **Clarify** requirements, **Plan** the implementation, **Execute** with legacy role references, **Verify** with automated review + fix loop.
 
 ```
-/unity-prototype "2D platformer with wall jumping and dash"
+unity-workflow "add a combo scoring system with multipliers and visual feedback"
 ```
 
-### `/unity-ralph` — Relentless Verify-Fix Loop
+### `unity-prototype` — One Prompt to Playable
+
+Describe a mechanic, and Codex writes the C# scripts, builds the scene via MCP, sets up physics layers, configures the camera, and verifies it compiles.
+
+```
+unity-prototype "2D platformer with wall jumping and dash"
+```
+
+### `unity-ralph` — Relentless Verify-Fix Loop
 
 Runs the verify-fix loop persistently — refuses to stop until the project is clean or hits the safety limit. Up to 30 effective verification passes with stall detection.
 
 ```
-/unity-ralph --max-iterations 10
+unity-ralph --max-iterations 10
 ```
 
-### `/unity-team` — Parallel Agent Orchestration
+### `unity-team` — Parallel Agent Orchestration
 
 Spawn multiple agents simultaneously — coder + tester + reviewer working in parallel for faster development.
 
 ```
-/unity-team --build "add health system with damage and healing"
-/unity-team --security "audit the save system"
-/unity-team --build --quick "add a basic score counter"
+unity-team --build "add health system with damage and healing"
+unity-team --security "audit the save system"
+unity-team --build --quick "add a basic score counter"
 ```
 
 ### What's New in v1.3.0
 
 - **Smart Model Routing** — complexity heuristics auto-select haiku/sonnet/opus agents based on task signals
-- **Persistent State** — session data survives reboots in `.claude/state/` with structured schema
-- **Plan Critic** — `unity-critic` agent challenges your plans before execution (built into `/unity-workflow`)
+- **Persistent State** — session data survives reboots in `.codex-unity/state/` with structured schema
+- **Plan Critic** — `unity-critic` agent challenges your plans before execution (built into `unity-workflow`)
 - **Security Auditing** — `unity-security-reviewer` catches PlayerPrefs secrets, hardcoded keys, insecure saves
 - **Benchmarking** — measure agent quality with reproducible evaluation scenarios
-- **Skillify** — `/unity-skillify` auto-generates skills from your accumulated session learnings
+- **Skillify** — `unity-skillify` auto-generates skills from your accumulated session learnings
 - **Multi-channel Notifications** — Discord, Slack, OS-native with event filtering and rate limiting
 - **Hardened CI** — cross-validation, tool restriction checks, template and skill quality gates
 
 ### Verify-Fix Loop
 
-The `unity-verifier` agent automatically reviews your code changes, fixes safe issues (missing `[FormerlySerializedAs]`, uncached `GetComponent`, `?.` on Unity objects), and re-verifies — up to 3 iterations until clean. Built into `/unity-workflow` and available as an optional step in `/unity-feature` and `/unity-prototype`.
+The `unity-verifier` review workflow reviews your code changes, fixes safe issues (missing `[FormerlySerializedAs]`, uncached `GetComponent`, `?.` on Unity objects), and re-verifies — up to 3 iterations until clean. Built into `unity-workflow` and available as an optional step in `unity-feature` and `unity-prototype`.
 
 ### Hook Profiles
 
@@ -117,7 +117,7 @@ DISABLE_HOOK_BLOCK_SCENE_EDIT=1    # Disable a specific hook
 ## Quick Start
 
 ### Prerequisites
-- [Claude Code](https://claude.ai/claude-code) installed
+- [Codex](https://openai.com/codex) installed
 - Unity 2021.3 LTS or later
 - [unity-mcp](https://github.com/CoplayDev/unity-mcp) (optional but recommended for full pipeline)
 
@@ -125,16 +125,16 @@ DISABLE_HOOK_BLOCK_SCENE_EDIT=1    # Disable a specific hook
 
 ```bash
 # From your Unity project root:
-git clone https://github.com/XeldarAlz/everything-claude-unity.git /tmp/ecu
+git clone https://github.com/qsjustin/everything-codex-unity.git /tmp/ecu
 /tmp/ecu/install.sh --project-dir .
 rm -rf /tmp/ecu
 ```
 
 Or manually:
 ```bash
-git clone https://github.com/XeldarAlz/everything-claude-unity.git
-cp -r everything-claude-unity/.claude your-unity-project/.claude
-chmod +x your-unity-project/.claude/hooks/*.sh
+git clone https://github.com/qsjustin/everything-codex-unity.git
+cp -r everything-codex-unity/.codex-plugin everything-codex-unity/skills everything-codex-unity/.mcp.json everything-codex-unity/.codex-legacy your-unity-project/
+chmod +x your-unity-project/.codex-legacy/hooks/*.sh
 ```
 
 ### Upgrade / Uninstall
@@ -152,26 +152,26 @@ chmod +x your-unity-project/.claude/hooks/*.sh
 
 ### Setup Unity MCP (Recommended)
 
-The MCP bridge gives Claude direct control over the Unity Editor — scene building, profiling, builds, and more.
+The MCP bridge gives Codex direct control over the Unity Editor — scene building, profiling, builds, and more.
 
 1. In Unity: `Window > Package Manager > + > Add package from git URL`
 2. Paste: `https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main`
 3. Open `Window > MCP for Unity` and click **Start Server**
-4. Claude Code auto-connects via `.claude/settings.json`
+4. Codex auto-connects via `.mcp.json`
 
 ### First Run
 
 ```bash
 cd your-unity-project
-claude
+codex
 
 # Verify installation:
-/unity-doctor         # Check MCP, hooks, project structure
+unity-doctor         # Check MCP, hooks, project structure
 
 # Start working:
-/unity-audit          # Full project health check
-/unity-workflow       # Full pipeline: clarify → plan → execute → verify
-/unity-prototype      # Rapid prototype a game mechanic
+unity-audit          # Full project health check
+unity-workflow       # Full pipeline: clarify → plan → execute → verify
+unity-prototype      # Rapid prototype a game mechanic
 ```
 
 ---
@@ -217,43 +217,43 @@ Commands support `--quick` (routes to sonnet lite agent) and `--thorough` (route
 
 ### Full Pipeline
 ```
-/unity-workflow <description>   Clarify → Plan → Execute → Verify (the recommended workflow)
+unity-workflow <description>   Clarify → Plan → Execute → Verify (the recommended workflow)
 ```
 
 ### Daily Workflow
 ```
-/unity-feature <description>    Plan + implement a feature (--quick for simple tasks)
-/unity-fix <bug or error>       Diagnose and fix a bug (--quick for obvious fixes)
-/unity-prototype <mechanic>     One prompt to playable prototype
-/unity-scene <description>      Build a scene via MCP
-/unity-shader <description>     Create shaders with live preview
-/unity-ui <screen description>  Build UI with visual setup
-/unity-network <framework>      Set up multiplayer
+unity-feature <description>    Plan + implement a feature (--quick for simple tasks)
+unity-fix <bug or error>       Diagnose and fix a bug (--quick for obvious fixes)
+unity-prototype <mechanic>     One prompt to playable prototype
+unity-scene <description>      Build a scene via MCP
+unity-shader <description>     Create shaders with live preview
+unity-ui <screen description>  Build UI with visual setup
+unity-network <framework>      Set up multiplayer
 ```
 
 ### Quality Gates
 ```
-/unity-review [scope]           Code review (--thorough for deep analysis)
-/unity-optimize                 Profile via MCP + fix bottlenecks
-/unity-test                     Write + run tests via MCP
-/unity-audit                    Full project health check
-/unity-profile                  Deep profiling session
+unity-review [scope]           Code review (--thorough for deep analysis)
+unity-optimize                 Profile via MCP + fix bottlenecks
+unity-test                     Write + run tests via MCP
+unity-audit                    Full project health check
+unity-profile                  Deep profiling session
 ```
 
 ### Orchestration
 ```
-/unity-ralph [options]          Persistent verify-fix loop (refuses to stop until clean)
-/unity-team <--preset|--custom> Parallel agents (coder + tester + reviewer simultaneously)
-/unity-interview <topic>        Deep Socratic requirements interview before coding
-/unity-learn [subcommand]       Session analytics: review, extract patterns, draft skills
+unity-ralph [options]          Persistent verify-fix loop (refuses to stop until clean)
+unity-team <--preset|--custom> Parallel agents (coder + tester + reviewer simultaneously)
+unity-interview <topic>        Deep Socratic requirements interview before coding
+unity-learn [subcommand]       Session analytics: review, extract patterns, draft skills
 ```
 
 ### Project Lifecycle
 ```
-/unity-init                     Scan project + generate CLAUDE.md
-/unity-build                    Configure + trigger builds
-/unity-migrate                  Plan version/pipeline migration
-/unity-doctor                   Diagnostic health check (MCP, hooks, project structure)
+unity-init                     Scan project + generate AGENTS.md
+unity-build                    Configure + trigger builds
+unity-migrate                  Plan version/pipeline migration
+unity-doctor                   Diagnostic health check (MCP, hooks, project structure)
 ```
 
 ---
@@ -284,7 +284,7 @@ Commands support `--quick` (routes to sonnet lite agent) and `--thorough` (route
 | `warn-platform-defines` | `#if UNITY_ANDROID` without `#else` fallback |
 | `quality-gate` | GetComponent in Update, LINQ in gameplay, `?.` on Unity objects, uncached Camera.main, SendMessage |
 | `validate-commit` | Missing .meta files, code quality issues on commit |
-| `suggest-verify` | Suggests `/unity-review` after 5+ C# files modified |
+| `suggest-verify` | Suggests `unity-review` after 5+ C# files modified |
 | `build-analyze` | Post-build: shader variant counts, size, stripping issues, deprecated APIs |
 
 ### Tracking Hooks — PostToolUse (standard/strict profile)
@@ -338,7 +338,7 @@ Plus the original templates: `MonoBehaviour.cs`, `ScriptableObject.cs`, `EditMod
 - **assembly-definitions** — When to split, reference rules, Editor/Runtime separation
 - **unity-mcp-patterns** — How to use MCP tools effectively (`batch_execute`, `read_console`)
 - **learner** — Post-debugging knowledge extraction with quality gates and confidence scoring
-- **hud-statusline** — Claude Code statusline integration showing workflow phase and session metrics
+- **hud-statusline** — Codex statusline integration showing workflow phase and session metrics
 
 ### Unity Systems (10)
 URP pipeline, Input System, Addressables, Cinemachine, Animation, Audio, Physics, NavMesh, UI Toolkit, ShaderGraph
@@ -381,21 +381,21 @@ Run these to check project health:
 ./scripts/analyze-build-size.sh               # Build size analysis from Editor.log
 ./scripts/validate-serialization.sh           # Field renames missing FormerlySerializedAs
 ./scripts/validate-architecture.sh            # MVS pattern compliance checks
-./scripts/generate-claude-md.sh > CLAUDE.md   # Auto-generate project CLAUDE.md
+./scripts/generate-agents-md.sh > AGENTS.md   # Auto-generate project AGENTS.md
 ```
 
 ---
 
-## Example CLAUDE.md Files
+## Example AGENTS.md Files
 
 Pre-built configurations for mobile game types:
 
-- `examples/CLAUDE.md.hyper-casual` — One-tap controls, minimal visuals, ad monetization
-- `examples/CLAUDE.md.match3` — Grid system, cascades, special tiles, lives/energy
-- `examples/CLAUDE.md.idle-clicker` — Big numbers, offline progress, prestige system
-- `examples/CLAUDE.md.mobile-casual` — Touch input, small build, ad integration
-- `examples/CLAUDE.md.2d-platformer` — Tilemap, virtual joystick, mobile-optimized
-- `examples/CLAUDE.md.rpg` — Stats, inventory, dialogue, touch controls
+- `examples/AGENTS.md.hyper-casual` — One-tap controls, minimal visuals, ad monetization
+- `examples/AGENTS.md.match3` — Grid system, cascades, special tiles, lives/energy
+- `examples/AGENTS.md.idle-clicker` — Big numbers, offline progress, prestige system
+- `examples/AGENTS.md.mobile-casual` — Touch input, small build, ad integration
+- `examples/AGENTS.md.2d-platformer` — Tilemap, virtual joystick, mobile-optimized
+- `examples/AGENTS.md.rpg` — Stats, inventory, dialogue, touch controls
 
 ---
 
@@ -404,7 +404,7 @@ Pre-built configurations for mobile game types:
 ### Workflow Pipeline
 
 ```
-/unity-workflow "add combo scoring"
+unity-workflow "add combo scoring"
     │
     ├─ Phase 1: Clarify   ── interview about requirements, constraints, platform
     ├─ Phase 2: Plan      ── scan project, choose agents, present implementation plan
@@ -434,7 +434,7 @@ Command (orchestrates the workflow)
 ### Hook Safety Net
 
 ```
-Claude attempts to edit PlayerView.cs
+Codex attempts to edit PlayerView.cs
     │
     ├──▶ _lib.sh: check profile level, kill switches
     ├──▶ PreToolUse: guard-editor-runtime.sh — UnityEditor guard
@@ -463,7 +463,7 @@ SessionStart
 
 Stop
     ├──▶ stop-validate.sh — batch validation on all modified files
-    ├──▶ session-save.sh — save state to /tmp/unity-claude-hooks/
+    ├──▶ session-save.sh — save state to /tmpunity-codex-hooks/
     └──▶ auto-learn.sh — append session metrics to learnings.jsonl
 ```
 

@@ -1,0 +1,30 @@
+{
+  "name": "everything-codex-unity",
+  "version": "1.3.0",
+  "description": "Codex toolkit for Unity game development with skills, workflows, validation scripts, templates, and Unity MCP guidance.",
+  "author": {
+    "name": "qsjustin",
+    "url": "https://github.com/qsjustin"
+  },
+  "homepage": "https://github.com/qsjustin/everything-codex-unity",
+  "repository": "https://github.com/qsjustin/everything-codex-unity",
+  "license": "MIT",
+  "keywords": ["codex", "unity", "gamedev", "mcp", "csharp"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Everything Codex Unity",
+    "shortDescription": "Unity development workflows and safety rules for Codex.",
+    "longDescription": "A Codex-native migration of everything-claude-unity. It provides Unity C# guidance, gameplay and system skills, workflow skills, validation scripts, C# templates, and Unity MCP configuration hints.",
+    "developerName": "qsjustin",
+    "category": "Developer Tools",
+    "capabilities": ["Write", "Automation"],
+    "websiteURL": "https://github.com/qsjustin/everything-codex-unity",
+    "defaultPrompt": [
+      "Review my Unity project for serialization risks.",
+      "Build a Unity feature using the workflow skill.",
+      "Create a mobile-friendly Unity prototype."
+    ],
+    "brandColor": "#111827"
+  }
+}

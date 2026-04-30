@@ -1,14 +1,14 @@
-# Contributing to everything-claude-unity
+# Contributing to everything-codex-unity
 
-Thanks for your interest in improving Unity game development with Claude Code!
+Thanks for your interest in improving Unity game development with Codex!
 
 ## How to Contribute
 
 ### Adding a New Skill
 
-Skills are the easiest way to contribute. A skill is a SKILL.md file in `.claude/skills/<category>/<skill-name>/`.
+Skills are the easiest way to contribute. A skill is a SKILL.md file in `skills/<category>/<skill-name>/`.
 
-1. Create the directory: `.claude/skills/<category>/<your-skill>/`
+1. Create the directory: `skills/<category>/<your-skill>/`
 2. Create `SKILL.md` with frontmatter:
 
 ```yaml
@@ -33,7 +33,7 @@ globs: ["**/Pattern*.cs", "**/*Match*"]
 
 ### Adding a New Agent
 
-Agents live in `.claude/agents/`. Create a markdown file with frontmatter:
+Agents live in `.codex-legacy/agents/`. Create a markdown file with frontmatter:
 
 ```yaml
 ---
@@ -48,7 +48,7 @@ skills: skill1, skill2
 
 ### Adding a New Command
 
-Commands live in `.claude/commands/`. Create a markdown file with:
+Commands live in `.codex-legacy/commands/`. Create a markdown file with:
 
 ```yaml
 ---
@@ -61,7 +61,7 @@ args: optional_argument_name
 
 ### Improving Hooks
 
-Hooks are shell scripts in `.claude/hooks/`. Key conventions:
+Hooks are shell scripts in `.codex-legacy/hooks/`. Key conventions:
 - Read JSON from stdin (tool input)
 - Exit 2 to block (PreToolUse), exit 0 to allow/warn
 - Write warnings to stderr
@@ -69,7 +69,7 @@ Hooks are shell scripts in `.claude/hooks/`. Key conventions:
 
 ### Improving Rules
 
-Rules in `.claude/rules/` are always loaded. Keep them:
+Rules in `.codex-legacy/rules/` are always loaded. Keep them:
 - Scannable (headers, short bullet points)
 - Actionable (show the correct code, not just "don't do X")
 - Focused (one topic per file)
@@ -89,7 +89,7 @@ Rules in `.claude/rules/` are always loaded. Keep them:
 
 - Shell scripts: `bash`, `set -euo pipefail`, colored output
 - Markdown: ATX headings, fenced code blocks, tables where appropriate
-- C# examples: follow the conventions in `.claude/rules/csharp-unity.md`
+- C# examples: follow the conventions in `.codex-legacy/rules/csharp-unity.md`
 
 ## Reporting Issues
 

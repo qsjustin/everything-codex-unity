@@ -1,12 +1,12 @@
 # Hook Reference
 
-Complete catalog of hooks in everything-claude-unity.
+Complete catalog of hooks in everything-codex-unity.
 
 ---
 
 ## Overview
 
-everything-claude-unity includes 22 hooks that provide safety enforcement, quality gates, session management, and learning. Hooks are bash scripts in `.claude/hooks/` configured in `.claude/settings.json`. All hooks source a shared library (`_lib.sh`) that provides kill switches, profile filtering, state paths, and utility functions.
+everything-codex-unity includes 22 hooks that provide safety enforcement, quality gates, session management, and learning. Hooks are bash scripts in `.codex-legacy/hooks/` configured in `.mcp.json`. All hooks source a shared library (`_lib.sh`) that provides kill switches, profile filtering, state paths, and utility functions.
 
 ---
 
@@ -44,7 +44,7 @@ DISABLE_HOOK_GATEGUARD=1
 UNITY_HOOK_MODE=warn
 ```
 
-Configure overrides in `.claude/settings.local.json` (git-ignored) so they do not affect the team.
+Configure overrides in `.codex-legacy/settings.local.json` (git-ignored) so they do not affect the team.
 
 ---
 
@@ -305,11 +305,11 @@ These hooks run when the agent stops (conversation ends or user exits).
 
 ## Shared Library: _lib.sh
 
-All hooks source `.claude/hooks/_lib.sh` after setting `HOOK_PROFILE_LEVEL`. The library provides:
+All hooks source `.codex-legacy/hooks/_lib.sh` after setting `HOOK_PROFILE_LEVEL`. The library provides:
 
 - **Profile filtering** -- compares the hook's declared level against the active profile and exits silently if the hook should not run
 - **Kill switch checks** -- `DISABLE_UNITY_HOOKS` and per-hook `DISABLE_HOOK_<NAME>`
-- **State directory resolution** -- finds `.claude/state/` or falls back to `/tmp/unity-claude-hooks`
+- **State directory resolution** -- finds `.codex-unity/state/` or falls back to `/tmp/unity-codex-hooks`
 - **Shared file paths** -- `UNITY_SESSION_FILE`, `UNITY_READS_FILE`, `UNITY_EDITS_FILE`, `UNITY_COST_FILE`, `UNITY_LEARNING_FILE`, `UNITY_WARNINGS_FILE`
 - **`unity_hook_block()`** -- replaces direct `exit 2` in blocking hooks; respects `UNITY_HOOK_MODE=warn`
 - **`unity_track_edit()`** / **`unity_track_read()`** -- append to tracking files

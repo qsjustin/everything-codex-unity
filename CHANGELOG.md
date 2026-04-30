@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to everything-claude-unity will be documented in this file.
+All notable changes to everything-codex-unity will be documented in this file.
 
 ## [1.5.0] — 2026-04-24
 
@@ -83,14 +83,14 @@ All notable changes to everything-claude-unity will be documented in this file.
 **Atomic Instinct Learning System**
 - New `instinct-capture.sh` (PostToolUse, ~10ms) logs lightweight observations with path-tag classification (view/system/model/sobject/mono/editor/scene/prefab/asmdef)
 - New `instinct-distill.sh` (Stop, heuristic, no LLM) extracts atomic instincts from observations using three heuristics: warning-hotspot by path tag, tool-sequence affinity, hook-specific recurrence
-- Project-scoped by default (`.claude/state/instincts/project/<git-remote-hash>/`); global scope available via promotion
+- Project-scoped by default (`.codex-unity/state/instincts/project/<git-remote-hash>/`); global scope available via promotion
 - Confidence scoring 0.3–0.9 with evidence-count-based progression
 - New `/unity-instincts` command (status, list, evolve, promote, demote, export, import, clear)
-- New meta-skill `.claude/skills/core/unity-instincts/` documenting the pipeline
+- New meta-skill `skills/core/unity-instincts/` documenting the pipeline
 
 **Session Management Commands**
 - `/unity-sessions` — list saved session snapshots with branch, phase, age, file counts
-- `/unity-session-save <label>` — snapshot the current session.json to `.claude/state/sessions/<label>.json`
+- `/unity-session-save <label>` — snapshot the current session.json to `.codex-unity/state/sessions/<label>.json`
 - `/unity-session-resume <label>` — restore a named snapshot with branch-mismatch warnings and TTL respect
 
 **Meta-Maintenance**
@@ -111,7 +111,7 @@ All notable changes to everything-claude-unity will be documented in this file.
 ### Added
 
 **Structured State Management**
-- Session state now persists in `.claude/state/` (project-local, git-ignored) instead of `/tmp/`
+- Session state now persists in `.codex-unity/state/` (project-local, git-ignored) instead of `/tmp/`
 - Structured `session.json` schema with `schema_version`, `plan`, `verification`, and `agent_context` fields
 - Configurable session TTL via `UNITY_SESSION_TTL_HOURS` environment variable (default: 4)
 - New `_lib.sh` helpers: `unity_state_read()`, `unity_state_write()`, `unity_state_plan_update()`, `unity_track_warning()`
@@ -171,13 +171,13 @@ All notable changes to everything-claude-unity will be documented in this file.
 
 ### Changed
 
-- Session state moved from `/tmp/unity-claude-hooks/` to `.claude/state/` (project-local)
+- Session state moved from `/tmp/unity-codex-hooks/` to `.codex-unity/state/` (project-local)
 - Session file renamed from `session-state.json` to `session.json` with schema versioning
-- Learnings file moved from `.claude/learnings.jsonl` to `.claude/state/learnings.jsonl`
-- Pre-compact state moved from `/tmp/` to `.claude/state/`
+- Learnings file moved from `.codex-legacy/learnings.jsonl` to `.codex-unity/state/learnings.jsonl`
+- Pre-compact state moved from `/tmp/` to `.codex-unity/state/`
 - `session-restore.sh` uses JSON `saved_at` field instead of `stat` for portable TTL checks
-- `install.sh` creates `.claude/state/` directory and adds it to `.gitignore`
-- `upgrade.sh` migrates state from old `/tmp/` and `.claude/learnings.jsonl` locations
+- `install.sh` creates `.codex-unity/state/` directory and adds it to `.gitignore`
+- `upgrade.sh` migrates state from old `/tmp/` and `.codex-legacy/learnings.jsonl` locations
 
 ### Component Counts
 
@@ -209,11 +209,11 @@ All notable changes to everything-claude-unity will be documented in this file.
 - `guard-project-config.sh` — blocks modification of `.editorconfig`, analyzer settings, and code quality config files
 
 **New Skill (1)**
-- `hud-statusline` — guidance for Claude Code statusline integration showing workflow phase, active agent, and session metrics
+- `hud-statusline` — guidance for Codex statusline integration showing workflow phase, active agent, and session metrics
 
 **Plugin Packaging**
-- `.claude-plugin/plugin.json` — machine-readable plugin manifest for Claude Code plugin system
-- `.claude-plugin/marketplace.json` — marketplace discovery metadata with highlights and keywords
+- `.codex-legacy-plugin/plugin.json` — machine-readable plugin manifest for Codex plugin system
+- `.codex-legacy-plugin/marketplace.json` — marketplace discovery metadata with highlights and keywords
 
 **CI/CD**
 - `.github/workflows/ci.yml` — shellcheck on all hooks, frontmatter validation for agents/commands/skills, JSON validation, test suite execution
@@ -244,7 +244,7 @@ All notable changes to everything-claude-unity will be documented in this file.
 
 **New Commands (2)**
 - `/unity-workflow` — full development pipeline: clarify → plan → execute → verify
-- `/unity-doctor` — diagnostic health check (MCP connectivity, .claude/ integrity, hook registration, project structure, skill/package alignment)
+- `/unity-doctor` — diagnostic health check (MCP connectivity, .codex-legacy/ integrity, hook registration, project structure, skill/package alignment)
 
 **New Agents (3)**
 - `unity-verifier` — verify-fix loop agent: reviews changes, auto-fixes safe issues, re-verifies up to 3 iterations
@@ -277,7 +277,7 @@ All notable changes to everything-claude-unity will be documented in this file.
 - `DISABLE_UNITY_HOOKS=1` — bypass all hooks
 - `UNITY_HOOK_MODE=warn` — downgrade blocking hooks to warnings
 - `DISABLE_HOOK_<NAME>=1` — disable individual hooks
-- Version tracking via `.claude/VERSION`
+- Version tracking via `.codex-legacy/VERSION`
 
 ### Changed
 
@@ -311,7 +311,7 @@ All notable changes to everything-claude-unity will be documented in this file.
 - `unity-migrator` — Unity version and render pipeline migration
 
 **Commands (15)**
-- `/unity-init` — project setup and CLAUDE.md generation
+- `/unity-init` — project setup and AGENTS.md generation
 - `/unity-feature` — plan and implement features
 - `/unity-fix` — diagnose and fix bugs
 - `/unity-prototype` — one prompt to playable prototype
@@ -343,13 +343,13 @@ All notable changes to everything-claude-unity will be documented in this file.
 - csharp-unity, performance, serialization, architecture, unity-specifics
 
 **Scripts (6)**
-- generate-claude-md, validate-meta-integrity, validate-code-quality, validate-asmdefs, detect-missing-refs, analyze-build-size
+- generate-codex-md, validate-meta-integrity, validate-code-quality, validate-asmdefs, detect-missing-refs, analyze-build-size
 
 **Templates (5)**
 - MonoBehaviour, ScriptableObject, EditModeTest, PlayModeTest, AssemblyDefinition
 
 **Examples (5)**
-- CLAUDE.md templates for: 2D platformer, FPS, RPG, mobile casual, VR experience
+- AGENTS.md templates for: 2D platformer, FPS, RPG, mobile casual, VR experience
 
 **Infrastructure**
 - One-command installer (`install.sh`)

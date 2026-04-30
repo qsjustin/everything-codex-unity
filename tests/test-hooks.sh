@@ -4,7 +4,7 @@
 # Feeds mock JSON payloads to hooks and verifies exit codes and output.
 # ============================================================================
 
-HOOKS_DIR="${REPO_DIR}/.claude/hooks"
+HOOKS_DIR="${REPO_DIR}/.codex-legacy/hooks"
 
 # --- Helper: run a hook with a JSON payload ---
 run_hook() {
@@ -90,7 +90,7 @@ assert_eq "0" "$EXIT_CODE" "guard-project-config allows .cs files"
 # --- track-reads.sh ---
 
 # Should exit 0 (advisory) and track the file
-TEMP_STATE="/tmp/unity-claude-hooks"
+TEMP_STATE="/tmp/unity-codex-hooks"
 rm -f "${TEMP_STATE}/gateguard-reads.txt"
 PAYLOAD='{"tool_name":"Read","tool_input":{"file_path":"Assets/Scripts/Player.cs"}}'
 RESULT=$(run_hook "track-reads.sh" "$PAYLOAD")

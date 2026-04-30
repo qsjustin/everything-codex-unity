@@ -1,15 +1,15 @@
 # Architecture
 
-Technical documentation for the everything-claude-unity system.
+Technical documentation for the everything-codex-unity system.
 
 ---
 
 ## Design Philosophy
 
-This project follows the architecture established by [everything-claude-code](https://github.com/affaan-m/everything-claude-code), adapted for Unity game development:
+This project is a Codex-native migration of the original Unity assistant toolkit.
 
-- **Convention over configuration** -- drop `.claude/` into any Unity project and it works.
-- **Safety by default** -- hooks block destructive operations (scene file edits, meta file corruption) before they happen.
+- **Convention over configuration** -- install the Codex plugin manifest, skills, MCP config, and legacy references into any Unity project.
+- **Safety by default** -- reusable validation scripts flag destructive operations (scene file edits, meta file corruption) before they happen.
 - **MCP as the bridge** -- code changes go through normal file editing; scene/editor changes go through unity-mcp tools.
 - **Composable knowledge** -- skills are modular and loaded on demand, not bundled into one massive prompt.
 - **Agent specialization** -- each agent has a focused role, specific model selection, and limited tool access.
@@ -19,18 +19,18 @@ This project follows the architecture established by [everything-claude-code](ht
 ## Component Overview
 
 ```
-.claude/
-  settings.json      Configuration: permissions, MCP servers, hook definitions
-  agents/            20 agent definitions (.md files with frontmatter)
-  commands/          22 user-invocable slash commands
-  hooks/             22 shell scripts + _lib.sh (safety, quality, session, learning)
+.codex-legacy/
+  agents/            20 legacy role references
+  commands/          27 legacy command references
+  hooks/             27 reusable shell scripts + _lib.sh (safety, quality, session, learning)
   rules/              5 always-loaded coding standards
-  skills/            41 knowledge modules in 6 categories
-  state/             Session state directory (session.json, tracking files)
-  VERSION            Installed version for upgrade tracking
+skills/              70 Codex skills, including 27 workflow skills
+.codex-plugin/       Codex plugin manifest
+.mcp.json            Unity MCP server configuration
+.codex-unity/state/  Session state directory (session.json, tracking files)
 ```
 
-Supporting files outside `.claude/`:
+Supporting files outside `.codex-legacy/`:
 
 ```
 scripts/             Shell scripts for validation (meta, code quality, serialization, architecture)
@@ -45,7 +45,7 @@ benchmarks/          Structural correctness benchmarks for agent output
 
 ## How Agents Work
 
-Agents are Markdown files in `.claude/agents/` with YAML frontmatter that controls their behavior.
+Agents are Markdown files in `.codex-legacy/agents/` with YAML frontmatter that controls their behavior.
 
 ### Frontmatter Fields
 
@@ -53,7 +53,7 @@ Agents are Markdown files in `.claude/agents/` with YAML frontmatter that contro
 |-------|---------|---------|
 | `name` | Identifier used by commands | `unity-coder` |
 | `description` | One-line summary shown in agent selection | `"Implements Unity features..."` |
-| `model` | Which Claude model to use | `opus`, `sonnet`, `haiku` |
+| `model` | Which Codex model to use | `opus`, `sonnet`, `haiku` |
 | `color` | Terminal display color | `green`, `blue`, `yellow` |
 | `tools` | Allowed tool access list | `Read, Write, Edit, Glob, Grep, Bash, mcp__unityMCP__*` |
 | `skills` | Skills to preload | Listed in the agent body or loaded by commands |
@@ -78,7 +78,7 @@ Agents only have access to the tools listed in their frontmatter. This enforces 
 
 ## How Commands Work
 
-Commands are Markdown files in `.claude/commands/` with `user-invocable: true` in frontmatter. Users invoke them with `/command-name` in Claude Code.
+Commands are Markdown files in `.codex-legacy/commands/` with `user-invocable: true` in frontmatter. Users invoke them with `/command-name` in Codex.
 
 Commands are orchestration entry points. They:
 
@@ -99,7 +99,7 @@ User: /unity-prototype "2D platformer with wall jumping"
 
 ## How Skills Work
 
-Skills are knowledge modules in `.claude/skills/`, organized into categories:
+Skills are knowledge modules in `skills/`, organized into categories:
 
 ```
 skills/
@@ -113,7 +113,7 @@ skills/
 
 ### Discovery
 
-Claude Code discovers skills via glob patterns. Agents reference skills by category path, and the system loads matching `.md` files.
+Codex discovers skills via glob patterns. Agents reference skills by category path, and the system loads matching `.md` files.
 
 ### Always-Apply Skills
 
@@ -121,9 +121,9 @@ Skills with `alwaysApply: true` in frontmatter (like `unity-mcp-patterns`) are l
 
 ---
 
-## How Hooks Work
+## How Legacy Hook Scripts Work
 
-Hooks are shell scripts in `.claude/hooks/` configured in `settings.json`. They run automatically at various lifecycle events: before/after tool invocations, before context compaction, on session start, and on session stop.
+Hook scripts are preserved in `.codex-legacy/hooks/` as reusable safety and validation utilities. Codex does not automatically consume the old hook lifecycle manifest; future plugin hook integration should adapt payloads and exit semantics explicitly.
 
 All 22 hooks source a shared library (`_lib.sh`) that provides kill switches, profile filtering, and utility functions. Hooks are organized into three **profile levels** -- `minimal` (5 hooks), `standard` (18 cumulative), and `strict` (22 cumulative). Set the active profile via `UNITY_HOOK_PROFILE=standard`.
 
@@ -174,7 +174,7 @@ For the full hook catalog with detailed descriptions, environment variables, and
 
 ## How Rules Work
 
-Rules are Markdown files in `.claude/rules/` that are always loaded as context for every conversation. They define coding standards that Claude follows:
+Rules are Markdown files in `.codex-legacy/rules/` that are always loaded as context for every conversation. They define coding standards that Codex follows:
 
 | Rule | Content |
 |------|---------|
@@ -190,7 +190,7 @@ Rules are not optional. They represent hard constraints that every agent follows
 
 ## The MCP Integration
 
-The unity-mcp bridge connects Claude Code to the Unity Editor via HTTP. It exposes tools for:
+The unity-mcp bridge connects Codex to the Unity Editor via HTTP. It exposes tools for:
 
 - **Scene management** -- create, load, save, modify scenes
 - **GameObject operations** -- create, parent, position, configure
@@ -224,10 +224,10 @@ The standard flow through the system:
 User Input
   |
   v
-Command (orchestration)        <- .claude/commands/
+Command (orchestration)        <- .codex-legacy/commands/
   |
   v
-Agent (specialized executor)   <- .claude/agents/
+Agent (specialized executor)   <- .codex-legacy/agents/
   |                  |
   v                  v
 File Tools         MCP Tools
@@ -253,42 +253,31 @@ C# Source Files    Unity Editor
 
 ---
 
-## Settings.json Structure
+## MCP Configuration
 
 ```json
 {
-  "permissions": {
-    "defaultMode": "acceptEdits"     // Claude can edit files without asking
-  },
   "mcpServers": {
     "unityMCP": {
       "url": "http://localhost:8080/mcp"  // unity-mcp bridge endpoint
     }
   },
-  "hooks": {
-    "PreToolUse": [ ... ],           // Blocking hooks (safety gates)
-    "PostToolUse": [ ... ],          // Warning hooks (quality, tracking)
-    "PreCompact": [ ... ],           // State preservation before compaction
-    "SessionStart": [ ... ],         // Session restoration
-    "Stop": [ ... ]                  // Validation, persistence, learning, notifications
-  }
 }
 ```
 
-The `settings.local.json.template` provides a starting point for per-developer overrides.
+The file lives at `.mcp.json` in the project root. Legacy hook scripts are not registered here.
 
 ---
 
 ## File Organization
 
-This structure follows Claude Code's discovery conventions:
+This structure follows Codex's discovery conventions:
 
-- **agents/** -- auto-discovered by name when referenced by commands or the user
-- **commands/** -- auto-discovered and exposed as `/slash-commands`
 - **skills/** -- discovered via glob patterns, loaded on demand
-- **hooks/** -- referenced by path in `settings.json`, executed by Claude Code runtime
-- **rules/** -- all files in this directory are loaded as context automatically
-- **state/** -- runtime session state (session.json, tracking files), git-ignored
+- **.codex-plugin/plugin.json** -- declares plugin metadata and skill/MCP paths
+- **.mcp.json** -- configures Unity MCP
+- **.codex-legacy/** -- reference roles, command workflows, rules, and reusable scripts
+- **.codex-unity/state/** -- runtime session state (session.json, tracking files), git-ignored
 
 Each component is a standalone Markdown file. No build step, no compilation, no registration. Drop files in the right directory and they work.
 
@@ -296,7 +285,7 @@ Each component is a standalone Markdown file. No build step, no compilation, no 
 
 ## Hook Kill Switch System
 
-All hooks source a shared library (`.claude/hooks/_lib.sh`) that provides environment variable overrides:
+All hooks source a shared library (`.codex-legacy/hooks/_lib.sh`) that provides environment variable overrides:
 
 ```
 DISABLE_UNITY_HOOKS=1              All hooks exit 0 immediately
@@ -306,13 +295,13 @@ UNITY_HOOK_MODE=warn               Blocking hooks (exit 2) downgraded to warning
 
 The `unity_hook_block()` function replaces direct `exit 2` calls in blocking hooks. It respects `UNITY_HOOK_MODE=warn`, printing the block message as a warning instead.
 
-Configure overrides in `.claude/settings.local.json` (git-ignored) so they don't affect the team.
+Configure overrides through environment variables so they do not affect the team.
 
 ---
 
 ## State Management
 
-Session state is persisted in the `.claude/state/` directory (falls back to `/tmp/unity-claude-hooks` if the directory does not exist). This enables conversation continuity across sessions and context compaction.
+Session state is persisted in the `.codex-unity/state/` directory (falls back to `/tmp/unity-codex-hooks` if the directory does not exist). This enables conversation continuity across sessions and context compaction.
 
 ### session.json Schema
 
@@ -393,9 +382,9 @@ Issues requiring human judgment (architecture, design patterns, ambiguous trade-
 
 The `benchmarks/` directory contains structural correctness benchmarks for agent output. Each benchmark scenario defines a prompt, expected files, required patterns, and forbidden patterns.
 
-Benchmarks do not invoke Claude Code directly. The workflow is:
+Benchmarks do not invoke Codex directly. The workflow is:
 
-1. Run Claude Code manually with a scenario prompt in a scratch Unity project.
+1. Run Codex manually with a scenario prompt in a scratch Unity project.
 2. Run `bash benchmarks/run-benchmarks.sh --workdir /path/to/output` to score the result.
 3. Use `--compare` to diff against a previous run and detect regressions.
 
@@ -407,4 +396,4 @@ See [BENCHMARK-GUIDE.md](BENCHMARK-GUIDE.md) for the full reference.
 
 ## Version Management
 
-The `.claude/VERSION` file tracks the installed version. The `upgrade.sh` script compares source and target versions, creates a backup, preserves user customizations (settings.local.json, custom agents/commands/skills), and reports a diff of changes.
+The `.codex-plugin/plugin.json` `version` field tracks the installed version. The `upgrade.sh` script creates backups of replaced Codex plugin paths and regenerates `AGENTS.md.generated` for review.

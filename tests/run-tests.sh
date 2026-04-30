@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# run-tests.sh — Test runner for everything-claude-unity
+# run-tests.sh — Test runner for everything-codex-unity
 # Runs all test-*.sh files in this directory and reports results.
 # No external dependencies — plain bash with built-in assertion helpers.
 #
@@ -144,7 +144,7 @@ export REPO_DIR VERBOSE
 # --- Runner ---
 
 echo ""
-echo -e "${CYAN}everything-claude-unity test suite${NC}"
+echo -e "${CYAN}everything-codex-unity test suite${NC}"
 echo "========================================"
 echo ""
 
@@ -160,14 +160,22 @@ for test_file in "${test_files[@]}"; do
     fi
     CURRENT_TEST_FILE="$(basename "$test_file")"
     echo -e "${CYAN}--- ${CURRENT_TEST_FILE} ---${NC}"
-    source "$test_file"
+    output=""
+    exit_code=0
+    output=$(bash "$test_file" 2>&1) || exit_code=$?
+    echo "$output"
+    if [ "$exit_code" -eq 0 ] && ! echo "$output" | grep -qE '(^|[[:space:]])FAIL([:[:space:]]|$)'; then
+        PASS=$((PASS + 1))
+    else
+        FAIL=$((FAIL + 1))
+    fi
     echo ""
 done
 
 # --- Summary ---
 TOTAL=$((PASS + FAIL + SKIP))
 echo "========================================"
-echo -e "Total: ${TOTAL}  ${GREEN}Passed: ${PASS}${NC}  ${RED}Failed: ${FAIL}${NC}  ${YELLOW}Skipped: ${SKIP}${NC}"
+echo -e "Files: ${TOTAL}  ${GREEN}Passed: ${PASS}${NC}  ${RED}Failed: ${FAIL}${NC}  ${YELLOW}Skipped: ${SKIP}${NC}"
 echo "========================================"
 
 if [ "$FAIL" -gt 0 ]; then

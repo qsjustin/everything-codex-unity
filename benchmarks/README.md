@@ -1,10 +1,10 @@
 # Benchmarks
 
-Measures **structural correctness** of Claude Code agent output when working on
+Measures **structural correctness** of Codex agent output when working on
 Unity projects. Each scenario defines a prompt, the files/patterns the agent
 should produce, and patterns it must avoid.
 
-The runner does **not** invoke Claude Code. You run Claude Code manually with the
+The runner does **not** invoke Codex. You run Codex manually with the
 benchmark prompt, then point the evaluator at the working directory to score the
 result.
 
@@ -32,7 +32,7 @@ Create a JSON file in `benchmarks/scenarios/`. Schema:
 {
   "name": "scenario-id",
   "description": "Human-readable description",
-  "prompt": "The prompt to give Claude Code",
+  "prompt": "The prompt to give Codex",
   "tags": ["architecture", "mvs"],
   "setup_files": {
     "relative/path.cs": "file contents (optional, pre-populated before eval)"
@@ -68,6 +68,6 @@ Use `--compare` to diff two runs and see regressions or improvements.
 ## Workflow
 
 1. Copy the `prompt` from a scenario JSON.
-2. Run Claude Code with that prompt in a scratch Unity project.
+2. Run Codex with that prompt in a scratch Unity project.
 3. Run `bash benchmarks/run-benchmarks.sh --workdir /path/to/scratch`.
 4. Review the pass/fail summary and the saved results JSON.

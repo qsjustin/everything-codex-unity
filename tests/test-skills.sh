@@ -20,7 +20,7 @@ FRONTMATTER_FAIL=0
 EXAMPLE_WARN=0
 ANTI_WARN=0
 
-for file in $(find "$PROJECT_ROOT/.claude/skills" -name "SKILL.md" 2>/dev/null); do
+for file in $(find "$PROJECT_ROOT/skills" -name "SKILL.md" 2>/dev/null); do
     SKILL_COUNT=$((SKILL_COUNT + 1))
     REL_PATH="${file#$PROJECT_ROOT/}"
 

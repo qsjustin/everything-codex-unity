@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # ============================================================================
-# test-lib.sh — Tests for .claude/hooks/_lib.sh
+# test-lib.sh — Tests for .codex-legacy/hooks/_lib.sh
 # Tests profile gating, kill switches, shared utilities, and state paths.
 #
 # _lib.sh uses BASH_SOURCE[1] to detect the calling hook's filename,
 # so we must create real temporary hook scripts (not bash -c) to test it.
 # ============================================================================
 
-HOOKS_DIR="${REPO_DIR}/.claude/hooks"
+HOOKS_DIR="${REPO_DIR}/.codex-legacy/hooks"
 TEST_TMP="/tmp/unity-test-lib-$$"
 mkdir -p "$TEST_TMP"
 
@@ -91,7 +91,7 @@ assert_not_contains "$OUTPUT" "reached" "global kill switch prevents execution"
 
 # --- State Directory Tests ---
 
-assert_file_exists "/tmp/unity-claude-hooks" "state directory exists after sourcing _lib.sh"
+assert_file_exists "/tmp/unity-codex-hooks" "state directory exists after sourcing _lib.sh"
 
 # --- unity_hook_block Tests ---
 
