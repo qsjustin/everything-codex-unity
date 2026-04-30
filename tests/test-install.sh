@@ -149,6 +149,33 @@ assert_file_exists "${MOCK_DIR}/AGENTS.md" "install generates AGENTS.md"
 # --- Test: Codex Desktop marketplace install ---
 CODEX_HOME_MOCK="${MOCK_DIR}/codex-home"
 HOME_MOCK="${MOCK_DIR}/home"
+mkdir -p "${HOME_MOCK}/.agents/plugins"
+cat > "${HOME_MOCK}/.agents/plugins/marketplace.json" <<'MARKETPLACE'
+{
+  "name": "existing-marketplace",
+  "interface": {
+    "displayName": "Existing Marketplace"
+  },
+  "plugins": [
+    {
+      "name": "other-plugin",
+      "source": {
+        "source": "local",
+        "path": "./plugins/other-plugin"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity",
+      "customField": {
+        "keep": true
+      }
+    }
+  ]
+}
+MARKETPLACE
+OTHER_PLUGIN_BEFORE=$(jq -c '.plugins[] | select(.name == "other-plugin")' "${HOME_MOCK}/.agents/plugins/marketplace.json")
 MARKETPLACE_OUTPUT=$(HOME="$HOME_MOCK" CODEX_HOME="$CODEX_HOME_MOCK" bash "$INSTALL_SCRIPT" --codex-marketplace 2>&1) || true
 assert_file_exists "${HOME_MOCK}/.agents/plugins/marketplace.json" "marketplace install writes marketplace.json"
 assert_file_exists "${HOME_MOCK}/plugins/everything-codex-unity/.codex-plugin/plugin.json" "marketplace install writes plugin manifest"
@@ -165,6 +192,10 @@ if [ -f "${HOME_MOCK}/.agents/plugins/marketplace.json" ]; then
     JQ_EXIT=0
     jq . "${HOME_MOCK}/.agents/plugins/marketplace.json" > /dev/null 2>&1 || JQ_EXIT=$?
     assert_eq "0" "$JQ_EXIT" "marketplace.json is valid JSON"
+    OTHER_PLUGIN_AFTER=$(jq -c '.plugins[] | select(.name == "other-plugin")' "${HOME_MOCK}/.agents/plugins/marketplace.json")
+    ECU_ENTRY_COUNT=$(jq '[.plugins[] | select(.name == "everything-codex-unity")] | length' "${HOME_MOCK}/.agents/plugins/marketplace.json")
+    assert_eq "$OTHER_PLUGIN_BEFORE" "$OTHER_PLUGIN_AFTER" "marketplace install preserves other plugin entry"
+    assert_eq "1" "$ECU_ENTRY_COUNT" "marketplace install adds one plugin entry"
 fi
 
 # --- Test: Codex Desktop marketplace upgrade ---
@@ -213,7 +244,24 @@ fi
 if [ -f "${HOME_MOCK}/.agents/plugins/marketplace.json" ]; then
     ENTRY_COUNT=$(jq '[.plugins[] | select(.name == "everything-codex-unity")] | length' "${HOME_MOCK}/.agents/plugins/marketplace.json")
     assert_eq "0" "$ENTRY_COUNT" "marketplace uninstall removes marketplace entry"
+    OTHER_PLUGIN_AFTER_UNINSTALL=$(jq -c '.plugins[] | select(.name == "other-plugin")' "${HOME_MOCK}/.agents/plugins/marketplace.json")
+    assert_eq "$OTHER_PLUGIN_BEFORE" "$OTHER_PLUGIN_AFTER_UNINSTALL" "marketplace uninstall preserves other plugin entry"
 fi
+
+# --- Test: malformed marketplace.json does not move existing plugin bundle ---
+BAD_HOME="${MOCK_DIR}/bad-home"
+BAD_CODEX_HOME="${MOCK_DIR}/bad-codex-home"
+mkdir -p "${BAD_HOME}/.agents/plugins" "${BAD_HOME}/plugins/everything-codex-unity"
+echo "existing bundle" > "${BAD_HOME}/plugins/everything-codex-unity/sentinel.txt"
+echo "{ invalid json" > "${BAD_HOME}/.agents/plugins/marketplace.json"
+BAD_INSTALL_EXIT=0
+HOME="$BAD_HOME" CODEX_HOME="$BAD_CODEX_HOME" bash "$INSTALL_SCRIPT" --codex-marketplace > /dev/null 2>&1 || BAD_INSTALL_EXIT=$?
+assert_eq "1" "$BAD_INSTALL_EXIT" "marketplace install rejects malformed marketplace.json"
+assert_file_exists "${BAD_HOME}/plugins/everything-codex-unity/sentinel.txt" "failed marketplace install preserves existing bundle"
+BAD_UNINSTALL_EXIT=0
+HOME="$BAD_HOME" CODEX_HOME="$BAD_CODEX_HOME" bash "$UNINSTALL_SCRIPT" --codex-marketplace --no-backup > /dev/null 2>&1 || BAD_UNINSTALL_EXIT=$?
+assert_eq "1" "$BAD_UNINSTALL_EXIT" "marketplace uninstall rejects malformed marketplace.json"
+assert_file_exists "${BAD_HOME}/plugins/everything-codex-unity/sentinel.txt" "failed marketplace uninstall preserves existing bundle"
 
 MUTEX_EXIT=0
 CODEX_HOME="$CODEX_HOME_MOCK" bash "$UNINSTALL_SCRIPT" --project-dir "$MOCK_DIR" --codex-marketplace > /dev/null 2>&1 || MUTEX_EXIT=$?

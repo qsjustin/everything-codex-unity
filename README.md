@@ -59,6 +59,8 @@
 >
 > To use a non-default Codex home during testing or custom installs, add `--codex-home <path>` or set `CODEX_HOME`. Add `--no-backup` to uninstall commands if you want removal instead of backup directories.
 >
+> Marketplace install and uninstall update only the `everything-codex-unity` entry in `~/.agents/plugins/marketplace.json`; other plugin entries are preserved. The JSON may be normalized by the updater, but unrelated plugin data is not removed. If the marketplace JSON is malformed, the command fails before moving or deleting the existing plugin bundle.
+>
 > `upgrade.sh` and `uninstall.sh` expect an existing install. If the project files or Desktop marketplace plugin are not present yet, run the matching `install.sh` command first.
 >
 > Keep or re-clone this repository when you need to run `upgrade.sh` later; marketplace install copies the plugin bundle into `~/plugins/everything-codex-unity/`, but upgrades still run from the source checkout.

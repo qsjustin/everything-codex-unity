@@ -13,6 +13,37 @@ ecu_require_python3() {
     fi
 }
 
+ecu_validate_marketplace_json() {
+    local marketplace_json="$1"
+
+    if [ ! -f "$marketplace_json" ]; then
+        return 0
+    fi
+
+    ecu_require_python3
+    python3 - "$marketplace_json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text())
+except Exception as exc:
+    print(f"Invalid marketplace JSON at {path}: {exc}", file=sys.stderr)
+    sys.exit(1)
+
+if not isinstance(data, dict):
+    print(f"Marketplace JSON must be an object: {path}", file=sys.stderr)
+    sys.exit(1)
+
+plugins = data.get("plugins", [])
+if not isinstance(plugins, list):
+    print(f"Marketplace JSON plugins field must be an array: {path}", file=sys.stderr)
+    sys.exit(1)
+PY
+}
+
 ecu_backup_path() {
     local path="$1"
     local stamp="${2:-$(date +%Y%m%d%H%M%S)}"
@@ -193,6 +224,8 @@ ecu_install_marketplace() {
         return 0
     fi
 
+    ecu_validate_marketplace_json "$marketplace_json"
+
     mkdir -p "$marketplace_root/.agents/plugins" "$marketplace_root/plugins"
     ecu_backup_path "$plugin_dir" "$stamp"
     mkdir -p "$plugin_dir"
@@ -223,6 +256,8 @@ ecu_uninstall_marketplace() {
     local config_file="$codex_home/config.toml"
     local backup
     local stamp
+
+    ecu_validate_marketplace_json "$marketplace_json"
 
     stamp=$(date +%Y%m%d%H%M%S)
     if [ -d "$plugin_dir" ]; then
