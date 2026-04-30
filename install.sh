@@ -72,6 +72,7 @@ if [ "$INSTALL_MARKETPLACE" -eq 1 ]; then
     CODEX_HOME=$(mkdir -p "$CODEX_HOME" && cd "$CODEX_HOME" && pwd)
 fi
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+source "$SCRIPT_DIR/scripts/codex-marketplace.sh"
 
 echo ""
 echo "${BOLD}${CYAN}Everything Codex Unity${RESET}"
@@ -138,81 +139,9 @@ copy_file() {
     fi
 }
 
-write_codex_config_section() {
-    local config_file="$1"
-    local marketplace_root="$2"
-    local tmp_file
-
-    mkdir -p "$(dirname "$config_file")"
-    touch "$config_file"
-    tmp_file=$(mktemp)
-    awk '
-        /^\[marketplaces\.everything-codex-unity\]$/ { skip=1; next }
-        /^\[plugins\."everything-codex-unity@everything-codex-unity"\]$/ { skip=1; next }
-        /^\[/ { skip=0 }
-        skip != 1 { print }
-    ' "$config_file" > "$tmp_file"
-    mv "$tmp_file" "$config_file"
-
-    {
-        echo ""
-        echo "[marketplaces.everything-codex-unity]"
-        echo "last_updated = \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\""
-        echo "source_type = \"local\""
-        echo "source = \"$marketplace_root\""
-        echo ""
-        echo "[plugins.\"everything-codex-unity@everything-codex-unity\"]"
-        echo "enabled = true"
-    } >> "$config_file"
-}
-
 install_codex_marketplace() {
-    local marketplace_root="$CODEX_HOME/marketplaces/everything-codex-unity"
-    local plugin_dir="$marketplace_root/plugins/everything-codex-unity"
-    local marketplace_json="$marketplace_root/.agents/plugins/marketplace.json"
-    local config_file="$CODEX_HOME/config.toml"
-
     info "Installing Codex Desktop marketplace plugin..."
-    mkdir -p "$marketplace_root/.agents/plugins" "$marketplace_root/plugins"
-    backup_path "$plugin_dir"
-    mkdir -p "$plugin_dir"
-
-    cp -R "$SCRIPT_DIR/.codex-plugin" "$plugin_dir/.codex-plugin"
-    cp -R "$SCRIPT_DIR/skills" "$plugin_dir/skills"
-    cp "$SCRIPT_DIR/.mcp.json" "$plugin_dir/.mcp.json"
-    [ -d "$SCRIPT_DIR/.codex-legacy" ] && cp -R "$SCRIPT_DIR/.codex-legacy" "$plugin_dir/.codex-legacy"
-    [ -d "$SCRIPT_DIR/templates" ] && cp -R "$SCRIPT_DIR/templates" "$plugin_dir/templates"
-    [ -d "$SCRIPT_DIR/scripts" ] && cp -R "$SCRIPT_DIR/scripts" "$plugin_dir/scripts"
-    [ -d "$SCRIPT_DIR/tests" ] && cp -R "$SCRIPT_DIR/tests" "$plugin_dir/tests"
-    chmod +x "$plugin_dir/.codex-legacy/hooks/"*.sh 2>/dev/null || true
-    chmod +x "$plugin_dir/scripts/"*.sh "$plugin_dir/tests/"*.sh 2>/dev/null || true
-
-    cat > "$marketplace_json" <<'JSON'
-{
-  "name": "everything-codex-unity",
-  "interface": {
-    "displayName": "Everything Codex Unity"
-  },
-  "plugins": [
-    {
-      "name": "everything-codex-unity",
-      "source": {
-        "source": "local",
-        "path": "./plugins/everything-codex-unity"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "Developer Tools"
-    }
-  ]
-}
-JSON
-
-    write_codex_config_section "$config_file" "$marketplace_root"
-    ok "Installed Codex marketplace at $marketplace_root"
-    ok "Enabled plugin in $config_file"
+    ecu_install_marketplace "$SCRIPT_DIR" "$CODEX_HOME" 0
 }
 
 if [ "$INSTALL_PROJECT" -eq 1 ]; then
@@ -291,7 +220,8 @@ if [ "$INSTALL_PROJECT" -eq 1 ]; then
     echo "  ${CYAN}Legacy${RESET}      Reference agents, commands, rules, and hooks in .codex-legacy/"
 fi
 if [ "$INSTALL_MARKETPLACE" -eq 1 ]; then
-    echo "  ${CYAN}Desktop${RESET}     Codex marketplace plugin in $CODEX_HOME/marketplaces/everything-codex-unity"
+    echo "  ${CYAN}Desktop${RESET}     Codex marketplace in $HOME/.agents/plugins/marketplace.json"
+    echo "  ${CYAN}Plugin${RESET}      Bundle in $HOME/plugins/everything-codex-unity"
 fi
 echo ""
 echo "Next steps:"

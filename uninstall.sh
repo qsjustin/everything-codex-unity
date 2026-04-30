@@ -42,6 +42,8 @@ fi
 if [ "$REMOVE_MARKETPLACE" -eq 1 ]; then
     CODEX_HOME=$(mkdir -p "$CODEX_HOME" && cd "$CODEX_HOME" && pwd)
 fi
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+source "$SCRIPT_DIR/scripts/codex-marketplace.sh"
 STAMP=$(date +%Y%m%d%H%M%S)
 BACKUP_DIR="$PROJECT_DIR/.codex-unity-uninstall-backup-$STAMP"
 
@@ -60,40 +62,8 @@ remove_path() {
     fi
 }
 
-remove_codex_config_section() {
-    local config_file="$1"
-    local tmp_file
-    if [ ! -f "$config_file" ]; then
-        return 0
-    fi
-    tmp_file=$(mktemp)
-    awk '
-        /^\[marketplaces\.everything-codex-unity\]$/ { skip=1; next }
-        /^\[plugins\."everything-codex-unity@everything-codex-unity"\]$/ { skip=1; next }
-        /^\[/ { skip=0 }
-        skip != 1 { print }
-    ' "$config_file" > "$tmp_file"
-    mv "$tmp_file" "$config_file"
-    echo "Removed Codex config entries"
-}
-
 remove_marketplace() {
-    local marketplace_root="$CODEX_HOME/marketplaces/everything-codex-unity"
-    local backup="$CODEX_HOME/marketplaces/everything-codex-unity.uninstall-backup-$STAMP"
-
-    if [ -d "$marketplace_root" ]; then
-        if [ "$KEEP_BACKUP" -eq 1 ]; then
-            if [ -e "$backup" ]; then
-                backup="${backup}.$$"
-            fi
-            mv "$marketplace_root" "$backup"
-            echo "Backed up Codex marketplace to: $backup"
-        else
-            rm -rf "$marketplace_root"
-            echo "Removed Codex marketplace"
-        fi
-    fi
-    remove_codex_config_section "$CODEX_HOME/config.toml"
+    ecu_uninstall_marketplace "$CODEX_HOME" "$KEEP_BACKUP"
 }
 
 if [ "$INSTALL_PROJECT" -eq 1 ]; then

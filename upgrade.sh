@@ -4,16 +4,26 @@
 set -euo pipefail
 
 PROJECT_DIR="."
+PROJECT_DIR_SET=0
+UPGRADE_PROJECT=1
+UPGRADE_MARKETPLACE=0
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 DRY_RUN=0
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --project-dir)
-            PROJECT_DIR="$2"; shift 2 ;;
+            PROJECT_DIR="$2"; PROJECT_DIR_SET=1; shift 2 ;;
+        --codex-marketplace)
+            UPGRADE_MARKETPLACE=1; UPGRADE_PROJECT=0; shift ;;
+        --codex-home)
+            CODEX_HOME="$2"; shift 2 ;;
         --dry-run)
             DRY_RUN=1; shift ;;
         --help|-h)
-            echo "Usage: upgrade.sh [--project-dir <path>] [--dry-run]"
+            echo "Usage: upgrade.sh [--project-dir <path> | --codex-marketplace] [--codex-home <path>] [--dry-run]"
+            echo ""
+            echo "Note: --project-dir and --codex-marketplace are mutually exclusive."
             exit 0 ;;
         *)
             echo "Unknown option: $1" >&2
@@ -21,10 +31,27 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-PROJECT_DIR=$(cd "$PROJECT_DIR" && pwd)
+if [ "$UPGRADE_MARKETPLACE" -eq 1 ] && [ "$PROJECT_DIR_SET" -eq 1 ]; then
+    echo "--project-dir and --codex-marketplace are mutually exclusive." >&2
+    exit 1
+fi
+
+if [ "$UPGRADE_PROJECT" -eq 1 ]; then
+    PROJECT_DIR=$(cd "$PROJECT_DIR" && pwd)
+fi
+if [ "$UPGRADE_MARKETPLACE" -eq 1 ]; then
+    CODEX_HOME=$(mkdir -p "$CODEX_HOME" && cd "$CODEX_HOME" && pwd)
+fi
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+source "$SCRIPT_DIR/scripts/codex-marketplace.sh"
 STAMP=$(date +%Y%m%d%H%M%S)
 BACKUP_DIR="$PROJECT_DIR/.codex-unity-upgrade-backup-$STAMP"
+
+if [ "$UPGRADE_MARKETPLACE" -eq 1 ]; then
+    ecu_install_marketplace "$SCRIPT_DIR" "$CODEX_HOME" "$DRY_RUN"
+    echo "everything-codex-unity marketplace upgrade complete."
+    exit 0
+fi
 
 copy_dir() {
     local src="$1"

@@ -7,6 +7,7 @@
 MOCK_DIR="/tmp/unity-test-mock-$$"
 INSTALL_SCRIPT="${REPO_DIR}/install.sh"
 UNINSTALL_SCRIPT="${REPO_DIR}/uninstall.sh"
+UPGRADE_SCRIPT="${REPO_DIR}/upgrade.sh"
 
 # --- Setup: create mock Unity project ---
 mkdir -p "${MOCK_DIR}/Assets/Scripts"
@@ -30,6 +31,8 @@ assert_file_exists "$INSTALL_SCRIPT" "install.sh exists"
 assert_file_executable "$INSTALL_SCRIPT" "install.sh is executable"
 assert_file_exists "$UNINSTALL_SCRIPT" "uninstall.sh exists"
 assert_file_executable "$UNINSTALL_SCRIPT" "uninstall.sh is executable"
+assert_file_exists "$UPGRADE_SCRIPT" "upgrade.sh exists"
+assert_file_executable "$UPGRADE_SCRIPT" "upgrade.sh is executable"
 
 # --- Test: install into mock project ---
 INSTALL_OUTPUT=$(bash "$INSTALL_SCRIPT" --project-dir "$MOCK_DIR" 2>&1) || true
@@ -108,10 +111,11 @@ assert_file_exists "${MOCK_DIR}/AGENTS.md" "install generates AGENTS.md"
 
 # --- Test: Codex Desktop marketplace install ---
 CODEX_HOME_MOCK="${MOCK_DIR}/codex-home"
-MARKETPLACE_OUTPUT=$(CODEX_HOME="$CODEX_HOME_MOCK" bash "$INSTALL_SCRIPT" --codex-marketplace 2>&1) || true
-assert_file_exists "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity/.agents/plugins/marketplace.json" "marketplace install writes marketplace.json"
-assert_file_exists "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity/plugins/everything-codex-unity/.codex-plugin/plugin.json" "marketplace install writes plugin manifest"
-assert_file_exists "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity/plugins/everything-codex-unity/skills/workflows/unity-workflow/SKILL.md" "marketplace install copies workflow skills"
+HOME_MOCK="${MOCK_DIR}/home"
+MARKETPLACE_OUTPUT=$(HOME="$HOME_MOCK" CODEX_HOME="$CODEX_HOME_MOCK" bash "$INSTALL_SCRIPT" --codex-marketplace 2>&1) || true
+assert_file_exists "${HOME_MOCK}/.agents/plugins/marketplace.json" "marketplace install writes marketplace.json"
+assert_file_exists "${HOME_MOCK}/plugins/everything-codex-unity/.codex-plugin/plugin.json" "marketplace install writes plugin manifest"
+assert_file_exists "${HOME_MOCK}/plugins/everything-codex-unity/skills/unity-workflow/SKILL.md" "marketplace install exposes workflow skills"
 assert_file_exists "${CODEX_HOME_MOCK}/config.toml" "marketplace install updates Codex config"
 
 if [ -f "${CODEX_HOME_MOCK}/config.toml" ]; then
@@ -120,10 +124,26 @@ if [ -f "${CODEX_HOME_MOCK}/config.toml" ]; then
     assert_contains "$CONFIG_TEXT" "[plugins.\"everything-codex-unity@everything-codex-unity\"]" "Codex config enables plugin"
 fi
 
-if [ -f "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity/.agents/plugins/marketplace.json" ]; then
+if [ -f "${HOME_MOCK}/.agents/plugins/marketplace.json" ]; then
     JQ_EXIT=0
-    jq . "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity/.agents/plugins/marketplace.json" > /dev/null 2>&1 || JQ_EXIT=$?
+    jq . "${HOME_MOCK}/.agents/plugins/marketplace.json" > /dev/null 2>&1 || JQ_EXIT=$?
     assert_eq "0" "$JQ_EXIT" "marketplace.json is valid JSON"
+fi
+
+# --- Test: Codex Desktop marketplace upgrade ---
+UPGRADE_OUTPUT=$(HOME="$HOME_MOCK" CODEX_HOME="$CODEX_HOME_MOCK" bash "$UPGRADE_SCRIPT" --codex-marketplace 2>&1) || true
+assert_file_exists "${HOME_MOCK}/plugins/everything-codex-unity/skills/unity-workflow/SKILL.md" "marketplace upgrade preserves workflow skills"
+if [ -d "${HOME_MOCK}/plugins" ]; then
+    BACKUP_COUNT=$(find "${HOME_MOCK}/plugins" -maxdepth 1 -name 'everything-codex-unity.backup.*' -type d | wc -l | tr -d ' ')
+    if [ "$BACKUP_COUNT" -gt 0 ]; then
+        PASS=$((PASS + 1))
+        if [ "$VERBOSE" = "--verbose" ]; then
+            echo -e "  ${GREEN}PASS${NC} marketplace upgrade creates backup"
+        fi
+    else
+        FAIL=$((FAIL + 1))
+        echo -e "  ${RED}FAIL${NC} marketplace upgrade creates backup"
+    fi
 fi
 
 # --- Test: project and marketplace modes are mutually exclusive ---
@@ -131,9 +151,13 @@ MUTEX_EXIT=0
 CODEX_HOME="$CODEX_HOME_MOCK" bash "$INSTALL_SCRIPT" --project-dir "$MOCK_DIR" --codex-marketplace > /dev/null 2>&1 || MUTEX_EXIT=$?
 assert_eq "1" "$MUTEX_EXIT" "install rejects --project-dir with --codex-marketplace"
 
+MUTEX_EXIT=0
+CODEX_HOME="$CODEX_HOME_MOCK" bash "$UPGRADE_SCRIPT" --project-dir "$MOCK_DIR" --codex-marketplace > /dev/null 2>&1 || MUTEX_EXIT=$?
+assert_eq "1" "$MUTEX_EXIT" "upgrade rejects --project-dir with --codex-marketplace"
+
 # --- Test: Codex Desktop marketplace uninstall ---
-UNINSTALL_OUTPUT=$(CODEX_HOME="$CODEX_HOME_MOCK" bash "$UNINSTALL_SCRIPT" --codex-marketplace --no-backup 2>&1) || true
-if [ ! -d "${CODEX_HOME_MOCK}/marketplaces/everything-codex-unity" ]; then
+UNINSTALL_OUTPUT=$(HOME="$HOME_MOCK" CODEX_HOME="$CODEX_HOME_MOCK" bash "$UNINSTALL_SCRIPT" --codex-marketplace --no-backup 2>&1) || true
+if [ ! -d "${HOME_MOCK}/plugins/everything-codex-unity" ]; then
     PASS=$((PASS + 1))
     if [ "$VERBOSE" = "--verbose" ]; then
         echo -e "  ${GREEN}PASS${NC} marketplace uninstall removes plugin directory"
@@ -147,6 +171,11 @@ if [ -f "${CODEX_HOME_MOCK}/config.toml" ]; then
     CONFIG_TEXT=$(cat "${CODEX_HOME_MOCK}/config.toml")
     assert_not_contains "$CONFIG_TEXT" "[marketplaces.everything-codex-unity]" "marketplace uninstall removes marketplace config"
     assert_not_contains "$CONFIG_TEXT" "[plugins.\"everything-codex-unity@everything-codex-unity\"]" "marketplace uninstall removes plugin config"
+fi
+
+if [ -f "${HOME_MOCK}/.agents/plugins/marketplace.json" ]; then
+    ENTRY_COUNT=$(jq '[.plugins[] | select(.name == "everything-codex-unity")] | length' "${HOME_MOCK}/.agents/plugins/marketplace.json")
+    assert_eq "0" "$ENTRY_COUNT" "marketplace uninstall removes marketplace entry"
 fi
 
 MUTEX_EXIT=0

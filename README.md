@@ -11,7 +11,12 @@
 > - Original Claude agents, commands, hooks, and rules are preserved as reference material under `.codex-legacy/`
 > - Project instructions now use `AGENTS.md`; `CLAUDE.md` is no longer the active entry point in this fork
 >
-> **When to use marketplace mode:** use `--codex-marketplace` when you want Codex Desktop to discover `$unity-*` workflow skills from the skill picker/new sessions. This installs the toolkit into the Codex Desktop environment, not into a Unity project. It is the recommended Desktop setup because project-local `skills/` files may not be indexed by Codex Desktop unless the toolkit is registered as a local marketplace plugin.
+> **Two install modes:**
+>
+> - **Codex Desktop marketplace mode** (`--codex-marketplace`) installs a home-local plugin so Codex Desktop can discover `$unity-*` workflow skills from the skill picker/new sessions. It writes `~/.agents/plugins/marketplace.json`, installs the bundle at `~/plugins/everything-codex-unity/`, and enables `everything-codex-unity@everything-codex-unity` in `~/.codex/config.toml`.
+> - **Project mode** (`--project-dir <UnityProject>`) installs project-local guidance, MCP config, templates, and legacy references into a Unity project. Use this for Codex CLI/project-context setup and for files that should live beside `Assets/` and `ProjectSettings/`. Project-local `skills/` are useful reference material, but Codex Desktop may not index them unless the toolkit is also installed through marketplace mode.
+>
+> `--project-dir` and `--codex-marketplace` are mutually exclusive. Run both commands separately if you need both Unity-project files and Codex Desktop `$unity-*` skill discovery.
 >
 > **Install into a Unity project:**
 >
@@ -22,20 +27,29 @@
 >
 > `--project-dir` must point at the Unity project folder containing `Assets/` and `ProjectSettings/`. For repos shaped like `Repo/client/Assets`, run the installer with `--project-dir ./client`.
 >
-> This installs project guidance, MCP config, templates, and legacy references into the Unity project.
+> **Upgrade project mode:**
+>
+> ```bash
+> /tmp/ecu/upgrade.sh --project-dir .
+> ```
+>
+> **Uninstall project mode:**
+>
+> ```bash
+> /tmp/ecu/uninstall.sh --project-dir .
+> ```
 >
 > **Register the Codex Desktop marketplace plugin:**
 >
 > ```bash
 > /tmp/ecu/install.sh --codex-marketplace
-> rm -rf /tmp/ecu
 > ```
 >
-> `--project-dir` and `--codex-marketplace` are mutually exclusive. Run both commands separately if you need both Unity-project files and Codex Desktop `$unity-*` skill discovery.
+> **Upgrade marketplace mode:**
 >
-> Marketplace mode registers a local Codex Desktop marketplace at `~/.codex/marketplaces/everything-codex-unity/` and enables `everything-codex-unity@everything-codex-unity` in `~/.codex/config.toml`.
->
-> To use a non-default Codex home during testing or custom installs, add `--codex-home <path>` or set `CODEX_HOME`.
+> ```bash
+> /tmp/ecu/upgrade.sh --codex-marketplace
+> ```
 >
 > **Uninstall marketplace mode:**
 >
@@ -43,13 +57,9 @@
 > /tmp/ecu/uninstall.sh --codex-marketplace
 > ```
 >
-> To remove Unity-project files, run the project uninstall separately:
+> To use a non-default Codex home during testing or custom installs, add `--codex-home <path>` or set `CODEX_HOME`. Add `--no-backup` to uninstall commands if you want removal instead of backup directories.
 >
-> ```bash
-> /tmp/ecu/uninstall.sh --project-dir .
-> ```
->
-> Add `--no-backup` if you want removal instead of backup directories.
+> Keep or re-clone this repository when you need to run `upgrade.sh` later; marketplace install copies the plugin bundle into `~/plugins/everything-codex-unity/`, but upgrades still run from the source checkout.
 >
 > **Use with Codex Desktop:** after installation, restart Codex Desktop so it reloads `~/.codex/config.toml` and the local marketplace. Open the Unity project in Codex, type `$` in the composer, and choose skills such as `$unity-doctor`, `$unity-audit`, `$unity-workflow`, `$unity-prototype`, `$unity-test`, or `$unity-build`. You can also invoke them in natural language, for example: “use `$unity-doctor` to check this project” or “use `$unity-workflow` to implement an inventory feature.”
 >
@@ -198,11 +208,17 @@ chmod +x your-unity-project/.claude/hooks/*.sh
 # Upgrade to latest (preserves your customizations, creates backup)
 ./upgrade.sh --project-dir .
 
+# Upgrade Codex Desktop marketplace plugin
+./upgrade.sh --codex-marketplace
+
 # Preview changes before upgrading
 ./upgrade.sh --project-dir . --dry-run
 
 # Clean removal (with backup)
 ./uninstall.sh --project-dir .
+
+# Remove Codex Desktop marketplace plugin
+./uninstall.sh --codex-marketplace
 ```
 
 ### Setup Unity MCP (Recommended)
