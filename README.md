@@ -59,6 +59,8 @@
 >
 > To use a non-default Codex home during testing or custom installs, add `--codex-home <path>` or set `CODEX_HOME`. Add `--no-backup` to uninstall commands if you want removal instead of backup directories.
 >
+> `upgrade.sh` and `uninstall.sh` expect an existing install. If the project files or Desktop marketplace plugin are not present yet, run the matching `install.sh` command first.
+>
 > Keep or re-clone this repository when you need to run `upgrade.sh` later; marketplace install copies the plugin bundle into `~/plugins/everything-codex-unity/`, but upgrades still run from the source checkout.
 >
 > **Use with Codex Desktop:** after installation, restart Codex Desktop so it reloads `~/.codex/config.toml` and the local marketplace. Open the Unity project in Codex, type `$` in the composer, and choose skills such as `$unity-doctor`, `$unity-audit`, `$unity-workflow`, `$unity-prototype`, `$unity-test`, or `$unity-build`. You can also invoke them in natural language, for example: “use `$unity-doctor` to check this project” or “use `$unity-workflow` to implement an inventory feature.”

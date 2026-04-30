@@ -34,6 +34,43 @@ assert_file_executable "$UNINSTALL_SCRIPT" "uninstall.sh is executable"
 assert_file_exists "$UPGRADE_SCRIPT" "upgrade.sh exists"
 assert_file_executable "$UPGRADE_SCRIPT" "upgrade.sh is executable"
 
+# --- Test: upgrade requires a previous install ---
+FRESH_PROJECT="${MOCK_DIR}/fresh-project"
+mkdir -p "${FRESH_PROJECT}/Assets" "${FRESH_PROJECT}/ProjectSettings"
+UPGRADE_EXIT=0
+bash "$UPGRADE_SCRIPT" --project-dir "$FRESH_PROJECT" > /dev/null 2>&1 || UPGRADE_EXIT=$?
+assert_eq "1" "$UPGRADE_EXIT" "project upgrade rejects missing install"
+
+mkdir -p "${FRESH_PROJECT}/skills/custom"
+echo "user skill" > "${FRESH_PROJECT}/skills/custom/SKILL.md"
+echo '{"mcpServers":{}}' > "${FRESH_PROJECT}/.mcp.json"
+UPGRADE_EXIT=0
+bash "$UPGRADE_SCRIPT" --project-dir "$FRESH_PROJECT" > /dev/null 2>&1 || UPGRADE_EXIT=$?
+assert_eq "1" "$UPGRADE_EXIT" "project upgrade ignores unrelated local skills and mcp config"
+assert_file_exists "${FRESH_PROJECT}/skills/custom/SKILL.md" "project upgrade preserves unrelated local skills"
+assert_file_exists "${FRESH_PROJECT}/.mcp.json" "project upgrade preserves unrelated mcp config"
+
+FRESH_HOME="${MOCK_DIR}/fresh-home"
+FRESH_CODEX_HOME="${MOCK_DIR}/fresh-codex-home"
+UPGRADE_EXIT=0
+HOME="$FRESH_HOME" CODEX_HOME="$FRESH_CODEX_HOME" bash "$UPGRADE_SCRIPT" --codex-marketplace > /dev/null 2>&1 || UPGRADE_EXIT=$?
+assert_eq "1" "$UPGRADE_EXIT" "marketplace upgrade rejects missing install"
+
+# --- Test: uninstall requires a previous install ---
+UNINSTALL_EXIT=0
+bash "$UNINSTALL_SCRIPT" --project-dir "$FRESH_PROJECT" > /dev/null 2>&1 || UNINSTALL_EXIT=$?
+assert_eq "1" "$UNINSTALL_EXIT" "project uninstall rejects missing install"
+
+UNINSTALL_EXIT=0
+bash "$UNINSTALL_SCRIPT" --project-dir "$FRESH_PROJECT" > /dev/null 2>&1 || UNINSTALL_EXIT=$?
+assert_eq "1" "$UNINSTALL_EXIT" "project uninstall ignores unrelated local skills and mcp config"
+assert_file_exists "${FRESH_PROJECT}/skills/custom/SKILL.md" "project uninstall preserves unrelated local skills"
+assert_file_exists "${FRESH_PROJECT}/.mcp.json" "project uninstall preserves unrelated mcp config"
+
+UNINSTALL_EXIT=0
+HOME="$FRESH_HOME" CODEX_HOME="$FRESH_CODEX_HOME" bash "$UNINSTALL_SCRIPT" --codex-marketplace > /dev/null 2>&1 || UNINSTALL_EXIT=$?
+assert_eq "1" "$UNINSTALL_EXIT" "marketplace uninstall rejects missing install"
+
 # --- Test: install into mock project ---
 INSTALL_OUTPUT=$(bash "$INSTALL_SCRIPT" --project-dir "$MOCK_DIR" 2>&1) || true
 

@@ -66,7 +66,47 @@ remove_marketplace() {
     ecu_uninstall_marketplace "$CODEX_HOME" "$KEEP_BACKUP"
 }
 
+has_project_install() {
+    [ -f "$PROJECT_DIR/.codex-plugin/plugin.json" ] && grep -q '"name"[[:space:]]*:[[:space:]]*"everything-codex-unity"' "$PROJECT_DIR/.codex-plugin/plugin.json" 2>/dev/null && return 0
+    [ -f "$PROJECT_DIR/skills/workflows/unity-workflow/SKILL.md" ] && grep -q '^name:[[:space:]]*unity-workflow' "$PROJECT_DIR/skills/workflows/unity-workflow/SKILL.md" 2>/dev/null && return 0
+    [ -f "$PROJECT_DIR/skills/unity-project-rules/SKILL.md" ] && grep -q '^name:[[:space:]]*unity-project-rules' "$PROJECT_DIR/skills/unity-project-rules/SKILL.md" 2>/dev/null && return 0
+    [ -f "$PROJECT_DIR/.codex-legacy/commands/unity-workflow.md" ] && return 0
+    [ -f "$PROJECT_DIR/.codex-unity/scripts/generate-agents-md.sh" ] && return 0
+    [ -f "$PROJECT_DIR/AGENTS.md" ] && grep -q "everything-codex-unity" "$PROJECT_DIR/AGENTS.md" 2>/dev/null && return 0
+    return 1
+}
+
+has_marketplace_install() {
+    local marketplace_json="$HOME/.agents/plugins/marketplace.json"
+    local config_file="$CODEX_HOME/config.toml"
+
+    [ -d "$HOME/plugins/$ECU_PLUGIN_NAME" ] && return 0
+    [ -f "$config_file" ] && grep -q "everything-codex-unity@everything-codex-unity" "$config_file" 2>/dev/null && return 0
+    if [ -f "$marketplace_json" ] && command -v python3 >/dev/null 2>&1; then
+        python3 - "$marketplace_json" <<'PY' && return 0
+import json
+import sys
+from pathlib import Path
+
+try:
+    data = json.loads(Path(sys.argv[1]).read_text())
+except Exception:
+    sys.exit(1)
+for plugin in data.get("plugins", []):
+    if plugin.get("name") == "everything-codex-unity":
+        sys.exit(0)
+sys.exit(1)
+PY
+    fi
+    return 1
+}
+
 if [ "$INSTALL_PROJECT" -eq 1 ]; then
+    if ! has_project_install; then
+        echo "No everything-codex-unity project install found in $PROJECT_DIR." >&2
+        exit 1
+    fi
+
     remove_path "$PROJECT_DIR/.codex-plugin"
     remove_path "$PROJECT_DIR/skills"
     remove_path "$PROJECT_DIR/.codex-legacy"
@@ -85,6 +125,11 @@ if [ "$KEEP_BACKUP" -eq 1 ] && [ -d "$BACKUP_DIR" ]; then
 fi
 
 if [ "$REMOVE_MARKETPLACE" -eq 1 ]; then
+    if ! has_marketplace_install; then
+        echo "No Codex marketplace install found for $ECU_PLUGIN_NAME." >&2
+        exit 1
+    fi
+
     remove_marketplace
 fi
 

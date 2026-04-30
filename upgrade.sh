@@ -47,10 +47,31 @@ source "$SCRIPT_DIR/scripts/codex-marketplace.sh"
 STAMP=$(date +%Y%m%d%H%M%S)
 BACKUP_DIR="$PROJECT_DIR/.codex-unity-upgrade-backup-$STAMP"
 
+has_project_install() {
+    [ -f "$PROJECT_DIR/.codex-plugin/plugin.json" ] && grep -q '"name"[[:space:]]*:[[:space:]]*"everything-codex-unity"' "$PROJECT_DIR/.codex-plugin/plugin.json" 2>/dev/null && return 0
+    [ -f "$PROJECT_DIR/skills/workflows/unity-workflow/SKILL.md" ] && grep -q '^name:[[:space:]]*unity-workflow' "$PROJECT_DIR/skills/workflows/unity-workflow/SKILL.md" 2>/dev/null && return 0
+    [ -f "$PROJECT_DIR/skills/unity-project-rules/SKILL.md" ] && grep -q '^name:[[:space:]]*unity-project-rules' "$PROJECT_DIR/skills/unity-project-rules/SKILL.md" 2>/dev/null && return 0
+    [ -f "$PROJECT_DIR/.codex-legacy/commands/unity-workflow.md" ] && return 0
+    [ -f "$PROJECT_DIR/.codex-unity/scripts/generate-agents-md.sh" ] && return 0
+    [ -f "$PROJECT_DIR/AGENTS.md" ] && grep -q "everything-codex-unity" "$PROJECT_DIR/AGENTS.md" 2>/dev/null && return 0
+    return 1
+}
+
 if [ "$UPGRADE_MARKETPLACE" -eq 1 ]; then
+    if [ ! -d "$HOME/plugins/$ECU_PLUGIN_NAME" ]; then
+        echo "No Codex marketplace install found at $HOME/plugins/$ECU_PLUGIN_NAME." >&2
+        echo "Run install.sh --codex-marketplace first." >&2
+        exit 1
+    fi
     ecu_install_marketplace "$SCRIPT_DIR" "$CODEX_HOME" "$DRY_RUN"
     echo "everything-codex-unity marketplace upgrade complete."
     exit 0
+fi
+
+if ! has_project_install; then
+    echo "No everything-codex-unity project install found in $PROJECT_DIR." >&2
+    echo "Run install.sh --project-dir \"$PROJECT_DIR\" first." >&2
+    exit 1
 fi
 
 copy_dir() {
